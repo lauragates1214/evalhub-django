@@ -11,7 +11,7 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def test_can_register_as_new_user(self):
+    def test_can_create_new_events(self):
         # User goes to the EvalHub homepage to register as a new user
         self.browser.get('http://localhost:8000')
 
@@ -19,22 +19,22 @@ class NewVisitorTest(unittest.TestCase):
         self.assertIn("EvalHub", self.browser.title) 
         self.assertIn("EvalHub", self.header_text)
 
-        # She sees a link inviting her to register as a new user
+        # She is invited to create a new event
         self.fail("Finish the test!")
 
-        # She clicks it 
-        # She is taken to a registration page with a form asking for:
-        # Name, Email, Password, and Password confirmation
+        # She types 'Puppetry Workshop' into a text box
 
-        # She fills in her details
+        # When she hits enter, the page updates, and now the page lists
+        # "1: Puppetry Workshop" as an event in a list of events
 
-        # She submits the form
-        # The page refreshes and she is redirected to the admin dashboard
+        # There is still a text box inviting her to add another event. 
+        # She enters "PyCon UK 2025"
 
-        # She sees a message confirming her registration and login
+        # She hits enter again, and the page updates again,
+        # and now shows both events on her event list
 
-        # Satisfied that she is now able to manage surveys, she logs out to continue later.
-        
+        # Satisfied, she logs out to continue later.
+
 
 if __name__ == '__main__':
     unittest.main()
