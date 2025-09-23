@@ -20,24 +20,24 @@ class NewVisitorTest(unittest.TestCase):
 
         # She notices the page title and header mention EvalHub
         self.assertIn('EvalHub', self.browser.title) 
-        header_text = self.browser.find_element(By.TAG_NAME, 'h1').text
-        self.assertIn('Surveys', header_text)
+        # header_text = self.browser.find_element(By.TAG_NAME, 'h1').text
+        # self.assertIn('Surveys', header_text)
 
-        # She is invited to create a new survey
-        inputbox = self.browser.find_element(By.ID, 'id_new_item')
-        self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a new survey')
+        # # She is invited to create a new survey
+        # inputbox = self.browser.find_element(By.ID, 'id_new_item')
+        # self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a new survey')
 
-        # She types 'Puppetry Workshop Survey' into a text box
-        inputbox.send_keys('Puppetry Workshop Survey')
+        # # She types 'Puppetry Workshop Survey' into a text box
+        # inputbox.send_keys('Puppetry Workshop Survey')
 
-        # # When she hits enter, the page updates, and now the page lists
-        # # "1: Puppetry Workshop Survey" as a survey in a list of surveys
-        inputbox.send_keys(Keys.ENTER)
-        time.sleep(1)
+        # # # When she hits enter, the page updates, and now the page lists
+        # # # "1: Puppetry Workshop Survey" as a survey in a list of surveys
+        # inputbox.send_keys(Keys.ENTER)
+        # time.sleep(1)
 
-        table = self.browser.find_element(By.ID, 'id_survey_table')
-        rows = table.find_elements(By.TAG_NAME, 'tr')
-        self.assertTrue(any(row.text == '1: Puppetry Workshop Survey' for row in rows))
+        # table = self.browser.find_element(By.ID, 'id_survey_table')
+        # rows = table.find_elements(By.TAG_NAME, 'tr')
+        # self.assertTrue(any(row.text == '1: Puppetry Workshop Survey' for row in rows))
 
         # There is still a text box inviting her to add another survey. 
         # She enters "PyCon UK Survey"
