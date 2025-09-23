@@ -1,10 +1,13 @@
 import unittest
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+import time
+import unittest
 
 
-## Scenario: As an organization admin, I want to register as a new user, so that I can manage events and questions. ##
+## Scenario: As an organization admin, I want to register as a new user, so that I can manage surveys. ##
 class NewVisitorTest(unittest.TestCase):
-
     def setUp(self):
         self.browser = webdriver.Firefox()
 
@@ -17,20 +20,31 @@ class NewVisitorTest(unittest.TestCase):
 
         # She notices the page title and header mention EvalHub
         self.assertIn('EvalHub', self.browser.title) 
+        header_text = self.browser.find_element(By.TAG_NAME, 'h1').text
+        self.assertIn('Surveys', header_text)
 
-        # She is invited to create a new event
+        # She is invited to create a new survey
+        inputbox = self.browser.find_element(By.ID, 'id_new_item')
+        self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a new survey')
+
+        # She types 'Puppetry Workshop Survey' into a text box
+        inputbox.send_keys('Puppetry Workshop Survey')
+
+        # # When she hits enter, the page updates, and now the page lists
+        # # "1: Puppetry Workshop Survey" as a survey in a list of surveys
+        inputbox.send_keys(Keys.ENTER)
+        time.sleep(1)
+
+        table = self.browser.find_element(By.ID, 'id_survey_table')
+        rows = table.find_elements(By.TAG_NAME, 'tr')
+        self.assertTrue(any(row.text == '1: Puppetry Workshop Survey' for row in rows))
+
+        # There is still a text box inviting her to add another survey. 
+        # She enters "PyCon UK Survey"
         self.fail('Finish the test!')
 
-        # She types 'Puppetry Workshop' into a text box
-
-        # When she hits enter, the page updates, and now the page lists
-        # "1: Puppetry Workshop" as an event in a list of events
-
-        # There is still a text box inviting her to add another event. 
-        # She enters "PyCon UK 2025"
-
-        # She hits enter again, and the page updates again,
-        # and now shows both events on her event list
+        # She hits enter again, the page updates again,
+        # and now shows both surveys in her survey list
 
         # Satisfied, she logs out to continue later.
 
