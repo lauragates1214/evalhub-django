@@ -3,4 +3,4 @@ from django.http import HttpResponse
 
 
 def home_page(request):
-    return HttpResponse("<html><title>EvalHub</title></html>")
+    return HttpResponse('<html><title>EvalHub</title></html>')

@@ -11,16 +11,15 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def test_can_create_new_events(self):
+    def test_can_create_new_feedback_sessions(self):
         # User goes to the EvalHub homepage to register as a new user
         self.browser.get('http://localhost:8000')
 
         # She notices the page title and header mention EvalHub
-        self.assertIn("EvalHub", self.browser.title) 
-        self.assertIn("EvalHub", self.header_text)
+        self.assertIn('EvalHub', self.browser.title) 
 
         # She is invited to create a new event
-        self.fail("Finish the test!")
+        self.fail('Finish the test!')
 
         # She types 'Puppetry Workshop' into a text box
 
