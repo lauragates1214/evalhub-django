@@ -14,6 +14,11 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
+    def check_for_row_in_survey_table(self, row_text):
+        table = slef.browser.find_element(By.ID, "id_survey_table" \
+        rows = table.find_elements(By.TAG_NAME, "tr")
+        self.assertIn(row_text, [row.text for row in rows])
+
     def test_can_create_new_surveys(self):
         # User goes to the EvalHub homepage to register as a new user
         self.browser.get("http://localhost:8000")
@@ -36,10 +41,7 @@ class NewVisitorTest(unittest.TestCase):
         # "1: Puppetry Workshop Survey" as a survey in a list of surveys
         inputbox.send_keys(Keys.ENTER)
         time.sleep(1)  # wait for the page to load
-
-        table = self.browser.find_element(By.ID, "id_survey_table")
-        rows = table.find_elements(By.TAG_NAME, "tr")
-        self.assertIn("1: Puppetry Workshop Survey", [row.text for row in rows])
+        self.check_for_row_in_survey_table("1: Puppetry Workshop Survey")
 
         # There is still a text box inviting her to add another survey.
         # She enters "PyCon UK Survey" and hits enter
@@ -49,10 +51,8 @@ class NewVisitorTest(unittest.TestCase):
         time.sleep(1)  # wait for the page to load
 
         # The page updates again, and now shows both surveys in her list
-        table = self.browser.find_element(By.ID, "id_survey_table")
-        rows = table.find_elements(By.TAG_NAME, "tr")
-        self.assertIn("2: PyCon UK Survey", [row.text for row in rows])
-        self.assertIn("1: Puppetry Workshop Survey", [row.text for row in rows])
+        self.check_for_row_in_survey_table("2: PyCon UK Survey")
+        self.check_for_row_in_survey_table("1: Puppetry Workshop Survey")
         self.fail("Finish the test!")
 
         # Satisfied, she logs out to continue later.
