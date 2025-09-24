@@ -1,9 +1,11 @@
 from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.keys import Keys
 import time
-import unittest
+
+MAX_WAIT = 5
 
 
 ## Scenario: As an organization admin, I want to register as a new user, so that I can manage surveys. ##
@@ -14,11 +16,18 @@ class NewVisitorTest(LiveServerTestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def check_for_row_in_survey_table(self, row_text):
-        table = self.browser.find_element(By.ID, "id_survey_table")
-        rows = table.find_elements(By.TAG_NAME, "tr")
-
-        self.assertIn(row_text, [row.text for row in rows])
+    def wait_for_row_in_survey_table(self, row_text):
+        start_time = time.time()
+        while True:
+            try:
+                table = self.browser.find_element(By.ID, "id_survey_table")
+                rows = table.find_elements(By.TAG_NAME, "tr")
+                self.assertIn(row_text, [row.text for row in rows])
+                return
+            except (AssertionError, WebDriverException):
+                if time.time() - start_time > MAX_WAIT:
+                    raise
+                time.sleep(0.5)
 
     def test_can_create_new_surveys(self):
         # User goes to the EvalHub homepage to register as a new user
@@ -43,21 +52,17 @@ class NewVisitorTest(LiveServerTestCase):
         # When she hits enter, the page updates, and now the page lists
         # "1: Puppetry Workshop Survey" as a survey in a list of surveys
         inputbox.send_keys(Keys.ENTER)
-        time.sleep(1)  # wait for the page to load
 
-        self.check_for_row_in_survey_table("1: Puppetry Workshop Survey")
+        self.wait_for_row_in_survey_table("1: Puppetry Workshop Survey")
 
         # There is still a text box inviting her to add another survey.
         # She enters "PyCon UK Survey" and hits enter
         inputbox = self.browser.find_element(By.ID, "id_new_survey")
         inputbox.send_keys("PyCon UK Survey")
         inputbox.send_keys(Keys.ENTER)
-        time.sleep(1)  # wait for the page to load
 
         # The page updates again, and now shows both surveys in her list
-        self.check_for_row_in_survey_table("2: PyCon UK Survey")
-        self.check_for_row_in_survey_table("1: Puppetry Workshop Survey")
-
-        self.fail("Finish the test!")
+        self.wait_for_row_in_survey_table("2: PyCon UK Survey")
+        self.wait_for_row_in_survey_table("1: Puppetry Workshop Survey")
 
         # Satisfied, she logs out to continue later.

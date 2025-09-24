@@ -9,7 +9,9 @@
             {% csrf_token %}
         </form>
         <table id="id_survey_table">
-            <tr><td>1: {{ new_survey_text }}</td></tr>
+            {% for survey in surveys %}
+                <tr><td>{{ forloop.counter }}: {{ survey.text }}</td></tr>
+            {% endfor %}
         </table>
     </body>
 </html>

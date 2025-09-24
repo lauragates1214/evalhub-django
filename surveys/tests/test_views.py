@@ -25,8 +25,8 @@ class HomePageTest(TestCase):
 
     def test_can_save_a_POST_request(self):
         self.client.post("/", data={"survey_text": "A new survey"})
-        new_survey = Survey.objects.first()
 
+        new_survey = Survey.objects.first()
         self.assertEqual(Survey.objects.count(), 1)
         self.assertEqual(new_survey.text, "A new survey")
 

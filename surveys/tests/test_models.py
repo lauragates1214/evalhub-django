@@ -15,7 +15,6 @@ class SurveyModelTest(TestCase):
         saved_surveys = Survey.objects.all()
         first_saved_survey = saved_surveys[0]
         second_saved_survey = saved_surveys[1]
-
         self.assertEqual(saved_surveys.count(), 2)
         self.assertEqual(first_saved_survey.text, "The first (ever) survey")
         self.assertEqual(second_saved_survey.text, "Survey the second")
