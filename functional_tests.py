@@ -14,7 +14,7 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def test_can_create_new_feedback_sessions(self):
+    def test_can_create_new_surveys(self):
         # User goes to the EvalHub homepage to register as a new user
         self.browser.get("http://localhost:8000")
 
