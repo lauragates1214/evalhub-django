@@ -6,11 +6,12 @@ from surveys.models import Survey
 def home_page(request):
     if request.method == "POST":
         Survey.objects.create(text=request.POST["survey_text"])
-        return redirect("/")
+        return redirect("/surveys/the-only-survey-in-the-world/")
 
     surveys = Survey.objects.all()
-    return render(
-        request,
-        "home.html",
-        {"surveys": surveys},
-    )
+    return render(request, "home.html", {"surveys": surveys})
+
+
+def view_survey(request):
+    surveys = Survey.objects.all()
+    return render(request, "survey.html", {"surveys": surveys})
