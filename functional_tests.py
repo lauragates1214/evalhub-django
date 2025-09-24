@@ -15,7 +15,7 @@ class NewVisitorTest(unittest.TestCase):
         self.browser.quit()
 
     def check_for_row_in_survey_table(self, row_text):
-        table = slef.browser.find_element(By.ID, "id_survey_table" \
+        table = self.browser.find_element(By.ID, "id_survey_table")
         rows = table.find_elements(By.TAG_NAME, "tr")
         self.assertIn(row_text, [row.text for row in rows])
 
