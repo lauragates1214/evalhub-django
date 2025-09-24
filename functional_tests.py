@@ -16,40 +16,47 @@ class NewVisitorTest(unittest.TestCase):
 
     def test_can_create_new_feedback_sessions(self):
         # User goes to the EvalHub homepage to register as a new user
-        self.browser.get('http://localhost:8000')
+        self.browser.get("http://localhost:8000")
 
         # She notices the page title and header mention EvalHub
-        self.assertIn('EvalHub', self.browser.title) 
-        header_text = self.browser.find_element(By.TAG_NAME, 'h1').text
-        self.assertIn('Surveys', header_text)
+        self.assertIn("EvalHub", self.browser.title)
+        header_text = self.browser.find_element(By.TAG_NAME, "h1").text
+        self.assertIn("Surveys", header_text)
 
         # She is invited to create a new survey
-        inputbox = self.browser.find_element(By.ID, 'id_new_survey')
-        self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a new survey')
-
-        # She types 'Puppetry Workshop Survey' into a text box
-        inputbox.send_keys('Puppetry Workshop Survey')
-
-        # When she hits enter, the page updates, and now the page lists
-        # '1: Puppetry Workshop Survey' as a survey in a list of surveys
-        inputbox.send_keys(Keys.ENTER)
-        time.sleep(1)
-
-        table = self.browser.find_element(By.ID, 'id_survey_table')
-        rows = table.find_elements(By.TAG_NAME, 'tr')
-        self.assertTrue(any(row.text == '1: Puppetry Workshop Survey' for row in rows),
-                        "New survey did not appear in table -- its text was:\n%s" % (table.text,)
+        inputbox = self.browser.find_element(By.ID, "id_new_survey")
+        self.assertEqual(
+            inputbox.get_attribute("placeholder"), "Enter a new survey name"
         )
 
-        # There is still a text box inviting her to add another survey. 
-        # She enters 'PyCon UK Survey'
-        self.fail('Finish the test!')
+        # She types "Puppetry Workshop Survey" into a text box
+        inputbox.send_keys("Puppetry Workshop Survey")
 
-        # She hits enter again, the page updates again,
-        # and now shows both surveys in her survey list
+        # When she hits enter, the page updates, and now the page lists
+        # "1: Puppetry Workshop Survey" as a survey in a list of surveys
+        inputbox.send_keys(Keys.ENTER)
+        time.sleep(1)  # wait for the page to load
+
+        table = self.browser.find_element(By.ID, "id_survey_table")
+        rows = table.find_elements(By.TAG_NAME, "tr")
+        self.assertIn("1: Puppetry Workshop Survey", [row.text for row in rows])
+
+        # There is still a text box inviting her to add another survey.
+        # She enters "PyCon UK Survey" and hits enter
+        inputbox = self.browser.find_element(By.ID, "id_new_survey")
+        inputbox.send_keys("PyCon UK Survey")
+        inputbox.send_keys(Keys.ENTER)
+        time.sleep(1)  # wait for the page to load
+
+        # The page updates again, and now shows both surveys in her list
+        table = self.browser.find_element(By.ID, "id_survey_table")
+        rows = table.find_elements(By.TAG_NAME, "tr")
+        self.assertIn("2: PyCon UK Survey", [row.text for row in rows])
+        self.assertIn("1: Puppetry Workshop Survey", [row.text for row in rows])
+        self.fail("Finish the test!")
 
         # Satisfied, she logs out to continue later.
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

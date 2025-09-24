@@ -19,6 +19,6 @@ from django.urls import path
 from surveys.views import home_page
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', home_page, name='home'),
+    path("admin/", admin.site.urls),
+    path("", home_page, name="home"),
 ]
