@@ -1,4 +1,4 @@
-import unittest
+from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -7,7 +7,7 @@ import unittest
 
 
 ## Scenario: As an organization admin, I want to register as a new user, so that I can manage surveys. ##
-class NewVisitorTest(unittest.TestCase):
+class NewVisitorTest(LiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
 
@@ -17,19 +17,22 @@ class NewVisitorTest(unittest.TestCase):
     def check_for_row_in_survey_table(self, row_text):
         table = self.browser.find_element(By.ID, "id_survey_table")
         rows = table.find_elements(By.TAG_NAME, "tr")
+
         self.assertIn(row_text, [row.text for row in rows])
 
     def test_can_create_new_surveys(self):
         # User goes to the EvalHub homepage to register as a new user
-        self.browser.get("http://localhost:8000")
+        self.browser.get(self.live_server_url)
 
         # She notices the page title and header mention EvalHub
-        self.assertIn("EvalHub", self.browser.title)
         header_text = self.browser.find_element(By.TAG_NAME, "h1").text
+
+        self.assertIn("EvalHub", self.browser.title)
         self.assertIn("Surveys", header_text)
 
         # She is invited to create a new survey
         inputbox = self.browser.find_element(By.ID, "id_new_survey")
+
         self.assertEqual(
             inputbox.get_attribute("placeholder"), "Enter a new survey name"
         )
@@ -41,6 +44,7 @@ class NewVisitorTest(unittest.TestCase):
         # "1: Puppetry Workshop Survey" as a survey in a list of surveys
         inputbox.send_keys(Keys.ENTER)
         time.sleep(1)  # wait for the page to load
+
         self.check_for_row_in_survey_table("1: Puppetry Workshop Survey")
 
         # There is still a text box inviting her to add another survey.
@@ -53,10 +57,7 @@ class NewVisitorTest(unittest.TestCase):
         # The page updates again, and now shows both surveys in her list
         self.check_for_row_in_survey_table("2: PyCon UK Survey")
         self.check_for_row_in_survey_table("1: Puppetry Workshop Survey")
+
         self.fail("Finish the test!")
 
         # Satisfied, she logs out to continue later.
-
-
-if __name__ == "__main__":
-    unittest.main()
