@@ -22,7 +22,8 @@ from surveys import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.home_page, name="home"),
+    path("surveys/new", views.new_survey, name="new_survey"),
     path(
-        "surveys/the-only-survey-in-the-world/", views.view_survey, name="view-survey"
+        "surveys/the-only-survey-in-the-world/", views.view_survey, name="view_survey"
     ),
 ]

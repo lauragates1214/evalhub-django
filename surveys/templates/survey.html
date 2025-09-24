@@ -4,7 +4,7 @@
     </head>
     <body>
         <h1>Your Surveys</h1>
-        <form method="POST" action="/">
+        <form method="POST" action="/surveys/new">
             <input name="survey_text", input id="id_new_survey", placeholder="Enter a new survey name" />
             {% csrf_token %}
         </form>
