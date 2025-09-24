@@ -8,7 +8,6 @@ import time
 MAX_WAIT = 5
 
 
-## Scenario: As an organization admin, I want to register as a new user, so that I can manage surveys. ##
 class NewVisitorTest(LiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
@@ -38,7 +37,7 @@ class NewVisitorTest(LiveServerTestCase):
         header_text = self.browser.find_element(By.TAG_NAME, "h1").text
 
         self.assertIn("EvalHub", self.browser.title)
-        self.assertIn("Surveys", header_text)
+        self.assertIn("Survey", header_text)
 
         # She is invited to create a new survey
         inputbox = self.browser.find_element(By.ID, "id_new_survey")

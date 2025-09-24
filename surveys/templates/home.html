@@ -3,15 +3,10 @@
         <title>EvalHub</title>
     </head>
     <body>
-        <h1>Your Surveys</h1>
+        <h1>Start a Survey</h1>
         <form method="POST" action="/">
             <input name="survey_text", input id="id_new_survey", placeholder="Enter a new survey name" />
             {% csrf_token %}
         </form>
-        <table id="id_survey_table">
-            {% for survey in surveys %}
-                <tr><td>{{ forloop.counter }}: {{ survey.text }}</td></tr>
-            {% endfor %}
-        </table>
     </body>
 </html>

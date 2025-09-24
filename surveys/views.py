@@ -8,8 +8,7 @@ def home_page(request):
         Survey.objects.create(text=request.POST["survey_text"])
         return redirect("/surveys/the-only-survey-in-the-world/")
 
-    surveys = Survey.objects.all()
-    return render(request, "home.html", {"surveys": surveys})
+    return render(request, "home.html")
 
 
 def view_survey(request):
