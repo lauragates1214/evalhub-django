@@ -91,18 +91,18 @@ class NewVisitorTest(LiveServerTestCase):
 
         # User 2 starts a new question by entering a new question name
         inputbox = self.browser.find_element(By.ID, "id_new_question")
-        inputbox.send_keys("What is your favorite manatee? Explain.")
+        inputbox.send_keys("What is manatee? Explain.")
         inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_question_table("What is your favorite manatee? Explain.")
+        self.wait_for_row_in_question_table("1: What is manatee? Explain.")
 
         # User 2 gets their own unique URL
         user2_question_url = self.browser.current_url
-        self.assertRegex(user2_question_url, "/questions/.+")
+        self.assertRegex(user2_question_url, "/surveys/.+")
         self.assertNotEqual(user2_question_url, user1_question_url)
 
         # Again, there is no trace of User 1's question
         page_text = self.browser.find_element(By.TAG_NAME, "body").text
         self.assertNotIn("How do you feel about capybara?", page_text)
-        self.assertIn("What is your favorite manatee? Explain.", page_text)
+        self.assertIn("What is manatee? Explain.", page_text)
 
         # Satisfied, they both go back to sleep

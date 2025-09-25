@@ -7,12 +7,19 @@ def home_page(request):
     return render(request, "home.html")
 
 
-def view_survey(request):
-    questions = Question.objects.all()
+def view_survey(request, survey_id):
+    mysurvey = Survey.objects.get(id=survey_id)
+    questions = Question.objects.filter(survey=mysurvey)
     return render(request, "survey.html", {"questions": questions})
 
 
 def new_survey(request):
-    nusurvey = Survey.objects.create()
-    Question.objects.create(text=request.POST["question_text"], survey=nusurvey)
-    return redirect("/surveys/the-only-survey-in-the-world/")
+    new_survey = Survey.objects.create()
+    Question.objects.create(text=request.POST["question_text"], survey=new_survey)
+    return redirect(f"/surveys/{new_survey.id}/")
+
+
+def add_question(request, survey_id):
+    mysurvey = Survey.objects.get(id=survey_id)
+    Question.objects.create(text=request.POST["question_text"], survey=mysurvey)
+    return redirect(f"/surveys/{mysurvey.id}/")

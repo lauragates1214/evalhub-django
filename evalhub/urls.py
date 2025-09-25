@@ -23,9 +23,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.home_page, name="home"),
     path("surveys/new", views.new_survey, name="new_survey"),
+    path("surveys/<int:survey_id>/", views.view_survey, name="view_survey"),
     path(
-        "surveys/the-only-survey-in-the-world/",
-        views.view_survey,
-        name="view_survey",
+        "surveys/<int:survey_id>/add_question", views.add_question, name="add_question"
     ),
 ]
