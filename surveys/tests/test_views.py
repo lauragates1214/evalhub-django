@@ -1,5 +1,6 @@
 from django.test import TestCase
 from surveys.models import Question, Survey
+import lxml.html
 
 
 class HomePageTest(TestCase):
@@ -10,9 +11,19 @@ class HomePageTest(TestCase):
 
     def test_renders_input_form(self):
         response = self.client.get("/")
+        parsed = lxml.html.fromstring(
+            response.content
+        )  # parse HTML into structured object to represent DOM
+        [form] = parsed.cssselect(
+            "form[method=POST]"
+        )  # find form element with method=POST, expect exactly one (hence the brackets)
 
-        self.assertContains(response, '<form method="POST" action="/surveys/new">')
-        self.assertContains(response, '<input name="question_text"')
+        self.assertEqual(form.get("action"), "/surveys/new")
+
+        inputs = form.cssselect("input")
+        self.assertIn(
+            "question_text", [input.get("name") for input in inputs]
+        )  # check at least one input has name=question_text
 
 
 class NewQuestionTest(TestCase):
@@ -52,12 +63,19 @@ class SurveyViewTest(TestCase):
     def test_renders_input_form(self):
         mysurvey = Survey.objects.create()
         response = self.client.get(f"/surveys/{mysurvey.id}/")
+        parsed = lxml.html.fromstring(
+            response.content
+        )  # parse HTML into structured object to represent DOM
+        [form] = parsed.cssselect(
+            "form[method=POST]"
+        )  # find form element with method=POST, expect exactly one (hence the brackets)
 
-        self.assertContains(
-            response,
-            f'<form method="POST" action="/surveys/{mysurvey.id}/add_question">',
-        )
-        self.assertContains(response, '<input name="question_text"')
+        self.assertEqual(form.get("action"), f"/surveys/{mysurvey.id}/add_question")
+
+        inputs = form.cssselect("input")
+        self.assertIn(
+            "question_text", [input.get("name") for input in inputs]
+        )  # check at least one input has name=question_text
 
     def test_displays_only_questions_for_that_survey(self):
         correct_survey = Survey.objects.create()

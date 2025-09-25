@@ -5,9 +5,11 @@
 {% block form_action %}/surveys/{{ survey.id }}/add_question{% endblock %}
 
 {% block table %}
-    <table id="id_question_table">
-        {% for question in survey.question_set.all %}
-            <tr><td>{{ forloop.counter }}: {{ question.text }}</td></tr>
-        {% endfor %}
-    </table>
+<table class="table" id="id_question_table">
+  {% for question in survey.question_set.all %}
+  <tr>
+    <td>{{ forloop.counter }}: {{ question.text }}</td>
+  </tr>
+  {% endfor %}
+</table>
 {% endblock %}
