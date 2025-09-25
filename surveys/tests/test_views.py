@@ -1,5 +1,5 @@
 from django.test import TestCase
-from surveys.models import Survey
+from surveys.models import Question
 
 
 class HomePageTest(TestCase):
@@ -11,42 +11,42 @@ class HomePageTest(TestCase):
     def test_renders_input_form(self):
         response = self.client.get("/")
 
-        self.assertContains(response, '<form method="POST" action="/surveys/new">')
-        self.assertContains(response, '<input name="survey_text"')
+        self.assertContains(response, '<form method="POST" action="/questions/new">')
+        self.assertContains(response, '<input name="question_text"')
 
 
-class NewSurveyTest(TestCase):
+class NewQuestionTest(TestCase):
     def test_can_save_a_POST_request(self):
-        self.client.post("/surveys/new", data={"survey_text": "A new survey"})
+        self.client.post("/questions/new", data={"question_text": "A new question"})
 
-        new_survey = Survey.objects.first()
-        self.assertEqual(Survey.objects.count(), 1)
-        self.assertEqual(new_survey.text, "A new survey")
+        new_question = Question.objects.first()
+        self.assertEqual(Question.objects.count(), 1)
+        self.assertEqual(new_question.text, "A new question")
 
     def test_redirects_after_POST(self):
         response = self.client.post(
-            "/surveys/new", data={"survey_text": "A new survey"}
+            "/questions/new", data={"question_text": "A new question"}
         )
 
-        self.assertRedirects(response, "/surveys/the-only-survey-in-the-world/")
+        self.assertRedirects(response, "/questions/the-only-question-in-the-world/")
 
 
-class SurveyViewTest(TestCase):
-    def test_uses_survey_template(self):
-        response = self.client.get("/surveys/the-only-survey-in-the-world/")
-        self.assertTemplateUsed(response, "survey.html")
+class QuestionViewTest(TestCase):
+    def test_uses_question_template(self):
+        response = self.client.get("/questions/the-only-question-in-the-world/")
+        self.assertTemplateUsed(response, "question.html")
 
     def test_renders_input_form(self):
-        response = self.client.get("/surveys/the-only-survey-in-the-world/")
+        response = self.client.get("/questions/the-only-question-in-the-world/")
 
-        self.assertContains(response, '<form method="POST" action="/surveys/new">')
-        self.assertContains(response, '<input name="survey_text"')
+        self.assertContains(response, '<form method="POST" action="/questions/new">')
+        self.assertContains(response, '<input name="question_text"')
 
-    def test_displays_all_surveys(self):
-        Survey.objects.create(text="Survey 1")
-        Survey.objects.create(text="Survey 2")
+    def test_displays_all_questions(self):
+        Question.objects.create(text="Question 1")
+        Question.objects.create(text="Question 2")
 
-        response = self.client.get("/surveys/the-only-survey-in-the-world/")
+        response = self.client.get("/questions/the-only-question-in-the-world/")
 
-        self.assertContains(response, "Survey 1")
-        self.assertContains(response, "Survey 2")
+        self.assertContains(response, "Question 1")
+        self.assertContains(response, "Question 2")

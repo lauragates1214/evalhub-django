@@ -1,17 +1,17 @@
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from surveys.models import Survey
+from surveys.models import Question
 
 
 def home_page(request):
     return render(request, "home.html")
 
 
-def view_survey(request):
-    surveys = Survey.objects.all()
-    return render(request, "survey.html", {"surveys": surveys})
+def view_question(request):
+    questions = Question.objects.all()
+    return render(request, "question.html", {"questions": questions})
 
 
-def new_survey(request):
-    Survey.objects.create(text=request.POST["survey_text"])
-    return redirect("/surveys/the-only-survey-in-the-world/")
+def new_question(request):
+    Question.objects.create(text=request.POST["question_text"])
+    return redirect("/questions/the-only-question-in-the-world/")

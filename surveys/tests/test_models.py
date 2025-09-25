@@ -1,20 +1,20 @@
 from django.test import TestCase
-from surveys.models import Survey
+from surveys.models import Question
 
 
-class SurveyModelTest(TestCase):
-    def test_saving_and_retrieving_surveys(self):
-        first_survey = Survey()
-        first_survey.text = "The first (ever) survey"
-        first_survey.save()
+class QuestionModelTest(TestCase):
+    def test_saving_and_retrieving_questions(self):
+        first_question = Question()
+        first_question.text = "The first (ever) question"
+        first_question.save()
 
-        second_survey = Survey()
-        second_survey.text = "Survey the second"
-        second_survey.save()
+        second_question = Question()
+        second_question.text = "Question the second"
+        second_question.save()
 
-        saved_surveys = Survey.objects.all()
-        first_saved_survey = saved_surveys[0]
-        second_saved_survey = saved_surveys[1]
-        self.assertEqual(saved_surveys.count(), 2)
-        self.assertEqual(first_saved_survey.text, "The first (ever) survey")
-        self.assertEqual(second_saved_survey.text, "Survey the second")
+        saved_questions = Question.objects.all()
+        first_saved_question = saved_questions[0]
+        second_saved_question = saved_questions[1]
+        self.assertEqual(saved_questions.count(), 2)
+        self.assertEqual(first_saved_question.text, "The first (ever) question")
+        self.assertEqual(second_saved_question.text, "Question the second")

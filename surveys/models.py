@@ -1,5 +1,5 @@
 from django.db import models
 
 
-class Survey(models.Model):
+class Question(models.Model):
     text = models.TextField(default="")
