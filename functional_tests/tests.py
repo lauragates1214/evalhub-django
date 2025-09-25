@@ -15,7 +15,7 @@ class NewVisitorTest(LiveServerTestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def wait_for_row_in_question_table(self, row_text):
+    def wait_for_row_in_survey_table(self, row_text):
         start_time = time.time()
         while True:
             try:
@@ -52,7 +52,7 @@ class NewVisitorTest(LiveServerTestCase):
         # "1: Puppetry Workshop Question" as a question in a list of questions
         inputbox.send_keys(Keys.ENTER)
 
-        self.wait_for_row_in_question_table("1: How do you feel about capybara?")
+        self.wait_for_row_in_survey_table("1: How do you feel about capybara?")
 
         # There is still a text box inviting her to add another question.
         # She enters "PyCon UK Question" and hits enter
@@ -61,8 +61,8 @@ class NewVisitorTest(LiveServerTestCase):
         inputbox.send_keys(Keys.ENTER)
 
         # The page updates again, and now shows both questions in her list
-        self.wait_for_row_in_question_table("2: How many capybara? Explain.")
-        self.wait_for_row_in_question_table("1: How do you feel about capybara?")
+        self.wait_for_row_in_survey_table("2: How many capybara? Explain.")
+        self.wait_for_row_in_survey_table("1: How do you feel about capybara?")
 
         # Satisfied, she logs out to continue later.
 
@@ -73,7 +73,7 @@ class NewVisitorTest(LiveServerTestCase):
         inputbox.send_keys("How do you feel about capybara?")
         inputbox.send_keys(Keys.ENTER)
 
-        self.wait_for_row_in_question_table("1: How do you feel about capybara?")
+        self.wait_for_row_in_survey_table("1: How do you feel about capybara?")
 
         # She notices that her question has a unique URL
         user1_question_url = self.browser.current_url
@@ -93,7 +93,7 @@ class NewVisitorTest(LiveServerTestCase):
         inputbox = self.browser.find_element(By.ID, "id_new_question")
         inputbox.send_keys("What is manatee? Explain.")
         inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_question_table("1: What is manatee? Explain.")
+        self.wait_for_row_in_survey_table("1: What is manatee? Explain.")
 
         # User 2 gets their own unique URL
         user2_question_url = self.browser.current_url
@@ -106,3 +106,29 @@ class NewVisitorTest(LiveServerTestCase):
         self.assertIn("What is manatee? Explain.", page_text)
 
         # Satisfied, they both go back to sleep
+
+    def test_layout_and_styling(self):
+        # Edith goes to the home page,
+        self.browser.get(self.live_server_url)
+
+        # Her browser window is set to a very specific size
+        self.browser.set_window_size(1024, 768)
+
+        # She notices the input box is nicely centered
+        inputbox = self.browser.find_element(By.ID, "id_new_question")
+        self.assertAlmostEqual(
+            inputbox.location["x"] + inputbox.size["width"] / 2,
+            512,
+            delta=10,
+        )
+
+        # She starts a new survey and sees the input is nicely centered there too
+        inputbox.send_keys("testing")
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_survey_table("1: testing")
+        inputbox = self.browser.find_element(By.ID, "id_new_question")
+        self.assertAlmostEqual(
+            inputbox.location["x"] + inputbox.size["width"] / 2,
+            512,
+            delta=10,
+        )
