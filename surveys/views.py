@@ -13,5 +13,6 @@ def view_survey(request):
 
 
 def new_survey(request):
-    Question.objects.create(text=request.POST["question_text"])
+    nusurvey = Survey.objects.create()
+    Question.objects.create(text=request.POST["question_text"], survey=nusurvey)
     return redirect("/surveys/the-only-survey-in-the-world/")

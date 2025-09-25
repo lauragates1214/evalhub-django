@@ -1,5 +1,5 @@
 from django.test import TestCase
-from surveys.models import Question
+from surveys.models import Question, Survey
 
 
 class HomePageTest(TestCase):
@@ -25,13 +25,13 @@ class NewQuestionTest(TestCase):
 
     def test_redirects_after_POST(self):
         response = self.client.post(
-            "/surveys/new", data={"question_text": "A new question"}
+            "/surveys/new", data={"question_text": "A new survey question"}
         )
 
         self.assertRedirects(response, "/surveys/the-only-survey-in-the-world/")
 
 
-class QuestionViewTest(TestCase):
+class SurveyViewTest(TestCase):
     def test_uses_question_template(self):
         response = self.client.get("/surveys/the-only-survey-in-the-world/")
 
@@ -43,9 +43,10 @@ class QuestionViewTest(TestCase):
         self.assertContains(response, '<form method="POST" action="/surveys/new">')
         self.assertContains(response, '<input name="question_text"')
 
-    def test_displays_all_questions(self):
-        Question.objects.create(text="Question 1")
-        Question.objects.create(text="Question 2")
+    def test_displays_all_survey_questions(self):
+        mysurvey = Survey.objects.create()
+        Question.objects.create(text="Question 1", survey=mysurvey)
+        Question.objects.create(text="Question 2", survey=mysurvey)
 
         response = self.client.get("/surveys/the-only-survey-in-the-world/")
 

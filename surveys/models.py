@@ -7,3 +7,4 @@ class Survey(models.Model):
 
 class Question(models.Model):
     text = models.TextField(default="")
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, null=True, blank=True)

@@ -36,9 +36,9 @@ class NewVisitorTest(LiveServerTestCase):
         # She notices the page title mentions EvalHub
         self.assertIn("EvalHub", self.browser.title)
 
-        # She notices the header mentions questions
+        # She notices the header mentions surveys
         header_text = self.browser.find_element(By.TAG_NAME, "h1").text
-        self.assertIn("Question", header_text)
+        self.assertIn("Survey", header_text)
 
         # She is invited to create a new question
         inputbox = self.browser.find_element(By.ID, "id_new_question")
