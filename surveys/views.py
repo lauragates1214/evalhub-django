@@ -9,8 +9,7 @@ def home_page(request):
 
 def view_survey(request, survey_id):
     mysurvey = Survey.objects.get(id=survey_id)
-    questions = Question.objects.filter(survey=mysurvey)
-    return render(request, "survey.html", {"questions": questions})
+    return render(request, "survey.html", {"survey": mysurvey})
 
 
 def new_survey(request):

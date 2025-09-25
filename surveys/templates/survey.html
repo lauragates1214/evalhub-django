@@ -4,12 +4,12 @@
     </head>
     <body>
         <h1>Your Surveys</h1>
-        <form method="POST" action="/surveys/new">
+        <form method="POST" action="/surveys/{{ survey.id }}/add_question">
             <input name="question_text", input id="id_new_question", placeholder="Enter a new question" />
             {% csrf_token %}
         </form>
         <table id="id_question_table">
-            {% for question in questions %}
+            {% for question in survey.question_set.all %}
                 <tr><td>{{ forloop.counter }}: {{ question.text }}</td></tr>
             {% endfor %}
         </table>

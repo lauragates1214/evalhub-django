@@ -53,7 +53,10 @@ class SurveyViewTest(TestCase):
         mysurvey = Survey.objects.create()
         response = self.client.get(f"/surveys/{mysurvey.id}/")
 
-        self.assertContains(response, '<form method="POST" action="/surveys/new">')
+        self.assertContains(
+            response,
+            f'<form method="POST" action="/surveys/{mysurvey.id}/add_question">',
+        )
         self.assertContains(response, '<input name="question_text"')
 
     def test_displays_only_questions_for_that_survey(self):
