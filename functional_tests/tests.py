@@ -77,7 +77,7 @@ class NewVisitorTest(LiveServerTestCase):
 
         # She notices that her question has a unique URL
         user1_question_url = self.browser.current_url
-        self.assertRegex(user1_question_url, "/questions/.+")
+        self.assertRegex(user1_question_url, "/surveys/.+")
 
         # Now a new user, User 2, comes along to the site
 

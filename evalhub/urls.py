@@ -22,10 +22,10 @@ from surveys import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.home_page, name="home"),
-    path("questions/new", views.new_question, name="new_question"),
+    path("surveys/new", views.new_survey, name="new_survey"),
     path(
-        "questions/the-only-question-in-the-world/",
-        views.view_question,
-        name="view_question",
+        "surveys/the-only-survey-in-the-world/",
+        views.view_survey,
+        name="view_survey",
     ),
 ]
