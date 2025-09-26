@@ -1,10 +1,31 @@
+# Database files
 db.sqlite3
-.venv
-__pycache__
-*.pyc
-/static
 src/db.sqlite3
-src/surveys/static/bootstrap/
-.DS_Store
-*.pyc
+
+# Python
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv
+env/
+venv/
+
+# Static files
+/static/
+src/surveys/static/bootstrap/
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Django
+*.log
+local_settings.py
+media/
