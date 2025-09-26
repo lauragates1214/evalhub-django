@@ -4,3 +4,7 @@ __pycache__
 *.pyc
 /static
 src/db.sqlite3
+src/surveys/static/bootstrap/
+.DS_Store
+*.pyc
+__pycache__/
