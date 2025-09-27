@@ -22,11 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if "DJANGO_DEBUG_FALSE" in os.environ:
+if config("DJANGO_DEBUG_FALSE", default=False, cast=bool):
     DEBUG = False
-    SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
-    ALLOWED_HOSTS = [os.environ["DJANGO_ALLOWED_HOST"]]
-    db_path = os.environ["DJANGO_DB_PATH"]
+    SECRET_KEY = config("DJANGO_SECRET_KEY")
+    ALLOWED_HOSTS = [config("DJANGO_ALLOWED_HOST")]
+    db_path = config("DJANGO_DB_PATH")
 else:
     DEBUG = True
     SECRET_KEY = "insecure-key-for-dev"
