@@ -11,4 +11,8 @@ COPY src /src
 
 WORKDIR /src
 
+RUN python manage.py collectstatic
+
+ENV DJANGO_DEBUG_FALSE=1
+
 CMD ["gunicorn", "--bind", ":8888", "evalhub.wsgi:application"]

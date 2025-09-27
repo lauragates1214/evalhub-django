@@ -13,7 +13,7 @@ env/
 venv/
 
 # Static files
-/static/
+src/static/
 src/surveys/static/bootstrap/
 
 # System files
@@ -28,4 +28,4 @@ Thumbs.db
 # Django
 *.log
 local_settings.py
-media/
+media/src/static
