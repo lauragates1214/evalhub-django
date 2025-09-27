@@ -1,6 +1,7 @@
 # Database files
 db.sqlite3
 src/db.sqlite3
+container.db.sqlite3
 
 # Python
 __pycache__/
@@ -15,6 +16,7 @@ venv/
 # Static files
 src/static/
 src/surveys/static/bootstrap/
+media/src/static
 
 # System files
 .DS_Store
@@ -28,4 +30,5 @@ Thumbs.db
 # Django
 *.log
 local_settings.py
-media/src/static
+
+
