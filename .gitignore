@@ -12,6 +12,7 @@ __pycache__/
 .venv
 env/
 venv/
+.env
 
 # Static files
 src/static/
