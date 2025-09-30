@@ -1,0 +1,29 @@
+- hosts: all
+
+  tasks:
+    - name: Install docker  
+      ansible.builtin.apt:  
+        name: docker.io  
+        state: latest
+        update_cache: true
+      become: true # Run this with sudo (elevated privileges)
+
+    - name: Add user to docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true # Don't remove any existing groups
+      become: true # Run this with sudo (elevated privileges)
+      register: docker_group_added # Capture the result
+
+    - name: Reset ssh connection to all the user/group change to take effect
+      ansible.builtin.meta: reset_connection
+      when: docker_group_added.changed # Only reset if the user was added to the group
+
+    - name: Run test container
+      community.docker.docker_container:
+        name: testcontainer
+        state: started
+        image: busybox
+        command: echo hello world
+      # become: true not needed because user is in docker group now
