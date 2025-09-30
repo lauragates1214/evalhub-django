@@ -44,6 +44,25 @@
         source: load # Load from tar archive into Docker's image registry so Docker can use it to run containers
         force_source: true # Re-import even if image with same name exists
         state: present # Ensure image is present
+
+    - name: Ensure .secret-key file exists # Intention: only happens once per server
+      ansible.builtin.copy: # Populate file with arbitrary string content
+        dest: ~/.secret-key
+        content: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters') }}"
+        mode: '0600' # Read/write for user only
+        force: false # Don't recreate if already exists
+
+    - name: Read secret key back from file # Reread value on every deploy 
+      ansible.builtin.slurp: # Read file content and base64 encode it
+        src: ~/.secret-key
+      register: secret_key
+
+    - name: Ensure db.sqlite3 file exists outside container
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/db.sqlite3" # Place database file in home directory of user
+        state: touch # Create file if it doesn't exist
+        owner: 1234  # So nonroot user can access it in container
+      become: true  # Needed for ownership change
     
     - name: Run container
       community.docker.docker_container:
@@ -51,3 +70,19 @@
         image: evalhub 
         state: started
         recreate: true # Recreate container if it already exists
+        env: # Set environment variables in container
+          DJANGO_DEBUG_FALSE: "1" # Any value will do, just needs to be defined
+          DJANGO_SECRET_KEY: "{{ secret_key.content | b64decode }}" # Decode base64 back to original string
+          DJANGO_ALLOWED_HOST: "{{ inventory_hostname }}" # Set allowed host to server's hostname
+          DJANGO_DB_PATH: /home/nonroot/db.sqlite3 # Path inside container where database file will be stored
+        mounts: 
+          - type: bind
+            source: "{{ ansible_env.HOME }}/db.sqlite3" 
+            target: /home/nonroot/db.sqlite3
+        ports: 
+          - "80:8888" # Map port 80 on server to port 8888 in container
+
+    - name: Run migration inside container
+      community.docker.docker_container_exec:
+        container: evalhub
+        command: ./manage.py migrate

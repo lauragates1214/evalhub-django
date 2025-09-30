@@ -28,17 +28,17 @@ if config("DJANGO_DEBUG_FALSE", default=False, cast=bool):
     ALLOWED_HOSTS = [config("DJANGO_ALLOWED_HOST")]  # List of allowed hosts
     db_path = config("DJANGO_DB_PATH")  # Path to the database file
 
-    # Always secure cookies
-    SESSION_COOKIE_SECURE = True  # Secure session cookies
-    CSRF_COOKIE_SECURE = True  # Secure CSRF cookies
+    # TODO: Re-enable these when HTTPS is configured
+    # SESSION_COOKIE_SECURE = True
+    # CSRF_COOKIE_SECURE = True
 
-    # HTTPS enforcement: only for real domains, not localhost
-    is_localhost = config("DJANGO_ALLOWED_HOST") in ["localhost", "127.0.0.1"]
-    if not is_localhost:
-        SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
-        SECURE_HSTS_SECONDS = 31536000  # Enforce HSTS for one year
-        SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
-        SECURE_HSTS_PRELOAD = True  # Allow preload list inclusion
+    # TODO: Re-enable HTTPS redirect when certificates are set up
+    # is_localhost = config("DJANGO_ALLOWED_HOST") in ["localhost", "127.0.0.1"]
+    # if not is_localhost:
+    #     SECURE_SSL_REDIRECT = True
+    #     SECURE_HSTS_SECONDS = 31536000
+    #     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    #     SECURE_HSTS_PRELOAD = True
 
 else:
     DEBUG = True  # Debug mode on for development
