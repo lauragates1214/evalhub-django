@@ -14,16 +14,40 @@
         groups: docker
         append: true # Don't remove any existing groups
       become: true # Run this with sudo (elevated privileges)
-      register: docker_group_added # Capture the result
 
     - name: Reset ssh connection to all the user/group change to take effect
       ansible.builtin.meta: reset_connection
-      when: docker_group_added.changed # Only reset if the user was added to the group
 
-    - name: Run test container
+    - name: Build container image locally for AMD64
+      ansible.builtin.command: 
+        # Use buildx on command line to build for AMD64 architecture on M1/M2 Mac
+        cmd: docker buildx build --platform linux/amd64 -t evalhub:latest --load {{ playbook_dir }}/..
+      delegate_to: 127.0.0.1 # Run this task on local machine rather than server
+      changed_when: true # Always report changed so that image is always re-exported and re-imported
+
+    - name: Export container image locally
+      community.docker.docker_image:
+        name: evalhub
+        archive_path: /tmp/evalhub-img.tar
+        source: local
+      delegate_to: 127.0.0.1 # Run this task on local machine rather than server
+
+    - name: Upload image to server
+      ansible.builtin.copy:
+        src: /tmp/evalhub-img.tar
+        dest: /tmp/evalhub-img.tar
+
+    - name: Import container image on server
+      community.docker.docker_image:
+        name: evalhub
+        load_path: /tmp/evalhub-img.tar
+        source: load # Load from tar archive into Docker's image registry so Docker can use it to run containers
+        force_source: true # Re-import even if image with same name exists
+        state: present # Ensure image is present
+    
+    - name: Run container
       community.docker.docker_container:
-        name: testcontainer
+        name: evalhub
+        image: evalhub 
         state: started
-        image: busybox
-        command: echo hello world
-      # become: true not needed because user is in docker group now
+        recreate: true # Recreate container if it already exists
