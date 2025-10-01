@@ -17,12 +17,15 @@
 
           <form method="POST" action="{% block form_action %}{% endblock %}">
             <input
-              class="form-control form-control-lg"
+              class="form-control form-control-lg {% if error %}is-invalid{% endif %}"
               name="question_text"
               id="id_new_question"
               placeholder="Enter a new question"
             />
             {% csrf_token %}
+            {% if error %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endif %}
           </form>
 
         </div>

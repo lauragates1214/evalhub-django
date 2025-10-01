@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 from surveys.models import Question, Survey
 
@@ -14,7 +14,16 @@ def view_survey(request, survey_id):
 
 def new_survey(request):
     new_survey = Survey.objects.create()
-    Question.objects.create(text=request.POST["question_text"], survey=new_survey)
+    question = Question.objects.create(
+        text=request.POST["question_text"], survey=new_survey
+    )
+    try:
+        question.full_clean()
+        question.save()
+    except ValidationError:
+        new_survey.delete()
+        error = "You can't have an empty question"
+        return render(request, "home.html", {"error": error})
     return redirect(f"/surveys/{new_survey.id}/")
 
 

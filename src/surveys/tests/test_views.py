@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.utils import html
 from surveys.models import Question, Survey
 import lxml.html
 
@@ -51,6 +52,18 @@ class NewQuestionTest(TestCase):
         )
 
         self.assertRedirects(response, f"/surveys/{correct_survey.id}/")
+
+    def test_validation_errors_are_sent_back_to_home_page_template(self):
+        response = self.client.post("/surveys/new", data={"question_text": ""})
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "home.html")
+        expected_error = html.escape("You can't have an empty question")
+        self.assertContains(response, expected_error)
+
+    def test_invalid_survey_questions_arent_saved(self):
+        self.client.post("/surveys/new", data={"question_text": ""})
+        self.assertEqual(Survey.objects.count(), 0)
+        self.assertEqual(Question.objects.count(), 0)
 
 
 class SurveyViewTest(TestCase):
