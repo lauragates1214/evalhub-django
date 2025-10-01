@@ -28,31 +28,6 @@ class HomePageTest(TestCase):
 
 
 class NewQuestionTest(TestCase):
-    def test_can_save_a_POST_request_to_an_existing_survey(self):
-        other_survey = Survey.objects.create()
-        correct_survey = Survey.objects.create()
-
-        self.client.post(
-            f"/surveys/{correct_survey.id}/add_question",
-            data={"question_text": "A new question for an existing survey"},
-        )
-
-        self.assertEqual(Question.objects.count(), 1)
-        new_question = Question.objects.get()
-        self.assertEqual(new_question.text, "A new question for an existing survey")
-        self.assertEqual(new_question.survey, correct_survey)
-
-    def test_redirects_after_POST(self):
-        other_survey = Survey.objects.create()
-        correct_survey = Survey.objects.create()
-
-        response = self.client.post(
-            f"/surveys/{correct_survey.id}/add_question",
-            data={"question_text": "A new question for an existing survey"},
-        )
-
-        self.assertRedirects(response, f"/surveys/{correct_survey.id}/")
-
     def test_validation_errors_are_sent_back_to_home_page_template(self):
         response = self.client.post("/surveys/new", data={"question_text": ""})
         self.assertEqual(response.status_code, 200)
@@ -83,7 +58,7 @@ class SurveyViewTest(TestCase):
             "form[method=POST]"
         )  # find form element with method=POST, expect exactly one (hence the brackets)
 
-        self.assertEqual(form.get("action"), f"/surveys/{mysurvey.id}/add_question")
+        self.assertEqual(form.get("action"), f"/surveys/{mysurvey.id}/")
 
         inputs = form.cssselect("input")
         self.assertIn(
@@ -102,3 +77,28 @@ class SurveyViewTest(TestCase):
         self.assertContains(response, "Question 1")
         self.assertContains(response, "Question 2")
         self.assertNotContains(response, "Other survey question")
+
+    def test_can_save_a_POST_request_to_an_existing_survey(self):
+        other_survey = Survey.objects.create()
+        correct_survey = Survey.objects.create()
+
+        self.client.post(
+            f"/surveys/{correct_survey.id}/",
+            data={"question_text": "A new question for an existing survey"},
+        )
+
+        self.assertEqual(Question.objects.count(), 1)
+        new_question = Question.objects.get()
+        self.assertEqual(new_question.text, "A new question for an existing survey")
+        self.assertEqual(new_question.survey, correct_survey)
+
+    def test_POST_redirects_to_survey_view(self):
+        other_survey = Survey.objects.create()
+        correct_survey = Survey.objects.create()
+
+        response = self.client.post(
+            f"/surveys/{correct_survey.id}/",
+            data={"question_text": "A new question for an existing survey"},
+        )
+
+        self.assertRedirects(response, f"/surveys/{correct_survey.id}/")
