@@ -20,7 +20,7 @@ class NewVisitorTest(FunctionalTest):
         # She is invited to create a new question
         inputbox = self.browser.find_element(By.ID, "id_new_question")
 
-        self.assertEqual(inputbox.get_attribute("placeholder"), "Enter a new question")
+        self.assertEqual(inputbox.get_attribute("placeholder"), "Enter a question")
 
         # She types "Puppetry Workshop Question" into a text box
         inputbox.send_keys("How do you feel about capybara?")

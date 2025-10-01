@@ -1,10 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 
+from surveys.forms import QuestionForm
 from surveys.models import Question, Survey
 
 
 def home_page(request):
+    # return render(request, "home.html", {"form": QuestionForm()})
     return render(request, "home.html")
 
 
