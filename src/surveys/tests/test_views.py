@@ -1,7 +1,9 @@
 from django.test import TestCase
 from django.utils import html
-from surveys.models import Question, Survey
+
 import lxml.html
+
+from surveys.models import Question, Survey
 
 
 class HomePageTest(TestCase):
