@@ -9,10 +9,18 @@ def home_page(request):
 
 def view_survey(request, survey_id):
     mysurvey = Survey.objects.get(id=survey_id)
+    error = None
+
     if request.method == "POST":
-        Question.objects.create(text=request.POST["question_text"], survey=mysurvey)
-        return redirect(f"/surveys/{mysurvey.id}/")
-    return render(request, "survey.html", {"survey": mysurvey})
+        try:
+            question = Question(text=request.POST["question_text"], survey=mysurvey)
+            question.full_clean()
+            question.save()
+            return redirect(f"/surveys/{mysurvey.id}/")
+        except ValidationError:
+            error = "You can't have an empty question"
+
+    return render(request, "survey.html", {"survey": mysurvey, "error": error})
 
 
 def new_survey(request):

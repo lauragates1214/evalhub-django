@@ -102,3 +102,16 @@ class SurveyViewTest(TestCase):
         )
 
         self.assertRedirects(response, f"/surveys/{correct_survey.id}/")
+
+    def test_validation_errors_end_up_on_surveys_page(self):
+        survey = Survey.objects.create()
+
+        response = self.client.post(
+            f"/surveys/{survey.id}/",
+            data={"question_text": ""},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "survey.html")
+        expected_error = html.escape("You can't have an empty question")
+        self.assertContains(response, expected_error)
