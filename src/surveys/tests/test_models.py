@@ -45,3 +45,8 @@ class SurveyAndQuestionModelsTest(TestCase):
         question = Question(survey=mysurvey, text="")
         with self.assertRaises(ValidationError):
             question.full_clean()  # model-level validation
+
+    def test_get_absolute_url(self):
+        mysurvey = Survey.objects.create()
+
+        self.assertEqual(mysurvey.get_absolute_url(), f"/surveys/{mysurvey.id}/")

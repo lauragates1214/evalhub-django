@@ -16,7 +16,7 @@ def view_survey(request, survey_id):
             question = Question(text=request.POST["question_text"], survey=mysurvey)
             question.full_clean()
             question.save()
-            return redirect(f"/surveys/{mysurvey.id}/")
+            return redirect(mysurvey)  # uses get_absolute_url() method of Survey model
         except ValidationError:
             error = "You can't have an empty question"
 
@@ -35,4 +35,4 @@ def new_survey(request):
         new_survey.delete()
         error = "You can't have an empty question"
         return render(request, "home.html", {"error": error})
-    return redirect(f"/surveys/{new_survey.id}/")
+    return redirect(new_survey)  # uses get_absolute_url() method of Survey model
