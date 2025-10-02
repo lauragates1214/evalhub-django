@@ -6,36 +6,27 @@ from surveys.models import Question, Survey
 
 
 def home_page(request):
-    # return render(request, "home.html", {"form": QuestionForm()})
-    return render(request, "home.html")
+    return render(request, "home.html", {"form": QuestionForm()})
 
 
 def view_survey(request, survey_id):
     mysurvey = Survey.objects.get(id=survey_id)
-    error = None
+    form = QuestionForm()
 
     if request.method == "POST":
-        try:
-            question = Question(text=request.POST["question_text"], survey=mysurvey)
-            question.full_clean()
-            question.save()
+        form = QuestionForm(data=request.POST)
+        if form.is_valid():
+            Question.objects.create(text=request.POST["text"], survey=mysurvey)
             return redirect(mysurvey)  # uses get_absolute_url() method of Survey model
-        except ValidationError:
-            error = "You can't have an empty question"
 
-    return render(request, "survey.html", {"survey": mysurvey, "error": error})
+    return render(request, "survey.html", {"survey": mysurvey, "form": form})
 
 
 def new_survey(request):
-    new_survey = Survey.objects.create()
-    question = Question.objects.create(
-        text=request.POST["question_text"], survey=new_survey
-    )
-    try:
-        question.full_clean()
-        question.save()
-    except ValidationError:
-        new_survey.delete()
-        error = "You can't have an empty question"
-        return render(request, "home.html", {"error": error})
-    return redirect(new_survey)  # uses get_absolute_url() method of Survey model
+    form = QuestionForm(data=request.POST)
+    if form.is_valid():
+        new_survey = Survey.objects.create()
+        Question.objects.create(text=request.POST["text"], survey=new_survey)
+        return redirect(new_survey)  # uses get_absolute_url() method of Survey model
+    else:
+        return render(request, "home.html", {"form": form})

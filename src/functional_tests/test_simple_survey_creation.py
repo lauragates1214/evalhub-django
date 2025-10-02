@@ -18,7 +18,7 @@ class NewVisitorTest(FunctionalTest):
         self.assertIn("Survey", header_text)
 
         # She is invited to create a new question
-        inputbox = self.browser.find_element(By.ID, "id_new_question")
+        inputbox = self.get_question_input_box()
 
         self.assertEqual(inputbox.get_attribute("placeholder"), "Enter a question")
 
@@ -33,7 +33,7 @@ class NewVisitorTest(FunctionalTest):
 
         # There is still a text box inviting her to add another question.
         # She enters "PyCon UK Question" and hits enter
-        inputbox = self.browser.find_element(By.ID, "id_new_question")
+        inputbox = self.get_question_input_box()
         inputbox.send_keys("How many capybara? Explain.")
         inputbox.send_keys(Keys.ENTER)
 
@@ -46,7 +46,7 @@ class NewVisitorTest(FunctionalTest):
     def test_multiple_users_can_start_questions_at_different_urls(self):
         # User 1 starts a new question
         self.browser.get(self.live_server_url)
-        inputbox = self.browser.find_element(By.ID, "id_new_question")
+        inputbox = self.get_question_input_box()
         inputbox.send_keys("How do you feel about capybara?")
         inputbox.send_keys(Keys.ENTER)
 
@@ -67,7 +67,7 @@ class NewVisitorTest(FunctionalTest):
         self.assertNotIn("How do you feel about capybara?", page_text)
 
         # User 2 starts a new question by entering a new question name
-        inputbox = self.browser.find_element(By.ID, "id_new_question")
+        inputbox = self.get_question_input_box()
         inputbox.send_keys("Why manatee? Explain.")
         inputbox.send_keys(Keys.ENTER)
         self.wait_for_row_in_survey_table("1: Why manatee? Explain.")

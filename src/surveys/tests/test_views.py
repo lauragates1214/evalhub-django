@@ -3,6 +3,7 @@ from django.utils import html
 
 import lxml.html
 
+from surveys.forms import EMPTY_QUESTION_ERROR
 from surveys.models import Question, Survey
 
 
@@ -25,22 +26,56 @@ class HomePageTest(TestCase):
 
         inputs = form.cssselect("input")
         self.assertIn(
-            "question_text", [input.get("name") for input in inputs]
-        )  # check at least one input has name=question_text
+            "text", [input.get("name") for input in inputs]
+        )  # check at least one input has name=text
 
 
-class NewQuestionTest(TestCase):
-    def test_validation_errors_are_sent_back_to_home_page_template(self):
-        response = self.client.post("/surveys/new", data={"question_text": ""})
+class NewSurveyTest(TestCase):
+    # TODO: check HP's test (copied this from next class)
+    def test_can_save_a_POST_request(self):
+        other_survey = Survey.objects.create()
+        correct_survey = Survey.objects.create()
+
+        self.client.post(
+            f"/surveys/{correct_survey.id}/",
+            data={"text": "A new question for an existing survey"},
+        )
+
+        self.assertEqual(Question.objects.count(), 1)
+        new_question = Question.objects.get()
+        self.assertEqual(new_question.text, "A new question for an existing survey")
+        self.assertEqual(new_question.survey, correct_survey)
+
+    # TODO: check HP's test (copied this from next class)
+    def test_redirects_after_POST(self):
+        other_survey = Survey.objects.create()
+        correct_survey = Survey.objects.create()
+
+        response = self.client.post(
+            f"/surveys/{correct_survey.id}/",
+            data={"text": "A new question for an existing survey"},
+        )
+
+        self.assertRedirects(response, f"/surveys/{correct_survey.id}/")
+
+    def post_invalid_input(self):
+        return self.client.post("/surveys/new", data={"text": ""})
+
+    def test_for_invalid_input_nothing_saved_to_db(self):
+        self.post_invalid_input()
+
+        self.assertEqual(Question.objects.count(), 0)
+
+    def test_for_invalid_input_renders_survey_template(self):
+        response = self.post_invalid_input()
+
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "home.html")
-        expected_error = html.escape("You can't have an empty question")
-        self.assertContains(response, expected_error)
 
-    def test_invalid_survey_questions_arent_saved(self):
-        self.client.post("/surveys/new", data={"question_text": ""})
-        self.assertEqual(Survey.objects.count(), 0)
-        self.assertEqual(Question.objects.count(), 0)
+    def test_for_invalid_input_shows_error_on_page(self):
+        response = self.post_invalid_input()
+
+        self.assertContains(response, html.escape(EMPTY_QUESTION_ERROR))
 
 
 class SurveyViewTest(TestCase):
@@ -64,8 +99,8 @@ class SurveyViewTest(TestCase):
 
         inputs = form.cssselect("input")
         self.assertIn(
-            "question_text", [input.get("name") for input in inputs]
-        )  # check at least one input has name=question_text
+            "text", [input.get("name") for input in inputs]
+        )  # check at least one input has name=text
 
     def test_displays_only_questions_for_that_survey(self):
         correct_survey = Survey.objects.create()
@@ -86,7 +121,7 @@ class SurveyViewTest(TestCase):
 
         self.client.post(
             f"/surveys/{correct_survey.id}/",
-            data={"question_text": "A new question for an existing survey"},
+            data={"text": "A new question for an existing survey"},
         )
 
         self.assertEqual(Question.objects.count(), 1)
@@ -100,20 +135,26 @@ class SurveyViewTest(TestCase):
 
         response = self.client.post(
             f"/surveys/{correct_survey.id}/",
-            data={"question_text": "A new question for an existing survey"},
+            data={"text": "A new question for an existing survey"},
         )
 
         self.assertRedirects(response, f"/surveys/{correct_survey.id}/")
 
-    def test_validation_errors_end_up_on_surveys_page(self):
-        survey = Survey.objects.create()
+    def post_invalid_input(self):
+        mysurvey = Survey.objects.create()
+        return self.client.post(f"/surveys/{mysurvey.id}/", data={"text": ""})
 
-        response = self.client.post(
-            f"/surveys/{survey.id}/",
-            data={"question_text": ""},
-        )
+    def test_for_invalid_input_nothing_saved_to_db(self):
+        self.post_invalid_input()
+
+        self.assertEqual(Question.objects.count(), 0)
+
+    def test_for_invalid_input_renders_survey_template(self):
+        response = self.post_invalid_input()
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "survey.html")
-        expected_error = html.escape("You can't have an empty question")
-        self.assertContains(response, expected_error)
+
+    def test_for_invalid_input_shows_error_on_page(self):
+        response = self.post_invalid_input()
+        self.assertContains(response, html.escape(EMPTY_QUESTION_ERROR))
