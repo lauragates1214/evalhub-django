@@ -19,3 +19,7 @@ class QuestionFormTest(TestCase):
             form.is_valid()
         )  # api for checking form validation before trying to save
         self.assertEqual(form.errors["text"], [EMPTY_QUESTION_ERROR])
+
+    def test_form_save_handles_saving_to_a_survey(self):
+        form = QuestionForm(data={"text": "save me"})
+        new_question = form.save()
