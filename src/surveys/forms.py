@@ -18,3 +18,7 @@ class QuestionForm(forms.models.ModelForm):
             ),
         }
         error_messages = {"text": {"required": EMPTY_QUESTION_ERROR}}
+
+    def save(self, for_survey):
+        self.instance.survey = for_survey  # .instance attribute represents db objec that is being modified or created
+        return super().save()

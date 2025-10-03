@@ -39,3 +39,22 @@ class QuestionValidationTest(FunctionalTest):
         self.get_question_input_box().send_keys("Why not?")
         self.get_question_input_box().send_keys(Keys.ENTER)
         self.wait_for_row_in_survey_table("2: Why not?")
+
+    def test_cannot_add_duplicate_questions(self):
+        # User 1 goes to the home page and starts a new survey
+        self.browser.get(self.live_server_url)
+        self.get_question_input_box().send_keys("Is a capybara?")
+        self.get_question_input_box().send_keys(Keys.ENTER)
+        self.wait_for_row_in_survey_table("1: Is a capybara?")
+
+        # She accidentally tries to enter a duplicate question
+        self.get_question_input_box().send_keys("Is a capybara?")
+        self.get_question_input_box().send_keys(Keys.ENTER)
+
+        # She sees a helpful error message
+        self.wait_for(
+            lambda: self.assertEqual(
+                self.browser.find_element(By.CSS_SELECTOR, ".invalid-feedback").text,
+                "You've already got this question in your survey",
+            )
+        )
