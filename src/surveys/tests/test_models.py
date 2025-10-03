@@ -47,8 +47,28 @@ class QuestionModelsTest(TestCase):
         question.full_clean()  # should not raise
 
 
-class SurveyModelsTest(TestCase):
+class SurveyModelTest(TestCase):
     def test_get_absolute_url(self):
         mysurvey = Survey.objects.create()
 
         self.assertEqual(mysurvey.get_absolute_url(), f"/surveys/{mysurvey.id}/")
+
+    def test_survey_questions_order(self):
+        survey1 = Survey.objects.create()
+        question1 = Question.objects.create(survey=survey1, text="i1")
+        question2 = Question.objects.create(survey=survey1, text="question 2")
+        question3 = Question.objects.create(survey=survey1, text="3")
+        self.assertEqual(
+            list(
+                survey1.question_set.all()
+            ),  # list() to force evaluation of the queryset
+            [
+                question1,
+                question2,
+                question3,
+            ],  # checks ordering by id as in Meta class of Question model
+        )
+
+    def test_string_representation(self):
+        question = Question(text="some text")
+        self.assertEqual(str(question), "some text")

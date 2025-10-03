@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 
-from surveys.forms import QuestionForm
+from surveys.forms import ExistingSurveyQuestionForm, QuestionForm
 from surveys.models import Survey
 
 
@@ -11,12 +11,12 @@ def home_page(request):
 
 def view_survey(request, survey_id):
     mysurvey = Survey.objects.get(id=survey_id)
-    form = QuestionForm()
+    form = ExistingSurveyQuestionForm(for_survey=mysurvey)
 
     if request.method == "POST":
-        form = QuestionForm(data=request.POST)
+        form = ExistingSurveyQuestionForm(for_survey=mysurvey, data=request.POST)
         if form.is_valid():
-            form.save(for_survey=mysurvey)
+            form.save()
             return redirect(mysurvey)  # uses get_absolute_url() method of Survey model
 
     return render(request, "survey.html", {"survey": mysurvey, "form": form})

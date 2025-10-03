@@ -58,3 +58,12 @@ class QuestionValidationTest(FunctionalTest):
                 "You've already got this question in your survey",
             )
         )
+
+        # She corrects it by entering a different question
+        self.get_question_input_box().clear()
+        self.get_question_input_box().send_keys("Why capybara?")
+        self.get_question_input_box().send_keys(Keys.ENTER)
+
+        # Now she has two questions in her survey
+        self.wait_for_row_in_survey_table("1: Is a capybara?")
+        self.wait_for_row_in_survey_table("2: Why capybara?")

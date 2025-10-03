@@ -21,6 +21,13 @@ class QuestionForm(forms.models.ModelForm):
         }
         error_messages = {"text": {"required": EMPTY_QUESTION_ERROR}}
 
+    # custom method for validation(override) to add bootstrap is-invalid CSS class to invalid fields
+    def is_valid(self):
+        result = super().is_valid()
+        if not result:
+            self.fields["text"].widget.attrs["class"] += " is-invalid"
+        return result  # return True/False if form is valid
+
     # custom save method (override) to associate question with a survey
     def save(self, for_survey):
         self.instance.survey = for_survey  # .instance attribute represents db objec that is being modified or created
@@ -29,7 +36,7 @@ class QuestionForm(forms.models.ModelForm):
 
 class ExistingSurveyQuestionForm(QuestionForm):
     def __init__(self, for_survey, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)  # call parent constructor
         self.instance.survey = for_survey  # associate question with survey instance
 
     # custom method for validation to prevent duplicate questions in the same survey
@@ -38,3 +45,7 @@ class ExistingSurveyQuestionForm(QuestionForm):
         if self.instance.survey.question_set.filter(text=text).exists():
             raise forms.ValidationError(DUPLICATE_QUESTION_ERROR)
         return text
+
+    # use parent class save method
+    def save(self):
+        return forms.models.ModelForm.save(self)

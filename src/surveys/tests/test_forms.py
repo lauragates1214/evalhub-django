@@ -26,6 +26,15 @@ class QuestionFormTest(TestCase):
         )  # api for checking form validation before trying to save
         self.assertEqual(form.errors["text"], [EMPTY_QUESTION_ERROR])
 
+    def test_invalid_form_has_bootstrap_is_invalid_css_class(self):
+        form = QuestionForm(data={"text": ""})
+        self.assertFalse(form.is_valid())
+        field = form.fields["text"]
+        self.assertEqual(
+            field.widget.attrs["class"],
+            "form-control form-control-lg is-invalid",
+        )
+
     def test_form_save_handles_saving_to_a_survey(self):
         mysurvey = Survey.objects.create()
         form = QuestionForm(data={"text": "save me"})
@@ -56,3 +65,13 @@ class ExistingSurveyQuestionFormTest(TestCase):
         form = ExistingSurveyQuestionForm(for_survey=survey, data={"text": "no twins!"})
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors["text"], [DUPLICATE_QUESTION_ERROR])
+
+    def test_form_save(self):
+        mysurvey = Survey.objects.create()
+        form = ExistingSurveyQuestionForm(for_survey=mysurvey, data={"text": "hi"})
+        self.assertTrue(form.is_valid())
+
+        new_question = (
+            form.save()
+        )  # should not require arguments as already associated with survey in constructor
+        self.assertEqual(new_question, Question.objects.get())
