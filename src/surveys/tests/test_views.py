@@ -3,6 +3,8 @@ from django.utils import html
 
 import lxml.html
 
+from unittest import skip
+
 from surveys.forms import EMPTY_QUESTION_ERROR
 from surveys.models import Question, Survey
 
@@ -158,3 +160,20 @@ class SurveyViewTest(TestCase):
     def test_for_invalid_input_shows_error_on_page(self):
         response = self.post_invalid_input()
         self.assertContains(response, html.escape(EMPTY_QUESTION_ERROR))
+
+    @skip
+    def test_duplicate_question_validation_errors_end_up_on_surveys_page(self):
+        survey1 = Survey.objects.create()
+        Question.objects.create(survey=survey1, text="textey")
+
+        response = self.client.post(
+            f"/surveys/{survey1.id}/",
+            data={"text": "textey"},
+        )
+
+        expected_error = html.escape("You've already got this question in your survey")
+        self.assertContains(response, expected_error)  # check error appears on page
+        self.assertTemplateUsed(response, "survey.html")  # check still on survey page
+        self.assertEqual(
+            Question.objects.all().count(), 1
+        )  # check no new question created (haven't saved anything to the DB)
