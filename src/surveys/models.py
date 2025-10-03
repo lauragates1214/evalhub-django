@@ -11,4 +11,7 @@ class Survey(models.Model):
 
 class Question(models.Model):
     text = models.TextField(default="")
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    survey = models.ForeignKey(Survey, default=None, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("survey", "text")

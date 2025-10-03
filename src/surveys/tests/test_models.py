@@ -7,33 +7,17 @@ from django.test import TestCase
 from surveys.models import Question, Survey
 
 
-class SurveyAndQuestionModelsTest(TestCase):
-    def test_saving_and_retrieving_questions(self):
-        mysurvey = Survey()
-        mysurvey.save()
+class QuestionModelsTest(TestCase):
+    def test_default_text(self):
+        question = Question()
+        self.assertEqual(question.text, "")
 
-        first_question = Question()
-        first_question.text = "The first (ever) survey question"
-        first_question.survey = mysurvey
-        first_question.save()
-
-        second_question = Question()
-        second_question.text = "Question the second"
-        second_question.survey = mysurvey
-        second_question.save()
-
-        saved_survey = Survey.objects.get()
-        self.assertEqual(saved_survey, mysurvey)
-
-        saved_questions = Question.objects.all()
-        self.assertEqual(saved_questions.count(), 2)
-
-        first_saved_question = saved_questions[0]
-        second_saved_question = saved_questions[1]
-        self.assertEqual(first_saved_question.text, "The first (ever) survey question")
-        self.assertEqual(first_saved_question.survey, mysurvey)
-        self.assertEqual(second_saved_question.text, "Question the second")
-        self.assertEqual(second_saved_question.survey, mysurvey)
+    def test_question_is_related_to_survey(self):
+        mysurvey = Survey.objects.create()
+        question = Question()
+        question.survey = mysurvey
+        question.save()
+        self.assertIn(question, mysurvey.question_set.all())
 
     def test_cannot_save_null_questions(self):
         mysurvey = Survey.objects.create()
@@ -47,6 +31,23 @@ class SurveyAndQuestionModelsTest(TestCase):
         with self.assertRaises(ValidationError):
             question.full_clean()  # model-level validation
 
+    def test_duplicate_questions_are_invalid(self):
+        mysurvey = Survey.objects.create()
+        Question.objects.create(survey=mysurvey, text="why")
+        with self.assertRaises(ValidationError):
+            question = Question(survey=mysurvey, text="why")
+            question.full_clean()  # model-level validation
+
+    # TODO: when expand, remove this test as will have org-wide question bank
+    def test_CAN_save_same_question_to_different_surveys(self):
+        survey1 = Survey.objects.create()
+        survey2 = Survey.objects.create()
+        Question.objects.create(survey=survey1, text="why")
+        question = Question(survey=survey2, text="why")
+        question.full_clean()  # should not raise
+
+
+class SurveyModelsTest(TestCase):
     def test_get_absolute_url(self):
         mysurvey = Survey.objects.create()
 
