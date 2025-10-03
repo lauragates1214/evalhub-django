@@ -5,6 +5,10 @@ from .base import FunctionalTest
 
 
 class QuestionValidationTest(FunctionalTest):
+    # helper method
+    def get_error_element(self):
+        return self.browser.find_element(By.CSS_SELECTOR, ".invalid-feedback")
+
     def test_cannot_add_empty_survey_questions(self):
         # User 1 goes to the home page and accidentally tries to submit
         # an empty question. She hits Enter on the empty input box
@@ -54,7 +58,7 @@ class QuestionValidationTest(FunctionalTest):
         # She sees a helpful error message
         self.wait_for(
             lambda: self.assertEqual(
-                self.browser.find_element(By.CSS_SELECTOR, ".invalid-feedback").text,
+                self.get_error_element().text,
                 "You've already got this question in your survey",
             )
         )
@@ -67,3 +71,19 @@ class QuestionValidationTest(FunctionalTest):
         # Now she has two questions in her survey
         self.wait_for_row_in_survey_table("1: Is a capybara?")
         self.wait_for_row_in_survey_table("2: Why capybara?")
+
+    def test_error_messages_are_cleared_on_input(self):
+        # User 1 starts a survey and causes a validation error:
+        self.browser.get(self.live_server_url)
+        self.get_question_input_box().send_keys("Capybara?")
+        self.get_question_input_box().send_keys(Keys.ENTER)
+        self.wait_for_row_in_survey_table("1: Capybara?")
+        self.get_question_input_box().send_keys("Capybara?")
+        self.get_question_input_box().send_keys(Keys.ENTER)
+        self.wait_for(lambda: self.assertTrue(self.get_error_element().is_displayed()))
+
+        # She starts typing in the input box to clear the error
+        self.get_question_input_box().send_keys("a")
+
+        # She is pleased to see that the error message disappears
+        self.wait_for(lambda: self.assertFalse(self.get_error_element().is_displayed()))

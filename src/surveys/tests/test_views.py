@@ -36,32 +36,18 @@ class HomePageTest(TestCase):
 
 
 class NewSurveyTest(TestCase):
-    # TODO: check HP's test (copied this from next class)
     def test_can_save_a_POST_request(self):
-        other_survey = Survey.objects.create()
-        correct_survey = Survey.objects.create()
-
-        self.client.post(
-            f"/surveys/{correct_survey.id}/",
-            data={"text": "A new question for an existing survey"},
-        )
-
+        self.client.post("/surveys/new", data={"text": "A new survey question"})
         self.assertEqual(Question.objects.count(), 1)
         new_question = Question.objects.get()
-        self.assertEqual(new_question.text, "A new question for an existing survey")
-        self.assertEqual(new_question.survey, correct_survey)
+        self.assertEqual(new_question.text, "A new survey question")
 
-    # TODO: check HP's test (copied this from next class)
     def test_redirects_after_POST(self):
-        other_survey = Survey.objects.create()
-        correct_survey = Survey.objects.create()
-
         response = self.client.post(
-            f"/surveys/{correct_survey.id}/",
-            data={"text": "A new question for an existing survey"},
+            "/surveys/new", data={"text": "A new survey question"}
         )
-
-        self.assertRedirects(response, f"/surveys/{correct_survey.id}/")
+        new_survey = Survey.objects.get()
+        self.assertRedirects(response, f"/surveys/{new_survey.id}/")
 
     def post_invalid_input(self):
         return self.client.post("/surveys/new", data={"text": ""})
