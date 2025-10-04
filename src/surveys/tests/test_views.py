@@ -45,6 +45,15 @@ class HomePageTest(TestCase):
 
 
 class NewSurveyTest(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        user = User.objects.create(email="test@example.com")
+        user.set_password("password")
+        user.save()
+        self.client.login(username="test@example.com", password="password")
+
     def test_can_save_a_POST_request(self):
         self.client.post("/surveys/new", data={"text": "A new survey question"})
         self.assertEqual(Question.objects.count(), 1)
