@@ -6,6 +6,13 @@ from .base import FunctionalTest
 
 class AuthenticationTest(FunctionalTest):
     def test_instructor_can_log_in(self):
+        # Create a test user
+        from accounts.models import User
+
+        user = User.objects.create(email="instructor@example.com")
+        user.set_password("password123")
+        user.save()
+
         # An instructor visits the site and sees a login form
         self.browser.get(self.live_server_url)
 

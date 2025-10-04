@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "accounts",
     "surveys",
 ]
 
@@ -99,6 +100,9 @@ DATABASES = {
         "NAME": db_path,
     }
 }
+
+AUTH_USER_MODEL = "accounts.User"
+LOGIN_REDIRECT_URL = "/"
 
 
 # Password validation
