@@ -33,7 +33,7 @@ class QuestionValidationTest(FunctionalTest):
         self.get_question_input_box().send_keys(Keys.ENTER)
         self.wait_for_row_in_survey_table("1: Why capybara?")
 
-        # Perversely, she now descides to submit a second blank question
+        # Weirdly, she now descides to submit a second blank question
         self.get_question_input_box().send_keys(Keys.ENTER)
 
         # She receives a similar warning on the question page
