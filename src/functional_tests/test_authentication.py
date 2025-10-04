@@ -42,3 +42,33 @@ class AuthenticationTest(FunctionalTest):
                 self.browser.find_element(By.CSS_SELECTOR, ".navbar").text,
             )
         )
+
+    def test_instructor_can_log_out(self):
+        # Create and log in a user
+        from accounts.models import User
+
+        user = User.objects.create(email="instructor@example.com")
+        user.set_password("password123")
+        user.save()
+
+        self.browser.get(self.live_server_url + "/accounts/login/")
+        self.browser.find_element(By.NAME, "username").send_keys(
+            "instructor@example.com"
+        )
+        self.browser.find_element(By.NAME, "password").send_keys(
+            "password123", Keys.ENTER
+        )
+
+        # She sees her email in the navbar
+        self.wait_for(
+            lambda: self.assertIn(
+                "instructor@example.com",
+                self.browser.find_element(By.CSS_SELECTOR, ".navbar").text,
+            )
+        )
+
+        # She clicks logout
+        self.browser.find_element(By.ID, "id_logout").click()
+
+        # She's logged out - sees login link again
+        self.wait_for(lambda: self.browser.find_element(By.ID, "id_login_link"))
