@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 
@@ -7,6 +8,17 @@ from surveys.models import Survey
 
 def home_page(request):
     return render(request, "home.html", {"form": QuestionForm()})
+
+
+@login_required  # ensure only logged-in users can create new surveys
+def new_survey(request):
+    form = QuestionForm(data=request.POST)
+    if form.is_valid():
+        new_survey = Survey.objects.create()
+        form.save(for_survey=new_survey)
+        return redirect(new_survey)  # uses get_absolute_url() method of Survey model
+    else:
+        return render(request, "home.html", {"form": form})
 
 
 def view_survey(request, survey_id):
@@ -32,13 +44,3 @@ def view_survey(request, survey_id):
             # Normal POST still works when no HX-Request header present; full page reload
             return redirect(mysurvey)  # uses get_absolute_url() method of Survey model
     return render(request, "survey.html", {"survey": mysurvey, "form": form})
-
-
-def new_survey(request):
-    form = QuestionForm(data=request.POST)
-    if form.is_valid():
-        new_survey = Survey.objects.create()
-        form.save(for_survey=new_survey)
-        return redirect(new_survey)  # uses get_absolute_url() method of Survey model
-    else:
-        return render(request, "home.html", {"form": form})

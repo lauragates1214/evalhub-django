@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import html
 
@@ -10,6 +11,14 @@ from surveys.forms import (
     EMPTY_QUESTION_ERROR,
 )
 from surveys.models import Question, Survey
+
+User = get_user_model()
+
+
+class NewSurveyAuthTest(TestCase):
+    def test_redirects_to_login_if_not_authenticated(self):
+        response = self.client.post("/surveys/new", data={"text": "A new question"})
+        self.assertRedirects(response, "/accounts/login/?next=/surveys/new")
 
 
 class HomePageTest(TestCase):
