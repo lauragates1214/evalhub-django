@@ -171,3 +171,38 @@ class SurveyViewTest(TestCase):
         self.assertEqual(
             Question.objects.all().count(), 1
         )  # check no new question created (haven't saved anything to the DB)
+
+    def test_htmx_request_returns_partial_template(self):
+        mysurvey = Survey.objects.create()
+
+        response = self.client.post(
+            f"/surveys/{mysurvey.id}/",
+            data={"text": "New question"},
+            HTTP_HX_REQUEST="true",  # Simulates htmx adding HX-Request header
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "partials/question_list.html")
+
+    def test_htmx_request_includes_new_question_in_response(self):
+        mysurvey = Survey.objects.create()
+
+        response = self.client.post(
+            f"/surveys/{mysurvey.id}/",
+            data={"text": "New question"},
+            HTTP_HX_REQUEST="true",
+        )
+
+        self.assertContains(response, "New question")
+        self.assertEqual(Question.objects.count(), 1)
+
+    def test_non_htmx_request_still_redirects(self):
+        mysurvey = Survey.objects.create()
+
+        response = self.client.post(
+            f"/surveys/{mysurvey.id}/",
+            data={"text": "New question"},
+            # No HX-Request header
+        )
+
+        self.assertEqual(response.status_code, 302)  # Still redirects for normal forms

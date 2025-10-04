@@ -74,7 +74,6 @@ class QuestionValidationTest(FunctionalTest):
         self.wait_for_row_in_survey_table("1: Is a capybara?")
         self.wait_for_row_in_survey_table("2: Why capybara?")
 
-    @skip
     def test_error_messages_are_cleared_on_input(self):
         # User 1 starts a survey and causes a validation error:
         self.browser.get(self.live_server_url)

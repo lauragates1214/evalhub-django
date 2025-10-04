@@ -12,35 +12,31 @@
     <div class="container">
       <div class="row justify-content-center p-5 bg-body-tertiary rounded-3">
         <div class="col-lg-6 text-center">
-
           <h1 class="display-1 mb-4">{% block header_text %}{% endblock %}</h1>
-
-          <form method="POST" action="{% block form_action %}{% endblock %}">
-            {% csrf_token %}
-            <input 
-              id="id_text"
-              name="text"
-              class="form-control  
-                     form-control-lg
-                     {% if form.errors %}is-invalid{% endif %}"
-              placeholder="Enter a survey question"
-              value="{{ form.text.value | default:'' }}"  
-              aria-describedby="id_text_feedback"  
-              required
-            />
-            {% if form.errors %}
-              <div id="id_text_feedback" class="invalid-feedback">  
-                 {{ form.errors.text.0 }}
-            {% endif %}
-          </form>
-
+          {% block content %}{% endblock %}
         </div>
       </div>
 
       <div class="row justify-content-center">
-        <div class="col-lg-6">{% block table %} {% endblock %}</div>
+        <div class="col-lg-6">{% block table %}{% endblock %}</div>
       </div>
     </div>
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script>
+      // Clear validation error on input
+      const attachErrorClearHandler = () => {
+        const textInput = document.querySelector("#id_text");
+        if (textInput) {
+          textInput.oninput = () => {
+            textInput.classList.remove("is-invalid");
+          };
+        }
+      };
+
+      window.onload = attachErrorClearHandler; // Attach on initial load
+      document.body.addEventListener('htmx:afterSwap', attachErrorClearHandler); // Attach after every htmx swap
+    </script>
 
   </body>
 </html>

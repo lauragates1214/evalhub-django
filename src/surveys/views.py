@@ -17,8 +17,20 @@ def view_survey(request, survey_id):
         form = ExistingSurveyQuestionForm(for_survey=mysurvey, data=request.POST)
         if form.is_valid():
             form.save()
-            return redirect(mysurvey)  # uses get_absolute_url() method of Survey model
 
+            # htmx automatically adds HX-Request header to every request it makes
+            if request.headers.get("HX-Request"):
+                # Create fresh form (so input box is cleared)
+                form = ExistingSurveyQuestionForm(for_survey=mysurvey)
+                # Return just the fragment, not full page
+                return render(
+                    request,
+                    "partials/question_list.html",
+                    {"survey": mysurvey, "form": form},
+                )
+
+            # Normal POST still works when no HX-Request header present; full page reload
+            return redirect(mysurvey)  # uses get_absolute_url() method of Survey model
     return render(request, "survey.html", {"survey": mysurvey, "form": form})
 
 
