@@ -20,6 +20,25 @@ class FunctionalTest(StaticLiveServerTestCase):
     def tearDown(self):
         self.browser.quit()
 
+    ### Helper methods ###
+    def login(self, email, password="password"):
+        from django.contrib.auth import get_user_model
+        from selenium.webdriver.common.keys import Keys
+
+        User = get_user_model()
+        user = User.objects.create(email=email)
+        user.set_password(password)
+        user.save()
+
+        self.browser.get(self.live_server_url + "/accounts/login/")
+        self.browser.find_element(By.NAME, "username").send_keys(email)
+        self.browser.find_element(By.NAME, "password").send_keys(password, Keys.ENTER)
+        self.wait_for(
+            lambda: self.assertIn(
+                email, self.browser.find_element(By.CSS_SELECTOR, ".navbar").text
+            )
+        )
+
     def wait_for(self, fn):
         start_time = time.time()
         while True:

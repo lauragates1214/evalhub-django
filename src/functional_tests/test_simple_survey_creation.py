@@ -7,7 +7,10 @@ from .base import FunctionalTest
 class NewVisitorTest(FunctionalTest):
     # Acts as regression test
     def test_can_start_a_new_question(self):
-        # User 1 goes to the EvalHub homepage to register as a new user
+        # User 1 logs in
+        self.login("user@example.com")
+
+        # She goes to the EvalHub homepage to register as a new user
         self.browser.get(self.live_server_url)
 
         # She notices the page title mentions EvalHub
@@ -46,7 +49,10 @@ class NewVisitorTest(FunctionalTest):
         # Satisfied, she logs out to continue later.
 
     def test_multiple_users_can_start_questions_at_different_urls(self):
-        # User 1 starts a new question
+        # User 1 logs in
+        self.login("user1@example.com")
+
+        # She starts a new question
         self.browser.get(self.live_server_url)
         inputbox = self.get_question_input_box()
         inputbox.send_keys("How do you feel about capybara?")
@@ -59,9 +65,11 @@ class NewVisitorTest(FunctionalTest):
         self.assertRegex(user1_question_url, "/surveys/.+")
 
         # Now a new user, User 2, comes along to the site
-
         ## Delete all the browser's cookies as a way of simulating a brand new user session
         self.browser.delete_all_cookies()
+
+        # User 2 logs in
+        self.login("user2@example.com")
 
         # User 2 visits the home page. There is no sign of User 1's question
         self.browser.get(self.live_server_url)

@@ -12,7 +12,10 @@ class QuestionValidationTest(FunctionalTest):
         return self.browser.find_element(By.CSS_SELECTOR, ".invalid-feedback")
 
     def test_cannot_add_empty_survey_questions(self):
-        # User 1 goes to the home page and accidentally tries to submit
+        # User 1 logs in
+        self.login("user@example.com")
+
+        # She goes to the home page and accidentally tries to submit
         # an empty question. She hits Enter on the empty input box
         self.browser.get(self.live_server_url)
         self.get_question_input_box().send_keys(Keys.ENTER)
@@ -47,7 +50,10 @@ class QuestionValidationTest(FunctionalTest):
         self.wait_for_row_in_survey_table("2: Why not?")
 
     def test_cannot_add_duplicate_questions(self):
-        # User 1 goes to the home page and starts a new survey
+        # User 1 logs in
+        self.login("user@example.com")
+
+        # She goes to the home page and starts a new survey
         self.browser.get(self.live_server_url)
         self.get_question_input_box().send_keys("Is a capybara?")
         self.get_question_input_box().send_keys(Keys.ENTER)
@@ -75,7 +81,10 @@ class QuestionValidationTest(FunctionalTest):
         self.wait_for_row_in_survey_table("2: Why capybara?")
 
     def test_error_messages_are_cleared_on_input(self):
-        # User 1 starts a survey and causes a validation error:
+        # User 1 logs in
+        self.login("user@example.com")
+
+        # She starts a survey and causes a validation error:
         self.browser.get(self.live_server_url)
         self.get_question_input_box().send_keys("Capybara?")
         self.get_question_input_box().send_keys(Keys.ENTER)
