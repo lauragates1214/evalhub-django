@@ -7,11 +7,19 @@ from .base import FunctionalTest
 class AuthenticationTest(FunctionalTest):
     def test_instructor_can_log_in(self):
         # Create a test user
-        from accounts.models import User
+        email = "instructor@example.com"
+        password = "password123"
 
-        user = User.objects.create(email="instructor@example.com")
-        user.set_password("password123")
-        user.save()
+        if self.test_server:
+            from functional_tests.container_commands import create_user_on_server
+
+            create_user_on_server(self.test_server, email, password)
+        else:
+            from accounts.models import User
+
+            user = User.objects.create(email=email)
+            user.set_password(password)
+            user.save()
 
         # An instructor visits the site and sees a login form
         self.browser.get(self.live_server_url)
@@ -28,36 +36,38 @@ class AuthenticationTest(FunctionalTest):
         )
 
         # She enters her credentials
-        self.browser.find_element(By.NAME, "username").send_keys(
-            "instructor@example.com"
-        )
+        self.browser.find_element(By.NAME, "username").send_keys(email)  # Changed
         self.browser.find_element(By.NAME, "password").send_keys(
-            "password123", Keys.ENTER
-        )
+            password, Keys.ENTER
+        )  # Changed
 
         # She's logged in and redirected to home
         self.wait_for(
             lambda: self.assertIn(
-                "instructor@example.com",
+                email,  # Also change this to use the variable
                 self.browser.find_element(By.CSS_SELECTOR, ".navbar").text,
             )
         )
 
     def test_instructor_can_log_out(self):
         # Create and log in a user
-        from accounts.models import User
+        email = "instructor@example.com"
+        password = "password123"
 
-        user = User.objects.create(email="instructor@example.com")
-        user.set_password("password123")
-        user.save()
+        if self.test_server:
+            from functional_tests.container_commands import create_user_on_server
+
+            create_user_on_server(self.test_server, email, password)
+        else:
+            from accounts.models import User
+
+            user = User.objects.create(email=email)
+            user.set_password(password)
+            user.save()
 
         self.browser.get(self.live_server_url + "/accounts/login/")
-        self.browser.find_element(By.NAME, "username").send_keys(
-            "instructor@example.com"
-        )
-        self.browser.find_element(By.NAME, "password").send_keys(
-            "password123", Keys.ENTER
-        )
+        self.browser.find_element(By.NAME, "username").send_keys(email)
+        self.browser.find_element(By.NAME, "password").send_keys(password, Keys.ENTER)
 
         # She sees her email in the navbar
         self.wait_for(

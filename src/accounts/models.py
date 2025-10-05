@@ -9,11 +9,14 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     email = models.EmailField(primary_key=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)  # required by Django admin
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
-    is_active = True
-    is_staff = False  # required by Django admin
-
     objects = UserManager()
+
+    @property
+    def is_authenticated(self):
+        return True
