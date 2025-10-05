@@ -34,7 +34,7 @@ class NewVisitorTest(FunctionalTest):
         # "1: Puppetry Workshop Question" as a question in a list of questions
         inputbox.send_keys(Keys.ENTER)
 
-        self.wait_for_row_in_survey_table("1: How do you feel about capybara?")
+        self.wait_for_row_in_question_table("1: How do you feel about capybara?")
 
         # There is still a text box inviting her to add another question.
         # She enters "PyCon UK Question" and hits enter
@@ -43,8 +43,8 @@ class NewVisitorTest(FunctionalTest):
         inputbox.send_keys(Keys.ENTER)
 
         # The page updates again, and now shows both questions in her list
-        self.wait_for_row_in_survey_table("2: How many capybara? Explain.")
-        self.wait_for_row_in_survey_table("1: How do you feel about capybara?")
+        self.wait_for_row_in_question_table("2: How many capybara? Explain.")
+        self.wait_for_row_in_question_table("1: How do you feel about capybara?")
 
         # Satisfied, she logs out to continue later.
 
@@ -58,7 +58,7 @@ class NewVisitorTest(FunctionalTest):
         inputbox.send_keys("How do you feel about capybara?")
         inputbox.send_keys(Keys.ENTER)
 
-        self.wait_for_row_in_survey_table("1: How do you feel about capybara?")
+        self.wait_for_row_in_question_table("1: How do you feel about capybara?")
 
         # She notices that her question has a unique URL
         user1_question_url = self.browser.current_url
@@ -80,7 +80,7 @@ class NewVisitorTest(FunctionalTest):
         inputbox = self.get_question_input_box()
         inputbox.send_keys("Why manatee? Explain.")
         inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_survey_table("1: Why manatee? Explain.")
+        self.wait_for_row_in_question_table("1: Why manatee? Explain.")
 
         # User 2 gets their own unique URL
         user2_question_url = self.browser.current_url

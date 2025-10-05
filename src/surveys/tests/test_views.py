@@ -224,3 +224,9 @@ class SurveyViewTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 302)  # Still redirects for normal forms
+
+
+class MySurveysTest(TestCase):
+    def test_my_surveys_url_renders_my_surveys_template(self):
+        response = self.client.get("/surveys/users/a@b.com/")
+        self.assertTemplateUsed(response, "my_surveys.html")

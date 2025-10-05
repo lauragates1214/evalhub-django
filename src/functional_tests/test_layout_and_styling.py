@@ -24,9 +24,7 @@ class LayoutAndStylingTest(FunctionalTest):
         )
 
         # She starts a new survey and sees the input is nicely centered there too
-        inputbox.send_keys("testing")
-        inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_survey_table("1: testing")
+        self.add_survey_question("testing")
         inputbox = self.get_question_input_box()
         self.assertAlmostEqual(
             inputbox.location["x"] + inputbox.size["width"] / 2,

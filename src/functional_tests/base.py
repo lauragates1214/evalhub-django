@@ -2,6 +2,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import WebDriverException
 
 import os
@@ -69,10 +70,20 @@ class FunctionalTest(StaticLiveServerTestCase):
         return fn()
 
     @wait
-    def wait_for_row_in_survey_table(self, row_text):
+    def wait_for_row_in_question_table(self, row_text):
         table = self.browser.find_element(By.ID, "id_question_table")
         rows = table.find_elements(By.TAG_NAME, "tr")
         self.assertIn(row_text, [row.text for row in rows])
 
     def get_question_input_box(self):
         return self.browser.find_element(By.ID, "id_text")
+
+    def add_survey_question(self, question_text):
+        num_rows = len(
+            self.browser.find_elements(By.CSS_SELECTOR, "#id_question_table tbody tr")
+        )
+        self.get_question_input_box().send_keys(question_text)
+        self.get_question_input_box().send_keys(Keys.ENTER)
+        question_number = num_rows + 1
+
+        self.wait_for_row_in_question_table(f"{question_number}: {question_text}")

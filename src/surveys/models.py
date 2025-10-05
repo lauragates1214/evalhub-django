@@ -4,7 +4,9 @@ from django.urls import reverse
 
 
 class Survey(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE
+    )
     text = models.TextField(default="")
 
     @property

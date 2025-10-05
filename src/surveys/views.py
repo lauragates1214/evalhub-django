@@ -44,3 +44,7 @@ def view_survey(request, survey_id):
             # Normal POST still works when no HX-Request header present; full page reload
             return redirect(mysurvey)  # uses get_absolute_url() method of Survey model
     return render(request, "survey.html", {"survey": mysurvey, "form": form})
+
+
+def my_surveys(request, email):
+    return render(request, "my_surveys.html")

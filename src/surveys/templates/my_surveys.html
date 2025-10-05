@@ -1,3 +1,12 @@
 {% extends 'base.html' %}
 
 {% block header_text %}{{ user.email }}'s Surveys{% endblock %}
+
+{% block content %}
+  <h2>{{ owner.email }}'s Surveys</h2>  
+  <ul>
+    {% for survey in owner.surveys.all %}  
+      <li><a href="{{ survey.get_absolute_url }}">{{ survey.name }}</a></li>  
+    {% endfor %}
+  </ul>
+{% endblock %}
