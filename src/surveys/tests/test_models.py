@@ -4,6 +4,7 @@ from django.core.exceptions import (
 from django.db import IntegrityError  # for DB-level validation, save()
 from django.test import TestCase
 
+from accounts.models import User
 from surveys.models import Question, Survey
 
 
@@ -80,6 +81,11 @@ class SurveyModelTest(TestCase):
                 question3,
             ],  # checks ordering by id as in Meta class of Question model
         )
+
+    def test_surveys_can_have_owners(self):
+        user = User.objects.create(email="a@b.com")
+        mysurvey = Survey.objects.create(owner=user)
+        self.assertIn(mysurvey, user.surveys.all())
 
     def test_string_representation(self):
         question = Question(text="some text")
