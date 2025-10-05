@@ -55,6 +55,12 @@ def _run_commands(commands):
 
 
 def reset_database(host):
+    production_domains = ["evalhub.lauragates.io", "staging-evalhub.lauragates.io"]
+
+    if any(domain in host for domain in production_domains):
+        raise Exception(
+            f"DANGER: Attempted to reset database on {host}. This is not allowed for production/staging servers!"
+        )
     return _exec_in_container(
         host, ["/venv/bin/python", "/src/manage.py", "flush", "--noinput"]
     )
