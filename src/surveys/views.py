@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 
+from accounts.models import User
 from surveys.forms import ExistingSurveyQuestionForm, QuestionForm
 from surveys.models import Survey
 
@@ -15,6 +16,8 @@ def new_survey(request):
     form = QuestionForm(data=request.POST)
     if form.is_valid():
         new_survey = Survey.objects.create()
+        new_survey.owner = request.user  # set the owner to the logged-in user
+        new_survey.save()
         form.save(for_survey=new_survey)
         return redirect(new_survey)  # uses get_absolute_url() method of Survey model
     else:
@@ -47,4 +50,5 @@ def view_survey(request, survey_id):
 
 
 def my_surveys(request, email):
-    return render(request, "my_surveys.html")
+    owner = User.objects.get(email=email)
+    return render(request, "my_surveys.html", {"owner": owner})

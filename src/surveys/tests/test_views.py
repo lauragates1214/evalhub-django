@@ -10,6 +10,7 @@ from surveys.forms import (
     DUPLICATE_QUESTION_ERROR,
     EMPTY_QUESTION_ERROR,
 )
+from accounts.models import User
 from surveys.models import Question, Survey
 
 User = get_user_model()
@@ -85,6 +86,13 @@ class NewSurveyTest(TestCase):
         response = self.post_invalid_input()
 
         self.assertContains(response, html.escape(EMPTY_QUESTION_ERROR))
+
+    def test_survey_owner_is_saved_if_user_is_authenticated(self):
+        user = User.objects.create(email="a@b.com")
+        self.client.force_login(user)
+        self.client.post("/surveys/new", data={"text": "new question"})
+        new_survey = Survey.objects.get()
+        self.assertEqual(new_survey.owner, user)
 
 
 class SurveyViewTest(TestCase):
@@ -228,5 +236,12 @@ class SurveyViewTest(TestCase):
 
 class MySurveysTest(TestCase):
     def test_my_surveys_url_renders_my_surveys_template(self):
+        User.objects.create(email="a@b.com")
         response = self.client.get("/surveys/users/a@b.com/")
         self.assertTemplateUsed(response, "my_surveys.html")
+
+    def test_passes_correct_owner_to_template(self):
+        User.objects.create(email="wrong@owner.com")
+        correct_user = User.objects.create(email="a@b.com")
+        response = self.client.get("/surveys/users/a@b.com/")
+        self.assertEqual(response.context["owner"], correct_user)
