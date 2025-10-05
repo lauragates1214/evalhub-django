@@ -14,6 +14,7 @@ WORKDIR /src
 RUN python manage.py collectstatic --noinput
 
 ENV DJANGO_DEBUG_FALSE=1
+ENV DJANGO_SETTINGS_MODULE=evalhub.settings.staging
 
 RUN adduser --uid 1234 nonroot
 USER nonroot
