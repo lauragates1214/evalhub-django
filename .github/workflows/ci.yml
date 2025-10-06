@@ -53,3 +53,33 @@ jobs:
       with:
         name: functional-test-screenshots
         path: src/functional_tests/screendumps/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install Ansible
+      run: |
+        pip install ansible
+    
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts
+    
+    - name: Deploy to staging
+      run: |
+        ansible-playbook --user=${{ secrets.VPS_USER }} \
+          -i ${{ secrets.STAGING_HOST }}, \
+          infra/deploy-playbook.yaml
