@@ -233,6 +233,19 @@ class SurveyViewTest(TestCase):
 
         self.assertEqual(response.status_code, 302)  # Still redirects for normal forms
 
+    def test_htmx_request_with_invalid_input_returns_partial_template(self):
+        mysurvey = Survey.objects.create()
+        Question.objects.create(survey=mysurvey, text="duplicate")
+
+        response = self.client.post(
+            f"/surveys/{mysurvey.id}/",
+            data={"text": "duplicate"},
+            HTTP_HX_REQUEST="true",
+        )
+
+        self.assertTemplateUsed(response, "partials/question_list.html")
+        self.assertContains(response, html.escape(DUPLICATE_QUESTION_ERROR))
+
 
 class MySurveysTest(TestCase):
     def test_my_surveys_url_renders_my_surveys_template(self):
