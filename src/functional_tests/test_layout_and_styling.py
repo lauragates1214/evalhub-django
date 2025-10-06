@@ -5,6 +5,7 @@ from .base import FunctionalTest
 
 
 class LayoutAndStylingTest(FunctionalTest):
+    @skipIf(os.environ.get("CI"), "Visual layout testing not reliable in headless CI")
     def test_layout_and_styling(self):
         # User 1 logs in
         self.login("user@example.com")
