@@ -33,3 +33,4 @@ Thumbs.db
 local_settings.py
 
 
+src/functional_tests/screendumps

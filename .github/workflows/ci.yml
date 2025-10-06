@@ -38,3 +38,10 @@ jobs:
         python src/manage.py test functional_tests
       env:
         MOZ_HEADLESS: "1"
+    
+    - name: Upload screenshots on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: functional-test-screenshots
+        path: src/functional_tests/screendumps/
