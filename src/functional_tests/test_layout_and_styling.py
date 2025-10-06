@@ -2,6 +2,7 @@ import os
 from unittest import skipIf
 
 from .base import FunctionalTest
+from .survey_page import SurveyPage
 
 
 class LayoutAndStylingTest(FunctionalTest):
@@ -10,14 +11,14 @@ class LayoutAndStylingTest(FunctionalTest):
         # User 1 logs in
         self.login("user@example.com")
 
-        # She goes to the home page,
-        self.browser.get(self.live_server_url)
+        # She goes to the home page
+        survey_page = SurveyPage(self).go_to_new_survey_page()
 
         # Her browser window is set to a very specific size
         self.browser.set_window_size(1024, 768)
 
         # She notices the input box is nicely centered
-        inputbox = self.get_question_input_box()
+        inputbox = survey_page.get_question_input_box()
         self.assertAlmostEqual(
             inputbox.location["x"] + inputbox.size["width"] / 2,
             512,
@@ -25,8 +26,8 @@ class LayoutAndStylingTest(FunctionalTest):
         )
 
         # She starts a new survey and sees the input is nicely centered there too
-        self.add_survey_question("testing")
-        inputbox = self.get_question_input_box()
+        survey_page.add_survey_question("testing")
+        inputbox = survey_page.get_question_input_box()
         self.assertAlmostEqual(
             inputbox.location["x"] + inputbox.size["width"] / 2,
             512,
