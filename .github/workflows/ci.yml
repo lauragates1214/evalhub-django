@@ -27,10 +27,11 @@ jobs:
       run: |
         pip install selenium
     
-    - name: Install Firefox
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y firefox
+    - name: Set up Firefox
+      uses: browser-actions/setup-firefox@latest
+    
+    - name: Set up geckodriver
+      uses: browser-actions/setup-geckodriver@latest
     
     - name: Run functional tests
       run: |
