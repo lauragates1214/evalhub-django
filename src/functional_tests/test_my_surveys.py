@@ -76,18 +76,18 @@ class MySurveysTest(FunctionalTest):
         second_survey_url = self.browser.current_url
 
         # Under "my surveys", their new survey appears
-        self.browser.find_element(By.LINK_TEXT, "My surveys").click()
+        self.browser.find_element(By.LINK_TEXT, "My Surveys").click()
         self.wait_for(lambda: self.browser.find_element(By.LINK_TEXT, "Click cows?"))
         self.browser.find_element(By.LINK_TEXT, "Click cows?").click()
         self.wait_for(
             lambda: self.assertEqual(self.browser.current_url, second_survey_url)
         )
 
-        # They log out.  The "My surveys" option disappears
+        # They log out.  The "My Surveys" option disappears
         self.browser.find_element(By.CSS_SELECTOR, "#id_logout").click()
         self.wait_for(
             lambda: self.assertEqual(
-                self.browser.find_elements(By.LINK_TEXT, "My surveys"),
+                self.browser.find_elements(By.LINK_TEXT, "My Surveys"),
                 [],
             )
         )

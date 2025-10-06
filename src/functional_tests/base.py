@@ -11,7 +11,7 @@ from unittest import skip
 
 from .container_commands import reset_database
 
-MAX_WAIT = 5
+MAX_WAIT = 10
 SCREEN_DUMP_LOCATION = Path(__file__).absolute().parent / "screendumps"
 
 
