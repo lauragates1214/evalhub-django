@@ -1,10 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import User
-from surveys.forms import ExistingSurveyQuestionForm, QuestionForm
-from surveys.models import Survey
+from surveys.forms import ExistingSurveyQuestionForm, QuestionForm, SurveyAnswerForm
+from surveys.models import Answer, Survey
 
 
 def home_page(request):
@@ -61,3 +61,18 @@ def view_survey(request, survey_id):
 def my_surveys(request, email):
     owner = User.objects.get(email=email)
     return render(request, "my_surveys.html", {"owner": owner})
+
+
+def student_survey_view(request, survey_id):
+    survey = get_object_or_404(Survey, id=survey_id)
+
+    if request.method == "POST":
+        form = SurveyAnswerForm(survey=survey, data=request.POST)
+        if form.is_valid():
+            form.save()
+            # Render confirmation instead of redirecting
+            return render(
+                request, "student_survey.html", {"survey": survey, "submitted": True}
+            )
+
+    return render(request, "student_survey.html", {"survey": survey})

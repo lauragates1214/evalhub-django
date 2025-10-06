@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+    {% if submitted %}
+        <div class="confirmation-message">
+            <h2>Thank you for your feedback!</h2>
+            <p>Your responses have been submitted.</p>
+        </div>
+    {% else %}
+        <form method="POST">
+            {% csrf_token %}
+            {% for question in survey.question_set.all %}
+                <div>
+                    <label>{{ question.text }}</label>
+                    <input type="text" name="response_{{ question.id }}">
+                </div>
+            {% endfor %}
+            <button type="submit">Submit</button>
+        </form>
+    {% endif %}
+</body>
+</html>

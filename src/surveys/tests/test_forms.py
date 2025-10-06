@@ -1,12 +1,15 @@
 from django.test import TestCase
 
+from accounts.models import User
+
 from surveys.forms import (
     DUPLICATE_QUESTION_ERROR,
     EMPTY_QUESTION_ERROR,
     ExistingSurveyQuestionForm,
     QuestionForm,
+    SurveyAnswerForm,
 )
-from surveys.models import Question, Survey
+from surveys.models import Answer, Question, Survey
 
 
 class QuestionFormTest(TestCase):
@@ -54,3 +57,41 @@ class ExistingSurveyQuestionFormTest(TestCase):
             form.save()
         )  # should not require arguments as already associated with survey in constructor
         self.assertEqual(new_question, Question.objects.get())
+
+
+class SurveyAnswerFormTest(TestCase):
+    def test_form_has_field_for_each_question(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        q1 = Question.objects.create(survey=survey, text="Question 1")
+        q2 = Question.objects.create(survey=survey, text="Question 2")
+
+        form = SurveyAnswerForm(survey=survey)
+
+        self.assertIn(f"response_{q1.id}", form.fields)
+        self.assertIn(f"response_{q2.id}", form.fields)
+
+    def test_form_saves_answers_for_each_question(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        q1 = Question.objects.create(survey=survey, text="Question 1")
+        q2 = Question.objects.create(survey=survey, text="Question 2")
+
+        form = SurveyAnswerForm(
+            survey=survey,
+            data={
+                f"response_{q1.id}": "Answer 1",
+                f"response_{q2.id}": "Answer 2",
+            },
+        )
+
+        self.assertTrue(form.is_valid())
+        form.save()
+
+        self.assertEqual(Answer.objects.count(), 2)
+        self.assertEqual(
+            Answer.objects.filter(question=q1).first().answer_text, "Answer 1"
+        )
+        self.assertEqual(
+            Answer.objects.filter(question=q2).first().answer_text, "Answer 2"
+        )

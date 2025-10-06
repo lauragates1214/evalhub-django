@@ -25,4 +25,9 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("", survey_views.home_page, name="home"),
     path("surveys/", include("surveys.urls")),
+    path(
+        "survey/<int:survey_id>/",
+        survey_views.student_survey_view,
+        name="student_survey",
+    ),
 ]

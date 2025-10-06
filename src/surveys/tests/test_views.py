@@ -11,7 +11,7 @@ from surveys.forms import (
     EMPTY_QUESTION_ERROR,
 )
 from accounts.models import User
-from surveys.models import Question, Survey
+from surveys.models import Answer, Question, Survey
 
 User = get_user_model()
 
@@ -258,3 +258,74 @@ class MySurveysTest(TestCase):
         correct_user = User.objects.create(email="a@b.com")
         response = self.client.get("/surveys/users/a@b.com/")
         self.assertEqual(response.context["owner"], correct_user)
+
+
+class StudentSurveyViewTest(TestCase):
+    def test_displays_all_questions_for_survey(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        Question.objects.create(survey=survey, text="How was the session?")
+        Question.objects.create(survey=survey, text="What did you think of capybara?")
+
+        response = self.client.get(f"/survey/{survey.id}/")
+
+        self.assertContains(response, "How was the session?")
+        self.assertContains(response, "What did you think of capybara?")
+
+    def test_uses_student_survey_template(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+
+        response = self.client.get(f"/survey/{survey.id}/")
+
+        self.assertTemplateUsed(response, "student_survey.html")
+
+    def test_returns_404_for_nonexistent_survey(self):
+        response = self.client.get("/survey/999/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_displays_form_with_inputs_for_each_question(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        q1 = Question.objects.create(survey=survey, text="Question 1")
+        q2 = Question.objects.create(survey=survey, text="Question 2")
+
+        response = self.client.get(f"/survey/{survey.id}/")
+
+        self.assertContains(response, f'name="response_{q1.id}"')
+        self.assertContains(response, f'name="response_{q2.id}"')
+        self.assertContains(response, 'type="submit"')
+
+    def test_can_save_POST_request_with_answers(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        q1 = Question.objects.create(survey=survey, text="Question 1")
+        q2 = Question.objects.create(survey=survey, text="Question 2")
+
+        self.client.post(
+            f"/survey/{survey.id}/",
+            data={
+                f"response_{q1.id}": "Answer to question 1",
+                f"response_{q2.id}": "Answer to question 2",
+            },
+        )
+
+        self.assertEqual(Answer.objects.count(), 2)
+        answers = Answer.objects.all()
+        self.assertEqual(answers[0].answer_text, "Answer to question 1")
+        self.assertEqual(answers[1].answer_text, "Answer to question 2")
+
+    def test_displays_confirmation_after_successful_submission(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        q1 = Question.objects.create(survey=survey, text="Question 1")
+
+        response = self.client.post(
+            f"/survey/{survey.id}/",
+            data={
+                f"response_{q1.id}": "My answer",
+            },
+        )
+
+        self.assertContains(response, "Thank you")
+        self.assertContains(response, "confirmation-message")

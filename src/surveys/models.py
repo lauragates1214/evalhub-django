@@ -31,3 +31,8 @@ class Question(models.Model):
     class Meta:
         ordering = ["id"]
         unique_together = ("survey", "text")
+
+
+class Answer(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer_text = models.TextField(default="")

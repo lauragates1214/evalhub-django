@@ -5,7 +5,7 @@ from django.db import IntegrityError  # for DB-level validation, save()
 from django.test import TestCase
 
 from accounts.models import User
-from surveys.models import Question, Survey
+from surveys.models import Answer, Question, Survey
 
 
 class QuestionModelsTest(TestCase):
@@ -100,3 +100,15 @@ class SurveyModelTest(TestCase):
         Question.objects.create(survey=survey, text="First question")
         Question.objects.create(survey=survey, text="Second question")
         self.assertEqual(survey.name, "First question")
+
+
+class ResponseModelTest(TestCase):
+    def test_can_save_response_to_question(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        question = Question.objects.create(survey=survey, text="How was it?")
+
+        answer = Answer.objects.create(question=question, answer_text="It was great!")
+
+        self.assertEqual(answer.question, question)
+        self.assertEqual(answer.answer_text, "It was great!")
