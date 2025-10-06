@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 
 from .base import FunctionalTest
+from .survey_page import SurveyPage
 
 
 class MySurveysTest(FunctionalTest):
@@ -11,9 +12,9 @@ class MySurveysTest(FunctionalTest):
         self.login(email)
 
         # They go to home page and create a survey
-        self.browser.get(self.live_server_url)
-        self.add_survey_question("What's your least favourite capybara?")
-        self.add_survey_question("Why and how?")
+        survey_page = SurveyPage(self).go_to_new_survey_page()
+        survey_page.add_survey_question("What's your least favourite capybara?")
+        survey_page.add_survey_question("Why and how?")
         first_survey_url = self.browser.current_url
 
         # They notice a "My Surveys" link
@@ -41,8 +42,8 @@ class MySurveysTest(FunctionalTest):
         )
 
         # They decide to start another survey, just to see
-        self.browser.get(self.live_server_url)
-        self.add_survey_question("Click cows?")
+        survey_page = SurveyPage(self).go_to_new_survey_page()
+        survey_page.add_survey_question("Click cows?")
         second_survey_url = self.browser.current_url
 
         # Under "my surveys", their new survey appears
