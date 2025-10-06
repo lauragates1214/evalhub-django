@@ -1,6 +1,7 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import WebDriverException
 import os
 import time
@@ -29,7 +30,6 @@ def wait(fn):
 
 
 class FunctionalTest(StaticLiveServerTestCase):
-    ### Helper methods for functional tests ###
     def setUp(self):
         self.browser = webdriver.Firefox()
         self.test_server = os.environ.get("TEST_SERVER")
@@ -46,9 +46,8 @@ class FunctionalTest(StaticLiveServerTestCase):
         self.browser.quit()
 
     def _test_has_failed(self):
-        return self._outcom
+        return self._outcome.result.failures or self._outcome.result.errors
 
-    # helper methods for taking screenshots and dumping HTML
     def take_screenshot(self):
         path = SCREEN_DUMP_LOCATION / self._get_filename("png")
         print("screenshotting to", path)
@@ -67,15 +66,12 @@ class FunctionalTest(StaticLiveServerTestCase):
 
     def login(self, email, password="password"):
         from django.contrib.auth import get_user_model
-        from selenium.webdriver.common.keys import Keys
 
         if self.test_server:
-            # When testing against a real server, create user on that server
             from .container_commands import create_user_on_server
 
             create_user_on_server(self.test_server, email, password)
         else:
-            # When testing locally with LiveServerTestCase, create user in test DB
             User = get_user_model()
             user = User.objects.create(email=email)
             user.set_password(password)
@@ -110,5 +106,4 @@ class FunctionalTest(StaticLiveServerTestCase):
         self.get_question_input_box().send_keys(question_text)
         self.get_question_input_box().send_keys(Keys.ENTER)
         question_number = num_rows + 1
-
         self.wait_for_row_in_question_table(f"{question_number}: {question_text}")
