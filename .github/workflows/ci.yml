@@ -22,3 +22,18 @@ jobs:
     - name: Run unit tests
       run: |
         python src/manage.py test accounts surveys
+    
+    - name: Install Selenium
+      run: |
+        pip install selenium
+    
+    - name: Install Firefox
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y firefox
+    
+    - name: Run functional tests
+      run: |
+        python src/manage.py test functional_tests
+      env:
+        MOZ_HEADLESS: "1"
