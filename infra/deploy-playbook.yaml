@@ -1,12 +1,19 @@
 - hosts: all
 
   tasks:
-    - name: Install docker  
-      ansible.builtin.apt:  
-        name: docker.io  
+    - name: Check if docker is installed
+      ansible.builtin.command: docker --version
+      register: docker_installed
+      ignore_errors: true
+      changed_when: false
+
+    - name: Install docker
+      ansible.builtin.apt:
+        name: docker.io
         state: present
         update_cache: true
-      become: true # Run this with sudo (elevated privileges)
+      become: true
+      when: docker_installed.rc != 0
 
     - name: Add user to docker group
       ansible.builtin.user:
