@@ -25,62 +25,10 @@
     - name: Reset ssh connection
       ansible.builtin.meta: reset_connection
 
-    - name: Copy project files to server
-      ansible.builtin.synchronize:
-        src: "{{ playbook_dir }}/../"
-        dest: "~/evalhub-django/"
-        delete: yes
-        rsync_opts:
-          - "--exclude=.git"
-          - "--exclude=.venv"
-          - "--exclude=__pycache__"
-          - "--exclude=*.pyc"
-          - "--exclude=node_modules"
-          - "--exclude=*.sqlite3"
+    - name: Build container image locally for AMD64
+      ansible.builtin.command: 
+        cmd: docker buildx build --platform linux/amd64 -t evalhub:latest --load {{ playbook_dir }}/..
+      delegate_to: 127.0.0.1
+      changed_when: true
 
-    - name: Build container image on server
-      ansible.builtin.command:
-        cmd: docker build -t evalhub:latest .
-        chdir: ~/evalhub-django
-
-    - name: Ensure .secret-key file exists
-      ansible.builtin.copy:
-        dest: ~/.secret-key
-        content: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters') }}"
-        mode: '0600'
-        force: false
-
-    - name: Read secret key back from file
-      ansible.builtin.slurp:
-        src: ~/.secret-key
-      register: secret_key
-
-    - name: Ensure db.sqlite3 file exists outside container
-      ansible.builtin.file:
-        path: "{{ ansible_env.HOME }}/db.sqlite3"
-        state: touch
-        owner: 1234
-      become: true
-    
-    - name: Run container
-      community.docker.docker_container:
-        name: evalhub
-        image: evalhub 
-        state: started
-        recreate: true
-        env:
-          DJANGO_DEBUG_FALSE: "1"
-          DJANGO_SECRET_KEY: "{{ secret_key.content | b64decode }}"
-          DJANGO_ALLOWED_HOST: "{{ inventory_hostname }}"
-          DJANGO_DB_PATH: /home/nonroot/db.sqlite3
-        mounts: 
-          - type: bind
-            source: "{{ ansible_env.HOME }}/db.sqlite3" 
-            target: /home/nonroot/db.sqlite3
-        ports: 
-          - "80:8888"
-
-    - name: Run migration inside container
-      community.docker.docker_container_exec:
-        container: evalhub
-        command: ./manage.py migrate
+    - name: Export container image loca
