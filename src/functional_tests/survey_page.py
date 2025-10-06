@@ -30,24 +30,3 @@ class SurveyPage:
     def go_to_new_survey_page(self):
         self.test.browser.get(self.test.live_server_url)
         return self
-
-    def get_share_box(self):
-        return self.test.browser.find_element(
-            By.CSS_SELECTOR,
-            'input[name="sharee"]',
-        )
-
-    def get_shared_with_survey(self):
-        return self.test.browser.find_elements(
-            By.CSS_SELECTOR,
-            ".survey-sharee",
-        )
-
-    def share_survey_with(self, email):
-        self.get_share_box().send_keys(email)
-        self.get_share_box().send_keys(Keys.ENTER)
-        self.test.wait_for(
-            lambda: self.test.assertIn(
-                email, [question.text for question in self.get_shared_with_survey()]
-            )
-        )
