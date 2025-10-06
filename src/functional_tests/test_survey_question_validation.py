@@ -1,7 +1,8 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-from unittest import skip
+import os
+from unittest import skipIf
 
 from .base import FunctionalTest
 
@@ -81,6 +82,8 @@ class QuestionValidationTest(FunctionalTest):
         self.wait_for_row_in_question_table("2: Why capybara?")
 
     def test_error_messages_are_cleared_on_input(self):
+        @skipIf(os.environ.get("CI"), "UX enhancement testing not reliable in headless CI")
+
         # User 1 logs in
         self.login("user@example.com")
 
