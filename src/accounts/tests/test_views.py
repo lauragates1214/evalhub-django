@@ -1,11 +1,10 @@
 from django.test import TestCase
 
+from accounts.models import User
+
 
 class LoginViewTest(TestCase):
     def test_shows_success_message_after_login(self):
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
         user = User.objects.create(email="test@example.com")
         user.set_password("password")
         user.save()
@@ -21,9 +20,6 @@ class LoginViewTest(TestCase):
 
 class LogoutViewTest(TestCase):
     def test_shows_success_message_after_logout(self):
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
         user = User.objects.create(email="test@example.com")
         user.set_password("password")
         user.save()

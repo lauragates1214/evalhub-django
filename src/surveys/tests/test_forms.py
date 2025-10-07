@@ -10,7 +10,7 @@ from surveys.forms import (
     QuestionForm,
     SurveyAnswerForm,
 )
-from surveys.models import Answer, Question, Survey
+from surveys.models import Answer, Question, Submission, Survey
 
 
 class QuestionFormTest(TestCase):
@@ -206,8 +206,6 @@ class SurveyAnswerFormTest(TestCase):
         self.assertIn('value="No"', form_html)
 
     def test_form_creates_submission_when_saving(self):
-        from surveys.models import Submission
-
         instructor = User.objects.create(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         q1 = Question.objects.create(

@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import html
 
@@ -11,9 +10,7 @@ from surveys.forms import (
     EMPTY_QUESTION_ERROR,
 )
 from accounts.models import User
-from surveys.models import Answer, Question, Survey
-
-User = get_user_model()
+from surveys.models import Answer, Question, Submission, Survey
 
 
 class NewSurveyAuthTest(TestCase):
@@ -47,9 +44,6 @@ class HomePageTest(TestCase):
 
 class NewSurveyTest(TestCase):
     def setUp(self):
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
         user = User.objects.create(email="test@example.com")
         user.set_password("password")
         user.save()
@@ -407,8 +401,6 @@ class ExportResponsesTest(TestCase):
         self.assertIn("Question 2", header)
 
     def test_export_includes_answer_data(self):
-        from surveys.models import Submission
-
         survey = Survey.objects.create(owner=self.user)
         q1 = Question.objects.create(
             survey=survey, text="Question 1", question_type="text"

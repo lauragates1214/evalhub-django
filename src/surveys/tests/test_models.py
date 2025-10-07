@@ -5,14 +5,11 @@ from django.db import IntegrityError  # for DB-level validation, save()
 from django.test import TestCase
 
 from accounts.models import User
-from surveys.models import Answer, Question, Survey
+from surveys.models import Answer, Question, Submission, Survey
 
 
 class QuestionModelsTest(TestCase):
     def setUp(self):
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
         self.user = User.objects.create(email="test@example.com")
 
     def test_default_text(self):
@@ -80,9 +77,6 @@ class QuestionModelsTest(TestCase):
 
 class SurveyModelTest(TestCase):
     def setUp(self):
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
         self.user = User.objects.create(email="test@example.com")
 
     def test_get_absolute_url(self):
@@ -137,8 +131,6 @@ class SurveyModelTest(TestCase):
 
 class AnswerModelTest(TestCase):
     def test_can_save_response_to_question(self):
-        from surveys.models import Submission
-
         instructor = User.objects.create(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(survey=survey, text="How was it?")
@@ -152,8 +144,6 @@ class AnswerModelTest(TestCase):
         self.assertEqual(answer.answer_text, "It was great!")
 
     def test_answer_can_have_optional_comment(self):
-        from surveys.models import Submission
-
         instructor = User.objects.create(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(survey=survey, text="How was it?")
@@ -169,8 +159,6 @@ class AnswerModelTest(TestCase):
         self.assertEqual(answer.comment_text, "Especially the capybara")
 
     def test_answer_comment_can_be_blank(self):
-        from surveys.models import Submission
-
         instructor = User.objects.create(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(survey=survey, text="How was it?")
@@ -187,9 +175,6 @@ class SubmissionModelTest(TestCase):
     def test_can_create_submission(self):
         instructor = User.objects.create(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
-
-        from surveys.models import Submission
-
         submission = Submission.objects.create(survey=survey)
 
         self.assertEqual(submission.survey, survey)
@@ -198,9 +183,6 @@ class SubmissionModelTest(TestCase):
         instructor = User.objects.create(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(survey=survey, text="Q1")
-
-        from surveys.models import Submission
-
         submission = Submission.objects.create(survey=survey)
         answer = Answer.objects.create(
             question=question, answer_text="Answer", submission=submission
