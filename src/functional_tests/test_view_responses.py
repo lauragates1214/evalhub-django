@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 from .base import FunctionalTest
-from surveys.models import Survey, Question, Answer
+from surveys.models import Answer, Submission, Survey, Question
 from accounts.models import User
 
 
@@ -14,9 +14,16 @@ class ViewResponsesTest(FunctionalTest):
         q2 = Question.objects.create(survey=survey, text="Any suggestions?")
 
         # Some students have submitted responses
-        Answer.objects.create(question=q1, answer_text="It was great!")
-        Answer.objects.create(question=q1, answer_text="Very informative")
-        Answer.objects.create(question=q2, answer_text="More capybaras please")
+        submission = Submission.objects.create(survey=survey)
+        Answer.objects.create(
+            question=q1, answer_text="It was great!", submission=submission
+        )
+        Answer.objects.create(
+            question=q1, answer_text="Very informative", submission=submission
+        )
+        Answer.objects.create(
+            question=q2, answer_text="More capybaras please", submission=submission
+        )
 
         # Instructor visits their survey page
         self.browser.get(f"{self.live_server_url}/surveys/{survey.id}/")

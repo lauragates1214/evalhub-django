@@ -137,33 +137,73 @@ class SurveyModelTest(TestCase):
 
 class AnswerModelTest(TestCase):
     def test_can_save_response_to_question(self):
+        from surveys.models import Submission
+
         instructor = User.objects.create(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(survey=survey, text="How was it?")
+        submission = Submission.objects.create(survey=survey)
 
-        answer = Answer.objects.create(question=question, answer_text="It was great!")
+        answer = Answer.objects.create(
+            question=question, answer_text="It was great!", submission=submission
+        )
 
         self.assertEqual(answer.question, question)
         self.assertEqual(answer.answer_text, "It was great!")
 
     def test_answer_can_have_optional_comment(self):
+        from surveys.models import Submission
+
         instructor = User.objects.create(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(survey=survey, text="How was it?")
+        submission = Submission.objects.create(survey=survey)
 
         answer = Answer.objects.create(
             question=question,
             answer_text="It was great!",
             comment_text="Especially the capybara",
+            submission=submission,
         )
 
         self.assertEqual(answer.comment_text, "Especially the capybara")
 
     def test_answer_comment_can_be_blank(self):
+        from surveys.models import Submission
+
         instructor = User.objects.create(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(survey=survey, text="How was it?")
+        submission = Submission.objects.create(survey=survey)
 
-        answer = Answer.objects.create(question=question, answer_text="Good")
+        answer = Answer.objects.create(
+            question=question, answer_text="Good", submission=submission
+        )
 
         self.assertEqual(answer.comment_text, "")
+
+
+class SubmissionModelTest(TestCase):
+    def test_can_create_submission(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+
+        from surveys.models import Submission
+
+        submission = Submission.objects.create(survey=survey)
+
+        self.assertEqual(submission.survey, survey)
+
+    def test_answers_can_be_linked_to_submission(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        question = Question.objects.create(survey=survey, text="Q1")
+
+        from surveys.models import Submission
+
+        submission = Submission.objects.create(survey=survey)
+        answer = Answer.objects.create(
+            question=question, answer_text="Answer", submission=submission
+        )
+
+        self.assertEqual(answer.submission, submission)

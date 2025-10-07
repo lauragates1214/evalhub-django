@@ -204,3 +204,22 @@ class SurveyAnswerFormTest(TestCase):
         self.assertIn('type="radio"', form_html)
         self.assertIn('value="Yes"', form_html)
         self.assertIn('value="No"', form_html)
+
+    def test_form_creates_submission_when_saving(self):
+        from surveys.models import Submission
+
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        q1 = Question.objects.create(
+            survey=survey, text="Question 1", question_type="text"
+        )
+
+        form = SurveyAnswerForm(survey=survey, data={f"response_{q1.id}": "Answer 1"})
+
+        self.assertTrue(form.is_valid())
+        form.save()
+
+        self.assertEqual(Submission.objects.count(), 1)
+        submission = Submission.objects.first()
+        self.assertEqual(submission.survey, survey)
+        self.assertEqual(submission.answers.count(), 1)

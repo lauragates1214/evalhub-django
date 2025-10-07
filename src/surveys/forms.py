@@ -96,6 +96,11 @@ class SurveyAnswerForm(forms.Form):
                 )
 
     def save(self):
+        from surveys.models import Submission
+
+        # Create a submission for this set of answers
+        submission = Submission.objects.create(survey=self.survey)
+
         for question in self.survey.question_set.all():
             field_name = f"response_{question.id}"
             comment_field_name = f"comment_{question.id}"
@@ -109,4 +114,5 @@ class SurveyAnswerForm(forms.Form):
                     question=question,
                     answer_text=answer_text,
                     comment_text=comment_text,
+                    submission=submission,
                 )

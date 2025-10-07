@@ -48,7 +48,18 @@ class Question(models.Model):
         unique_together = ("survey", "text")
 
 
+# Groups answers by user submission
+class Submission(models.Model):
+    survey = models.ForeignKey(
+        Survey, on_delete=models.CASCADE, related_name="submissions"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     answer_text = models.TextField(default="")
     comment_text = models.TextField(default="", blank=True)
+    submission = models.ForeignKey(
+        Submission, on_delete=models.CASCADE, related_name="answers"
+    )

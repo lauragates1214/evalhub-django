@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+import csv
 from io import BytesIO
 import qrcode
 
@@ -108,3 +109,31 @@ def survey_qr_code(request, survey_id):
 def survey_responses(request, survey_id):
     survey = get_object_or_404(Survey, id=survey_id)
     return render(request, "survey_responses.html", {"survey": survey})
+
+
+def export_responses(request, survey_id):
+    survey = get_object_or_404(Survey, id=survey_id)
+
+    # Create the HttpResponse object with CSV header
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = (
+        f'attachment; filename="survey_{survey_id}_responses.csv"'
+    )
+
+    writer = csv.writer(response)
+
+    # Write header row with submission ID and question texts
+    questions = survey.question_set.all()
+    header = ["Submission ID"] + [q.text for q in questions]
+    writer.writerow(header)
+
+    # Write data rows - one row per submission
+    for submission in survey.submissions.all():
+        row = [submission.id]
+        for question in questions:
+            # Find the answer for this question in this submission
+            answer = submission.answers.filter(question=question).first()
+            row.append(answer.answer_text if answer else "")
+        writer.writerow(row)
+
+    return response

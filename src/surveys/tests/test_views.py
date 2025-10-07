@@ -2,9 +2,9 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import html
 
+import csv
 import lxml.html
-
-from unittest import skip
+from io import StringIO
 
 from surveys.forms import (
     DUPLICATE_QUESTION_ERROR,
@@ -95,7 +95,13 @@ class NewSurveyTest(TestCase):
         self.assertEqual(new_survey.owner, user)
 
 
-class SurveyViewTest(TestCase):
+class InstructorSurveyViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(email="test@example.com")
+        self.user.set_password("password")
+        self.user.save()
+        self.client.login(username="test@example.com", password="password")
+
     def test_uses_question_template(self):
         mysurvey = Survey.objects.create()
         response = self.client.get(f"/surveys/{mysurvey.id}/")
@@ -109,8 +115,8 @@ class SurveyViewTest(TestCase):
             response.content
         )  # parse HTML into structured object to represent DOM
         [form] = parsed.cssselect(
-            "form[method=POST]"
-        )  # find form element with method=POST, expect exactly one (hence the brackets)
+            "form[action^='/surveys/']"
+        )  # find survey form element with method=POST, expect exactly one (hence the brackets)
 
         self.assertEqual(form.get("action"), f"/surveys/{mysurvey.id}/")
 
@@ -272,6 +278,13 @@ class SurveyViewTest(TestCase):
         self.assertContains(response, "View Responses")
         self.assertContains(response, f"/surveys/{survey.id}/responses/")
 
+    def test_survey_page_shows_export_link(self):
+        mysurvey = Survey.objects.create(owner=self.user)
+        response = self.client.get(f"/surveys/{mysurvey.id}/")
+
+        self.assertContains(response, "Export to CSV")
+        self.assertContains(response, f"/surveys/{mysurvey.id}/export/")
+
 
 class MySurveysTest(TestCase):
     def test_my_surveys_url_renders_my_surveys_template(self):
@@ -355,3 +368,85 @@ class StudentSurveyViewTest(TestCase):
 
         self.assertContains(response, "Thank you")
         self.assertContains(response, "confirmation-message")
+
+
+class ExportResponsesTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(email="test@example.com")
+        self.user.set_password("password")
+        self.user.save()
+        self.client.login(username="test@example.com", password="password")
+
+    def test_export_url_exists(self):
+        survey = Survey.objects.create(owner=self.user)
+        response = self.client.get(f"/surveys/{survey.id}/export/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_export_returns_csv_file(self):
+        survey = Survey.objects.create(owner=self.user)
+        response = self.client.get(f"/surveys/{survey.id}/export/")
+
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn("attachment; filename=", response["Content-Disposition"])
+
+    def test_export_includes_question_headers(self):
+        survey = Survey.objects.create(owner=self.user)
+        q1 = Question.objects.create(
+            survey=survey, text="Question 1", question_type="text"
+        )
+        q2 = Question.objects.create(
+            survey=survey, text="Question 2", question_type="rating", options=[1, 2, 3]
+        )
+
+        response = self.client.get(f"/surveys/{survey.id}/export/")
+        content = response.content.decode("utf-8")
+        csv_reader = csv.reader(StringIO(content))
+        header = next(csv_reader)
+
+        self.assertIn("Question 1", header)
+        self.assertIn("Question 2", header)
+
+    def test_export_includes_answer_data(self):
+        from surveys.models import Submission
+
+        survey = Survey.objects.create(owner=self.user)
+        q1 = Question.objects.create(
+            survey=survey, text="Question 1", question_type="text"
+        )
+        q2 = Question.objects.create(
+            survey=survey, text="Question 2", question_type="text"
+        )
+
+        # Create a submission with answers
+        submission = Submission.objects.create(survey=survey)
+        Answer.objects.create(
+            question=q1, answer_text="Answer 1A", submission=submission
+        )
+        Answer.objects.create(
+            question=q2, answer_text="Answer 2A", submission=submission
+        )
+
+        response = self.client.get(f"/surveys/{survey.id}/export/")
+        content = response.content.decode("utf-8")
+        csv_reader = csv.reader(StringIO(content))
+        rows = list(csv_reader)
+
+        self.assertEqual(len(rows), 2)  # Header + 1 data row
+        self.assertEqual(
+            rows[0], ["Submission ID", "Question 1", "Question 2"]
+        )  # Header
+        self.assertEqual(rows[1], ["1", "Answer 1A", "Answer 2A"])  # Data
+
+    def test_export_with_no_submissions_only_shows_header(self):
+        survey = Survey.objects.create(owner=self.user)
+        q1 = Question.objects.create(
+            survey=survey, text="Question 1", question_type="text"
+        )
+
+        response = self.client.get(f"/surveys/{survey.id}/export/")
+        content = response.content.decode("utf-8")
+        csv_reader = csv.reader(StringIO(content))
+        rows = list(csv_reader)
+
+        self.assertEqual(len(rows), 1)  # Only header row
+        self.assertEqual(rows[0], ["Submission ID", "Question 1"])
