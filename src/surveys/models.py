@@ -20,6 +20,9 @@ class Survey(models.Model):
     def get_absolute_url(self):
         return reverse("view_survey", args=[self.id])
 
+    def get_qr_code_url(self):
+        return f"/survey/{self.id}/"
+
 
 class Question(models.Model):
     text = models.TextField(default="")

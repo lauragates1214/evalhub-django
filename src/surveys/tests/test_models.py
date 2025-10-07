@@ -101,6 +101,15 @@ class SurveyModelTest(TestCase):
         Question.objects.create(survey=survey, text="Second question")
         self.assertEqual(survey.name, "First question")
 
+    def test_survey_can_generate_qr_code_url(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+
+        qr_code_url = survey.get_qr_code_url()
+
+        self.assertIn("/survey/", qr_code_url)
+        self.assertIn(str(survey.id), qr_code_url)
+
 
 class ResponseModelTest(TestCase):
     def test_can_save_response_to_question(self):

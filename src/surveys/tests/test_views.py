@@ -246,6 +246,23 @@ class SurveyViewTest(TestCase):
         self.assertTemplateUsed(response, "partials/question_list.html")
         self.assertContains(response, html.escape(DUPLICATE_QUESTION_ERROR))
 
+    def test_survey_page_displays_qr_code(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+
+        response = self.client.get(f"/surveys/{survey.id}/")
+
+        self.assertContains(response, "qr-code")
+
+    def test_qr_code_view_returns_image(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+
+        response = self.client.get(f"/surveys/{survey.id}/qr/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/png")
+
 
 class MySurveysTest(TestCase):
     def test_my_surveys_url_renders_my_surveys_template(self):
