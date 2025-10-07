@@ -47,6 +47,12 @@ class HomePageTest(TestCase):
 
         return lxml.html.fromstring(response.content)
 
+    def test_home_page_displays_survey_name_input(self):
+        response = self.client.get("/")
+
+        self.assertContains(response, 'name="survey_name"')
+        self.assertContains(response, "Enter a name for your survey")
+
 
 class NewSurveyTest(AuthenticatedTestCase):
     # setUp inherited from AuthenticatedTestCase
@@ -86,6 +92,32 @@ class NewSurveyTest(AuthenticatedTestCase):
         self.client.post("/surveys/new", data={"text": "new question"})
         new_survey = Survey.objects.get()
         self.assertEqual(new_survey.owner, user)
+
+    def test_can_save_survey_with_name_and_first_question(self):
+        self.client.post(
+            "/surveys/new",
+            data={
+                "survey_name": "Q4 Course Evaluation",
+                "text": "How did you find the course?",
+            },
+        )
+
+        self.assertEqual(Survey.objects.count(), 1)
+        new_survey = Survey.objects.get()
+        self.assertEqual(new_survey.name, "Q4 Course Evaluation")
+
+        self.assertEqual(Question.objects.count(), 1)
+        new_question = Question.objects.get()
+        self.assertEqual(new_question.text, "How did you find the course?")
+
+    def test_survey_name_defaults_to_Survey_if_not_provided(self):
+        self.client.post(
+            "/surveys/new",
+            data={"survey_name": "", "text": "First question"},  # Empty name
+        )
+
+        new_survey = Survey.objects.get()
+        self.assertEqual(new_survey.name, "Survey")
 
 
 class InstructorSurveyViewTest(AuthenticatedTestCase):

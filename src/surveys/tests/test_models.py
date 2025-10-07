@@ -106,11 +106,9 @@ class SurveyModelTest(AuthenticatedTestCase):
         question = Question(text="some text")
         self.assertEqual(str(question), "some text")
 
-    def test_survey_name_is_first_question_text(self):
-        survey = self.create_survey()
-        Question.objects.create(survey=survey, text="First question")
-        Question.objects.create(survey=survey, text="Second question")
-        self.assertEqual(survey.name, "First question")
+    def test_survey_can_have_a_name(self):
+        survey = Survey.objects.create(owner=self.user, name="My Survey")
+        self.assertEqual(survey.name, "My Survey")
 
     def test_survey_can_generate_qr_code_url(self):
         instructor = self.create_user("instructor@test.com")

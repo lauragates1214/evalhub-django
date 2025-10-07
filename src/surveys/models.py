@@ -11,11 +11,8 @@ class Survey(models.Model):
         on_delete=models.CASCADE,
         related_name="surveys",
     )
+    name = models.CharField(max_length=200, default="")
     text = models.TextField(default="")
-
-    @property
-    def name(self):
-        return self.question_set.first().text
 
     def get_absolute_url(self):
         return reverse("view_survey", args=[self.id])

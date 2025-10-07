@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 from .base import FunctionalTest
 from .survey_page import SurveyPage
@@ -80,3 +81,39 @@ class NewVisitorTest(FunctionalTest):
         self.assertIn("Why manatee? Explain.", page_text)
 
         # Satisfied, they both go back to sleep
+
+    def test_instructor_can_name_their_survey(self):
+        # Instructor logs in
+        self.login("instructor@test.com")
+
+        # She goes to create a new survey
+        self.browser.get(self.live_server_url)
+
+        # Before she adds any questions, she sees a field to name her survey
+        name_input = self.browser.find_element(By.NAME, "survey_name")
+        self.assertEqual(
+            name_input.get_attribute("placeholder"), "Enter a name for your survey"
+        )
+
+        # She enters a name for her survey
+        name_input.send_keys("Q4 Capybara Evaluation")
+
+        # She adds her first question by typing and hitting enter
+        inputbox = self.browser.find_element(By.ID, "id_text")
+        inputbox.send_keys("How did you find the capybara?")
+        inputbox.send_keys(Keys.ENTER)
+
+        # Wait to be redirected to the survey page
+        from .survey_page import SurveyPage
+
+        survey_page = SurveyPage(self)
+        survey_page.wait_for_row_in_question_table("How did you find the capybara?", 1)
+
+        # She goes to "My Surveys"
+        self.browser.find_element(By.LINK_TEXT, "My Surveys").click()
+
+        # She sees her survey listed by the name she chose, not by the first question
+        self.wait_for(
+            lambda: self.browser.find_element(By.LINK_TEXT, "Q4 Capybara Evaluation")
+        )
+        self.assertNotIn("How did you find the capybara?", self.browser.page_source)
