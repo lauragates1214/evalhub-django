@@ -4,3 +4,4 @@ whitenoise==6.11.0
 python-decouple
 lxml
 cssselect
+qrcode==8.2
