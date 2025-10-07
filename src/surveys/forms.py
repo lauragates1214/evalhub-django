@@ -1,9 +1,10 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from surveys.models import Answer, Question
+from surveys.models import Answer, Question, Survey
 
 DUPLICATE_QUESTION_ERROR = "You've already got this question in your survey"
+EMPTY_SURVEY_NAME_ERROR = "You can't have a survey without a name"
 EMPTY_QUESTION_ERROR = "You can't have an empty question"
 
 
@@ -19,6 +20,18 @@ class QuestionForm(forms.Form):
             survey=for_survey,
             text=self.cleaned_data["text"],
         )
+
+
+class SurveyCreationForm(QuestionForm):
+    survey_name = forms.CharField(
+        error_messages={"required": EMPTY_SURVEY_NAME_ERROR},
+        required=True,
+    )
+
+    def save(self):
+        survey = Survey.objects.create(name=self.cleaned_data["survey_name"])
+        super().save(for_survey=survey)
+        return survey
 
 
 class ExistingSurveyQuestionForm(QuestionForm):

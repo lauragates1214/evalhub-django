@@ -20,7 +20,13 @@ class SurveyPage:
     def get_question_input_box(self):
         return self.test.browser.find_element(By.ID, "id_text")
 
-    def add_survey_question(self, question_text):
+    def add_survey_question(self, question_text, survey_name="Test Survey"):
+        # Check if on the home page (creating new survey)
+        survey_name_inputs = self.test.browser.find_elements(By.ID, "id_survey_name")
+        if survey_name_inputs:
+            # Fill in the survey name
+            survey_name_inputs[0].send_keys(survey_name)
+
         new_question_no = len(self.get_table_rows()) + 1
         self.get_question_input_box().send_keys(question_text)
         self.get_question_input_box().send_keys(Keys.ENTER)
