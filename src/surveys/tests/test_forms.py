@@ -1,3 +1,4 @@
+from django import forms
 from django.test import TestCase
 
 from accounts.models import User
@@ -95,3 +96,111 @@ class SurveyAnswerFormTest(TestCase):
         self.assertEqual(
             Answer.objects.filter(question=q2).first().answer_text, "Answer 2"
         )
+
+    def test_form_renders_radio_buttons_for_multiple_choice(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        question = Question.objects.create(
+            survey=survey,
+            text="Rate this course",
+            question_type="multiple_choice",
+            options=["Excellent", "Good", "Fair", "Poor"],
+        )
+
+        form = SurveyAnswerForm(survey=survey)
+
+        form_html = form.as_p()
+        self.assertIn('type="radio"', form_html)
+        self.assertIn('value="Excellent"', form_html)
+        self.assertIn('value="Good"', form_html)
+
+    def test_form_includes_comment_field_for_multiple_choice(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        question = Question.objects.create(
+            survey=survey,
+            text="Rate this course",
+            question_type="multiple_choice",
+            options=["Excellent", "Good", "Fair", "Poor"],
+        )
+
+        form = SurveyAnswerForm(survey=survey)
+
+        self.assertIn(f"comment_{question.id}", form.fields)
+        self.assertIsInstance(form.fields[f"comment_{question.id}"], forms.CharField)
+
+    def test_form_saves_comment_with_answer(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        question = Question.objects.create(
+            survey=survey,
+            text="Rate this course",
+            question_type="multiple_choice",
+            options=["Excellent", "Good"],
+        )
+
+        form = SurveyAnswerForm(
+            survey=survey,
+            data={
+                f"response_{question.id}": "Excellent",
+                f"comment_{question.id}": "Great capybara!",
+            },
+        )
+
+        self.assertTrue(form.is_valid())
+        form.save()
+
+        self.assertEqual(Answer.objects.count(), 1)
+        answer = Answer.objects.first()
+        self.assertEqual(answer.answer_text, "Excellent")
+        self.assertEqual(answer.comment_text, "Great capybara!")
+
+    def test_form_renders_radio_buttons_for_rating_scale(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        question = Question.objects.create(
+            survey=survey,
+            text="Rate capybara",
+            question_type="rating",
+            options=[1, 2, 3, 4, 5],
+        )
+
+        form = SurveyAnswerForm(survey=survey)
+
+        form_html = form.as_p()
+        self.assertIn('type="radio"', form_html)
+        self.assertIn('value="5"', form_html)
+
+    def test_form_renders_checkboxes_for_checkbox_question(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        question = Question.objects.create(
+            survey=survey,
+            text="Which topics interested you?",
+            question_type="checkbox",
+            options=["Capybara", "Capybaras", "Cap"],
+        )
+
+        form = SurveyAnswerForm(survey=survey)
+
+        form_html = form.as_p()
+        self.assertIn('type="checkbox"', form_html)
+        self.assertIn('value="Capybara"', form_html)
+        self.assertIn('value="Capybaras"', form_html)
+
+    def test_form_renders_radio_buttons_for_yes_no_question(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        question = Question.objects.create(
+            survey=survey,
+            text="Would you capybara?",
+            question_type="yes_no",
+            options=["Yes", "No"],
+        )
+
+        form = SurveyAnswerForm(survey=survey)
+
+        form_html = form.as_p()
+        self.assertIn('type="radio"', form_html)
+        self.assertIn('value="Yes"', form_html)
+        self.assertIn('value="No"', form_html)

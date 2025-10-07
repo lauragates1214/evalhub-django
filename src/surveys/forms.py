@@ -41,18 +41,72 @@ class ExistingSurveyQuestionForm(QuestionForm):
 class SurveyAnswerForm(forms.Form):
     def __init__(self, survey, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.survey = survey  # Store the survey
+        self.survey = survey
 
         # Dynamically add a field for each question
         for question in survey.question_set.all():
             field_name = f"response_{question.id}"
-            self.fields[field_name] = forms.CharField(
-                label=question.text, required=False
-            )
+
+            if question.question_type == "multiple_choice":
+                choices = [(option, option) for option in question.options]
+                self.fields[field_name] = forms.ChoiceField(
+                    label=question.text,
+                    required=False,
+                    widget=forms.RadioSelect,
+                    choices=choices,
+                )
+            elif question.question_type == "rating":
+                choices = [(option, option) for option in question.options]
+                self.fields[field_name] = forms.ChoiceField(
+                    label=question.text,
+                    required=False,
+                    widget=forms.RadioSelect,
+                    choices=choices,
+                )
+
+            elif question.question_type == "checkbox":
+                choices = [(option, option) for option in question.options]
+                self.fields[field_name] = forms.MultipleChoiceField(
+                    label=question.text,
+                    required=False,
+                    widget=forms.CheckboxSelectMultiple,
+                    choices=choices,
+                )
+            elif question.question_type == "yes_no":
+                choices = [(option, option) for option in question.options]
+                self.fields[field_name] = forms.ChoiceField(
+                    label=question.text,
+                    required=False,
+                    widget=forms.RadioSelect,
+                    choices=choices,
+                )
+
+            else:  # text question
+                self.fields[field_name] = forms.CharField(
+                    label=question.text, required=False
+                )
+
+            # Add comment field for non-text question types
+            if question.question_type != "text":
+                comment_field_name = f"comment_{question.id}"
+                self.fields[comment_field_name] = forms.CharField(
+                    label="Additional comments (optional)",
+                    required=False,
+                    widget=forms.Textarea(attrs={"rows": 2}),
+                )
 
     def save(self):
         for question in self.survey.question_set.all():
             field_name = f"response_{question.id}"
-            answer_text = self.cleaned_data.get(field_name)
-            if answer_text:
-                Answer.objects.create(question=question, answer_text=answer_text)
+            comment_field_name = f"comment_{question.id}"
+
+            answer_text = self.cleaned_data.get(field_name, "")
+            comment_text = self.cleaned_data.get(comment_field_name, "")
+
+            # Only save if there's either an answer or a comment
+            if answer_text or comment_text:
+                Answer.objects.create(
+                    question=question,
+                    answer_text=answer_text,
+                    comment_text=comment_text,
+                )

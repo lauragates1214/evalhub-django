@@ -9,12 +9,7 @@
     {% else %}
         <form method="POST">
             {% csrf_token %}
-            {% for question in survey.question_set.all %}
-                <div>
-                    <label>{{ question.text }}</label>
-                    <input type="text" name="response_{{ question.id }}">
-                </div>
-            {% endfor %}
+            {{ form.as_p }}
             <button type="submit">Submit</button>
         </form>
     {% endif %}

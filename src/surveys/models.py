@@ -25,11 +25,23 @@ class Survey(models.Model):
 
 
 class Question(models.Model):
+    QUESTION_TYPES = [
+        ("text", "Text"),
+        ("multiple_choice", "Multiple Choice"),
+        ("rating", "Rating Scale"),
+        ("checkbox", "Checkboxes"),
+        ("yes_no", "Yes/No"),
+    ]
+
     text = models.TextField(default="")
     survey = models.ForeignKey(Survey, default=None, on_delete=models.CASCADE)
+    question_type = models.CharField(
+        max_length=20, choices=QUESTION_TYPES, default="text"
+    )
+    options = models.JSONField(null=True, blank=True)
 
     def __str__(self):
-        return self.text  # to make admin list display meaningful
+        return self.text
 
     class Meta:
         ordering = ["id"]
@@ -39,3 +51,4 @@ class Question(models.Model):
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     answer_text = models.TextField(default="")
+    comment_text = models.TextField(default="", blank=True)

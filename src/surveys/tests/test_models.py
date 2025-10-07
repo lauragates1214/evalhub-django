@@ -17,6 +17,7 @@ class QuestionModelsTest(TestCase):
 
     def test_default_text(self):
         question = Question()
+
         self.assertEqual(question.text, "")
 
     def test_question_is_related_to_survey(self):
@@ -24,23 +25,27 @@ class QuestionModelsTest(TestCase):
         question = Question()
         question.survey = mysurvey
         question.save()
+
         self.assertIn(question, mysurvey.question_set.all())
 
     def test_cannot_save_null_questions(self):
         mysurvey = Survey.objects.create(owner=self.user)
         question = Question(survey=mysurvey, text=None)
+
         with self.assertRaises(IntegrityError):
             question.save()  # database-level validation
 
     def test_cannot_save_empty_questions(self):
         mysurvey = Survey.objects.create(owner=self.user)
         question = Question(survey=mysurvey, text="")
+
         with self.assertRaises(ValidationError):
             question.full_clean()  # model-level validation
 
     def test_duplicate_questions_are_invalid(self):
         mysurvey = Survey.objects.create(owner=self.user)
         Question.objects.create(survey=mysurvey, text="why")
+
         with self.assertRaises(ValidationError):
             question = Question(survey=mysurvey, text="why")
             question.full_clean()  # model-level validation
@@ -51,7 +56,26 @@ class QuestionModelsTest(TestCase):
         survey2 = Survey.objects.create(owner=self.user)
         Question.objects.create(survey=survey1, text="why")
         question = Question(survey=survey2, text="why")
+
         question.full_clean()  # should not raise
+
+    def test_question_type_defaults_to_text(self):
+        mysurvey = Survey.objects.create(owner=self.user)
+        question = Question.objects.create(survey=mysurvey, text="A question")
+
+        self.assertEqual(question.question_type, "text")
+
+    def test_can_create_multiple_choice_question_with_options(self):
+        mysurvey = Survey.objects.create(owner=self.user)
+        question = Question.objects.create(
+            survey=mysurvey,
+            text="Rate this course",
+            question_type="multiple_choice",
+            options=["Excellent", "Good", "Fair", "Poor"],
+        )
+
+        self.assertEqual(question.question_type, "multiple_choice")
+        self.assertEqual(question.options, ["Excellent", "Good", "Fair", "Poor"])
 
 
 class SurveyModelTest(TestCase):
@@ -111,7 +135,7 @@ class SurveyModelTest(TestCase):
         self.assertIn(str(survey.id), qr_code_url)
 
 
-class ResponseModelTest(TestCase):
+class AnswerModelTest(TestCase):
     def test_can_save_response_to_question(self):
         instructor = User.objects.create(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
@@ -121,3 +145,25 @@ class ResponseModelTest(TestCase):
 
         self.assertEqual(answer.question, question)
         self.assertEqual(answer.answer_text, "It was great!")
+
+    def test_answer_can_have_optional_comment(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        question = Question.objects.create(survey=survey, text="How was it?")
+
+        answer = Answer.objects.create(
+            question=question,
+            answer_text="It was great!",
+            comment_text="Especially the capybara",
+        )
+
+        self.assertEqual(answer.comment_text, "Especially the capybara")
+
+    def test_answer_comment_can_be_blank(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+        question = Question.objects.create(survey=survey, text="How was it?")
+
+        answer = Answer.objects.create(question=question, answer_text="Good")
+
+        self.assertEqual(answer.comment_text, "")

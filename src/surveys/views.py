@@ -77,8 +77,10 @@ def student_survey_view(request, survey_id):
             return render(
                 request, "student_survey.html", {"survey": survey, "submitted": True}
             )
+    else:
+        form = SurveyAnswerForm(survey=survey)
 
-    return render(request, "student_survey.html", {"survey": survey})
+    return render(request, "student_survey.html", {"survey": survey, "form": form})
 
 
 def survey_qr_code(request, survey_id):
