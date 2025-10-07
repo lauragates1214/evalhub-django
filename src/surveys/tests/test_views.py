@@ -58,14 +58,18 @@ class NewSurveyTest(AuthenticatedTestCase):
     # setUp inherited from AuthenticatedTestCase
 
     def test_can_save_a_POST_request(self):
-        self.client.post("/surveys/new", data={"text": "A new survey question"})
+        self.client.post(
+            "/surveys/new",
+            data={"survey_name": "Test Survey", "text": "A new survey question"},
+        )
         self.assertEqual(Question.objects.count(), 1)
         new_question = Question.objects.get()
         self.assertEqual(new_question.text, "A new survey question")
 
     def test_redirects_after_POST(self):
         response = self.client.post(
-            "/surveys/new", data={"text": "A new survey question"}
+            "/surveys/new",
+            data={"survey_name": "Test Survey", "text": "A new survey question"},
         )
         new_survey = Survey.objects.get()
         self.assertRedirects(response, f"/surveys/{new_survey.id}/")
@@ -89,7 +93,9 @@ class NewSurveyTest(AuthenticatedTestCase):
     def test_survey_owner_is_saved_if_user_is_authenticated(self):
         user = self.create_user("a@b.com")
         self.client.force_login(user)
-        self.client.post("/surveys/new", data={"text": "new question"})
+        self.client.post(
+            "/surveys/new", data={"survey_name": "Test Survey", "text": "new question"}
+        )
         new_survey = Survey.objects.get()
         self.assertEqual(new_survey.owner, user)
 
