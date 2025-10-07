@@ -11,9 +11,9 @@ class QRCodeGenerationTest(FunctionalTest):
         self.login("instructor@test.com")
 
         # They create a survey
-        instructor = User.objects.get(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
-        Question.objects.create(survey=survey, text="How was the session?")
+        survey = self.create_survey_with_questions(
+            "instructor@test.com", ["Test question"]
+        )
 
         # They visit their survey page
         self.browser.get(f"{self.live_server_url}/surveys/{survey.id}/")
@@ -25,9 +25,9 @@ class QRCodeGenerationTest(FunctionalTest):
     def test_qr_code_links_to_correct_survey_url(self):
         # Instructor creates a survey
         self.login("instructor@test.com")
-        instructor = User.objects.get(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
-        Question.objects.create(survey=survey, text="Test question")
+        survey = self.create_survey_with_questions(
+            "instructor@test.com", ["Test question"]
+        )
 
         # They visit their survey page
         self.browser.get(f"{self.live_server_url}/surveys/{survey.id}/")

@@ -86,6 +86,19 @@ class FunctionalTest(StaticLiveServerTestCase):
             )
         )
 
+    def create_survey_with_questions(self, owner_email, question_texts):
+        """Helper to create a survey with questions for testing (bypasses UI)"""
+        from accounts.models import User
+        from surveys.models import Survey, Question
+
+        owner = User.objects.get(email=owner_email)
+        survey = Survey.objects.create(owner=owner)
+
+        for text in question_texts:
+            Question.objects.create(survey=survey, text=text)
+
+        return survey
+
     @wait
     def wait_for(self, fn):
         return fn()

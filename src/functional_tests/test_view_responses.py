@@ -8,6 +8,7 @@ class ViewResponsesTest(FunctionalTest):
     def test_instructor_can_view_responses_to_their_survey(self):
         # Instructor creates a survey with questions
         self.login("instructor@test.com")
+
         instructor = User.objects.get(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         q1 = Question.objects.create(survey=survey, text="How was the session?")

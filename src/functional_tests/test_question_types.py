@@ -7,9 +7,11 @@ from accounts.models import User
 class MultipleChoiceQuestionTest(FunctionalTest):
     def test_student_can_answer_multiple_choice_question(self):
         # Instructor creates a survey with a multiple choice question
-        instructor = User.objects.create_user(
-            email="instructor@test.com", password="password"
-        )
+        # Create and login the instructor
+        self.login("instructor@test.com")
+
+        # Get the user and create the survey with custom question
+        instructor = User.objects.get(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(
             survey=survey,
@@ -47,9 +49,11 @@ class MultipleChoiceQuestionTest(FunctionalTest):
 class RatingScaleQuestionTest(FunctionalTest):
     def test_student_can_answer_rating_scale_question(self):
         # Instructor creates a survey with a rating scale question
-        instructor = User.objects.create_user(
-            email="instructor@test.com", password="password"
-        )
+        # Create and login the instructor
+        self.login("instructor@test.com")
+
+        # Get the user and create the survey with custom question
+        instructor = User.objects.get(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(
             survey=survey,
@@ -89,9 +93,11 @@ class RatingScaleQuestionTest(FunctionalTest):
 class CheckboxQuestionTest(FunctionalTest):
     def test_student_can_answer_checkbox_question(self):
         # Instructor creates a survey with a checkbox question
-        instructor = User.objects.create_user(
-            email="instructor@test.com", password="password"
-        )
+        # Create and login the instructor
+        self.login("instructor@test.com")
+
+        # Get the user and create the survey with custom question
+        instructor = User.objects.get(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(
             survey=survey,
@@ -133,9 +139,11 @@ class CheckboxQuestionTest(FunctionalTest):
 class YesNoQuestionTest(FunctionalTest):
     def test_student_can_answer_yes_no_question(self):
         # Instructor creates a survey with a yes/no question
-        instructor = User.objects.create_user(
-            email="instructor@test.com", password="password"
-        )
+        # Create and login the instructor
+        self.login("instructor@test.com")
+
+        # Get the user and create the survey with custom question
+        instructor = User.objects.get(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(
             survey=survey,
@@ -172,9 +180,11 @@ class YesNoQuestionTest(FunctionalTest):
 
 class QuestionCommentBoxTest(FunctionalTest):
     def test_comment_boxes_appear_for_non_text_questions_only(self):
-        instructor = User.objects.create_user(
-            email="instructor@test.com", password="password"
-        )
+        # Create and login the instructor
+        self.login("instructor@test.com")
+
+        # Get the user and create the survey with custom question
+        instructor = User.objects.get(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
 
         # Create one of each question type

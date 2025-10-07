@@ -9,9 +9,11 @@ class ExportResponsesTest(FunctionalTest):
         from surveys.models import Submission
 
         # Instructor creates a survey with responses
-        instructor = User.objects.create_user(
-            email="instructor@test.com", password="password"
-        )
+        # Create and login the instructor first
+        self.login("instructor@test.com")
+
+        # Then get the user and create the survey with custom questions
+        instructor = User.objects.get(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         q1 = Question.objects.create(
             survey=survey, text="Question 1", question_type="text"
