@@ -7,4 +7,5 @@
   {% include "partials/question_list.html" %}
 </div>
 <img src="{% url 'survey_qr_code' survey.id %}" class="qr-code" alt="Survey QR Code">
+<a href="{% url 'survey_responses' survey.id %}">View Responses</a>
 {% endblock %}

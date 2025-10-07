@@ -263,6 +263,15 @@ class SurveyViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "image/png")
 
+    def test_survey_page_shows_view_responses_link(self):
+        instructor = User.objects.create(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
+
+        response = self.client.get(f"/surveys/{survey.id}/")
+
+        self.assertContains(response, "View Responses")
+        self.assertContains(response, f"/surveys/{survey.id}/responses/")
+
 
 class MySurveysTest(TestCase):
     def test_my_surveys_url_renders_my_surveys_template(self):

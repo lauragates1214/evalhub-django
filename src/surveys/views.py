@@ -101,3 +101,8 @@ def survey_qr_code(request, survey_id):
     buffer.seek(0)
 
     return HttpResponse(buffer.getvalue(), content_type="image/png")
+
+
+def survey_responses(request, survey_id):
+    survey = get_object_or_404(Survey, id=survey_id)
+    return render(request, "survey_responses.html", {"survey": survey})
