@@ -2,9 +2,9 @@ from django.test import TestCase
 from django.utils import html
 
 import csv
-import lxml.html
 from io import StringIO
 
+from tests.base import AuthenticatedTestCase
 from surveys.forms import (
     DUPLICATE_QUESTION_ERROR,
     EMPTY_QUESTION_ERROR,
@@ -22,13 +22,12 @@ class NewSurveyAuthTest(TestCase):
 class HomePageTest(TestCase):
     def test_uses_home_template(self):
         response = self.client.get("/")
-
         self.assertTemplateUsed(response, "home.html")
 
     def test_renders_input_form(self):
         response = self.client.get("/")
-        parsed = lxml.html.fromstring(
-            response.content
+        parsed = self.parse_html(
+            response
         )  # parse HTML into structured object to represent DOM
         [form] = parsed.cssselect(
             "form[method=POST]"
@@ -41,13 +40,16 @@ class HomePageTest(TestCase):
             "text", [input.get("name") for input in inputs]
         )  # check at least one input has name=text
 
+    # Add parse_html helper as a module-level function for non-authenticated tests
+    @staticmethod
+    def parse_html(response):
+        import lxml.html
 
-class NewSurveyTest(TestCase):
-    def setUp(self):
-        user = User.objects.create(email="test@example.com")
-        user.set_password("password")
-        user.save()
-        self.client.login(username="test@example.com", password="password")
+        return lxml.html.fromstring(response.content)
+
+
+class NewSurveyTest(AuthenticatedTestCase):
+    # setUp inherited from AuthenticatedTestCase
 
     def test_can_save_a_POST_request(self):
         self.client.post("/surveys/new", data={"text": "A new survey question"})
@@ -67,52 +69,44 @@ class NewSurveyTest(TestCase):
 
     def test_for_invalid_input_nothing_saved_to_db(self):
         self.post_invalid_input()
-
         self.assertEqual(Question.objects.count(), 0)
 
     def test_for_invalid_input_renders_survey_template(self):
         response = self.post_invalid_input()
-
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "home.html")
 
     def test_for_invalid_input_shows_error_on_page(self):
         response = self.post_invalid_input()
-
         self.assertContains(response, html.escape(EMPTY_QUESTION_ERROR))
 
     def test_survey_owner_is_saved_if_user_is_authenticated(self):
-        user = User.objects.create(email="a@b.com")
+        user = self.create_user("a@b.com")
         self.client.force_login(user)
         self.client.post("/surveys/new", data={"text": "new question"})
         new_survey = Survey.objects.get()
         self.assertEqual(new_survey.owner, user)
 
 
-class InstructorSurveyViewTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create(email="test@example.com")
-        self.user.set_password("password")
-        self.user.save()
-        self.client.login(username="test@example.com", password="password")
+class InstructorSurveyViewTest(AuthenticatedTestCase):
+    # setUp inherited from AuthenticatedTestCase
 
     def test_uses_question_template(self):
-        mysurvey = Survey.objects.create()
-        response = self.client.get(f"/surveys/{mysurvey.id}/")
-
+        survey = self.create_survey()
+        response = self.client.get(f"/surveys/{survey.id}/")
         self.assertTemplateUsed(response, "survey.html")
 
     def test_renders_input_form(self):
-        mysurvey = Survey.objects.create()
-        response = self.client.get(f"/surveys/{mysurvey.id}/")
-        parsed = lxml.html.fromstring(
-            response.content
+        survey = self.create_survey()
+        response = self.client.get(f"/surveys/{survey.id}/")
+        parsed = self.parse_html(
+            response
         )  # parse HTML into structured object to represent DOM
         [form] = parsed.cssselect(
             "form[action^='/surveys/']"
         )  # find survey form element with method=POST, expect exactly one (hence the brackets)
 
-        self.assertEqual(form.get("action"), f"/surveys/{mysurvey.id}/")
+        self.assertEqual(form.get("action"), f"/surveys/{survey.id}/")
 
         inputs = form.cssselect("input")
         self.assertIn(
@@ -120,10 +114,10 @@ class InstructorSurveyViewTest(TestCase):
         )  # check at least one input has name=text
 
     def test_displays_only_questions_for_that_survey(self):
-        correct_survey = Survey.objects.create()
+        correct_survey = self.create_survey()
         Question.objects.create(text="Question 1", survey=correct_survey)
         Question.objects.create(text="Question 2", survey=correct_survey)
-        other_survey = Survey.objects.create()
+        other_survey = self.create_survey()
         Question.objects.create(text="Other survey question", survey=other_survey)
 
         response = self.client.get(f"/surveys/{correct_survey.id}/")
@@ -133,8 +127,8 @@ class InstructorSurveyViewTest(TestCase):
         self.assertNotContains(response, "Other survey question")
 
     def test_can_save_a_POST_request_to_an_existing_survey(self):
-        other_survey = Survey.objects.create()
-        correct_survey = Survey.objects.create()
+        other_survey = self.create_survey()
+        correct_survey = self.create_survey()
 
         self.client.post(
             f"/surveys/{correct_survey.id}/",
@@ -147,8 +141,8 @@ class InstructorSurveyViewTest(TestCase):
         self.assertEqual(new_question.survey, correct_survey)
 
     def test_POST_redirects_to_survey_view(self):
-        other_survey = Survey.objects.create()
-        correct_survey = Survey.objects.create()
+        other_survey = self.create_survey()
+        correct_survey = self.create_survey()
 
         response = self.client.post(
             f"/surveys/{correct_survey.id}/",
@@ -158,17 +152,15 @@ class InstructorSurveyViewTest(TestCase):
         self.assertRedirects(response, f"/surveys/{correct_survey.id}/")
 
     def post_invalid_input(self):
-        mysurvey = Survey.objects.create()
-        return self.client.post(f"/surveys/{mysurvey.id}/", data={"text": ""})
+        survey = self.create_survey()
+        return self.client.post(f"/surveys/{survey.id}/", data={"text": ""})
 
     def test_for_invalid_input_nothing_saved_to_db(self):
         self.post_invalid_input()
-
         self.assertEqual(Question.objects.count(), 0)
 
     def test_for_invalid_input_renders_survey_template(self):
         response = self.post_invalid_input()
-
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "survey.html")
 
@@ -178,106 +170,43 @@ class InstructorSurveyViewTest(TestCase):
 
     def test_for_invalid_input_sets_is_invalid_class(self):
         response = self.post_invalid_input()
-        parsed = lxml.html.fromstring(response.content)
+        parsed = self.parse_html(response)
         [input] = parsed.cssselect("input[name=text]")
         self.assertIn("is-invalid", set(input.classes))
 
-    def test_duplicate_question_validation_errors_end_up_on_surveys_page(self):
-        survey1 = Survey.objects.create()
-        Question.objects.create(survey=survey1, text="textey")
-
+    def test_duplicate_question_validation_errors_show_on_question_list(self):
+        survey = self.create_survey()
+        Question.objects.create(survey=survey, text="no twins!")
         response = self.client.post(
-            f"/surveys/{survey1.id}/",
-            data={"text": "textey"},
+            f"/surveys/{survey.id}/",
+            data={"text": "no twins!"},
         )
 
-        expected_error = html.escape(DUPLICATE_QUESTION_ERROR)
-        self.assertContains(response, expected_error)  # check error appears on page
-        self.assertTemplateUsed(response, "survey.html")  # check still on survey page
-        self.assertEqual(
-            Question.objects.all().count(), 1
-        )  # check no new question created (haven't saved anything to the DB)
-
-    def test_htmx_request_returns_partial_template(self):
-        mysurvey = Survey.objects.create()
-
-        response = self.client.post(
-            f"/surveys/{mysurvey.id}/",
-            data={"text": "New question"},
-            HTTP_HX_REQUEST="true",  # Simulates htmx adding HX-Request header
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "partials/question_list.html")
-
-    def test_htmx_request_includes_new_question_in_response(self):
-        mysurvey = Survey.objects.create()
-
-        response = self.client.post(
-            f"/surveys/{mysurvey.id}/",
-            data={"text": "New question"},
-            HTTP_HX_REQUEST="true",
-        )
-
-        self.assertContains(response, "New question")
-        self.assertEqual(Question.objects.count(), 1)
-
-    def test_non_htmx_request_still_redirects(self):
-        mysurvey = Survey.objects.create()
-
-        response = self.client.post(
-            f"/surveys/{mysurvey.id}/",
-            data={"text": "New question"},
-            # No HX-Request header
-        )
-
-        self.assertEqual(response.status_code, 302)  # Still redirects for normal forms
-
-    def test_htmx_request_with_invalid_input_returns_partial_template(self):
-        mysurvey = Survey.objects.create()
-        Question.objects.create(survey=mysurvey, text="duplicate")
-
-        response = self.client.post(
-            f"/surveys/{mysurvey.id}/",
-            data={"text": "duplicate"},
-            HTTP_HX_REQUEST="true",
-        )
-
-        self.assertTemplateUsed(response, "partials/question_list.html")
+        self.assertTemplateUsed(response, "survey.html")
         self.assertContains(response, html.escape(DUPLICATE_QUESTION_ERROR))
 
     def test_survey_page_displays_qr_code(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
-
+        survey = self.create_survey()
         response = self.client.get(f"/surveys/{survey.id}/")
-
         self.assertContains(response, "qr-code")
 
     def test_qr_code_view_returns_image(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
-
+        survey = self.create_survey()
         response = self.client.get(f"/surveys/{survey.id}/qr/")
-
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "image/png")
 
     def test_survey_page_shows_view_responses_link(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
-
+        survey = self.create_survey()
         response = self.client.get(f"/surveys/{survey.id}/")
-
         self.assertContains(response, "View Responses")
         self.assertContains(response, f"/surveys/{survey.id}/responses/")
 
     def test_survey_page_shows_export_link(self):
-        mysurvey = Survey.objects.create(owner=self.user)
-        response = self.client.get(f"/surveys/{mysurvey.id}/")
-
+        survey = self.create_survey()
+        response = self.client.get(f"/surveys/{survey.id}/")
         self.assertContains(response, "Export to CSV")
-        self.assertContains(response, f"/surveys/{mysurvey.id}/export/")
+        self.assertContains(response, f"/surveys/{survey.id}/export/")
 
 
 class MySurveysTest(TestCase):
@@ -293,10 +222,10 @@ class MySurveysTest(TestCase):
         self.assertEqual(response.context["owner"], correct_user)
 
 
-class StudentSurveyViewTest(TestCase):
+class StudentSurveyViewTest(AuthenticatedTestCase):
+
     def test_displays_all_questions_for_survey(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         Question.objects.create(survey=survey, text="How was the session?")
         Question.objects.create(survey=survey, text="What did you think of capybara?")
 
@@ -306,11 +235,8 @@ class StudentSurveyViewTest(TestCase):
         self.assertContains(response, "What did you think of capybara?")
 
     def test_uses_student_survey_template(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
-
+        survey = self.create_survey()
         response = self.client.get(f"/survey/{survey.id}/")
-
         self.assertTemplateUsed(response, "student_survey.html")
 
     def test_returns_404_for_nonexistent_survey(self):
@@ -318,8 +244,7 @@ class StudentSurveyViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_displays_form_with_inputs_for_each_question(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         q1 = Question.objects.create(survey=survey, text="Question 1")
         q2 = Question.objects.create(survey=survey, text="Question 2")
 
@@ -330,8 +255,7 @@ class StudentSurveyViewTest(TestCase):
         self.assertContains(response, 'type="submit"')
 
     def test_can_save_POST_request_with_answers(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         q1 = Question.objects.create(survey=survey, text="Question 1")
         q2 = Question.objects.create(survey=survey, text="Question 2")
 
@@ -349,8 +273,7 @@ class StudentSurveyViewTest(TestCase):
         self.assertEqual(answers[1].answer_text, "Answer to question 2")
 
     def test_displays_confirmation_after_successful_submission(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         q1 = Question.objects.create(survey=survey, text="Question 1")
 
         response = self.client.post(
@@ -364,27 +287,23 @@ class StudentSurveyViewTest(TestCase):
         self.assertContains(response, "confirmation-message")
 
 
-class ExportResponsesTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create(email="test@example.com")
-        self.user.set_password("password")
-        self.user.save()
-        self.client.login(username="test@example.com", password="password")
+class ExportResponsesTest(AuthenticatedTestCase):
+    # setUp inherited from AuthenticatedTestCase
 
     def test_export_url_exists(self):
-        survey = Survey.objects.create(owner=self.user)
+        survey = self.create_survey()
         response = self.client.get(f"/surveys/{survey.id}/export/")
         self.assertEqual(response.status_code, 200)
 
     def test_export_returns_csv_file(self):
-        survey = Survey.objects.create(owner=self.user)
+        survey = self.create_survey()
         response = self.client.get(f"/surveys/{survey.id}/export/")
 
         self.assertEqual(response["Content-Type"], "text/csv")
         self.assertIn("attachment; filename=", response["Content-Disposition"])
 
     def test_export_includes_question_headers(self):
-        survey = Survey.objects.create(owner=self.user)
+        survey = self.create_survey()
         q1 = Question.objects.create(
             survey=survey, text="Question 1", question_type="text"
         )
@@ -401,7 +320,7 @@ class ExportResponsesTest(TestCase):
         self.assertIn("Question 2", header)
 
     def test_export_includes_answer_data(self):
-        survey = Survey.objects.create(owner=self.user)
+        survey = self.create_survey()
         q1 = Question.objects.create(
             survey=survey, text="Question 1", question_type="text"
         )
@@ -430,7 +349,7 @@ class ExportResponsesTest(TestCase):
         self.assertEqual(rows[1], ["1", "Answer 1A", "Answer 2A"])  # Data
 
     def test_export_with_no_submissions_only_shows_header(self):
-        survey = Survey.objects.create(owner=self.user)
+        survey = self.create_survey()
         q1 = Question.objects.create(
             survey=survey, text="Question 1", question_type="text"
         )

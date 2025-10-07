@@ -1,6 +1,7 @@
 from django import forms
 from django.test import TestCase
 
+from tests.base import AuthenticatedTestCase
 from accounts.models import User
 
 from surveys.forms import (
@@ -23,16 +24,16 @@ class QuestionFormTest(TestCase):
         self.assertEqual(form.errors["text"], [EMPTY_QUESTION_ERROR])
 
     def test_form_save_handles_saving_to_a_survey(self):
-        mysurvey = Survey.objects.create()
+        survey = Survey.objects.create()
         form = QuestionForm(data={"text": "save me"})
         form.is_valid()  # must call before accessing cleaned_data
-        new_question = form.save(for_survey=mysurvey)
+        new_question = form.save(for_survey=survey)
 
         self.assertEqual(
             new_question, Question.objects.get()
         )  # there is now one and only one Question in the DB
         self.assertEqual(new_question.text, "save me")
-        self.assertEqual(new_question.survey, mysurvey)
+        self.assertEqual(new_question.survey, survey)
 
 
 class ExistingSurveyQuestionFormTest(TestCase):
@@ -50,8 +51,8 @@ class ExistingSurveyQuestionFormTest(TestCase):
         self.assertEqual(form.errors["text"], [DUPLICATE_QUESTION_ERROR])
 
     def test_form_save(self):
-        mysurvey = Survey.objects.create()
-        form = ExistingSurveyQuestionForm(for_survey=mysurvey, data={"text": "hi"})
+        survey = Survey.objects.create()
+        form = ExistingSurveyQuestionForm(for_survey=survey, data={"text": "hi"})
         self.assertTrue(form.is_valid())
 
         new_question = (
@@ -60,10 +61,11 @@ class ExistingSurveyQuestionFormTest(TestCase):
         self.assertEqual(new_question, Question.objects.get())
 
 
-class SurveyAnswerFormTest(TestCase):
+class SurveyAnswerFormTest(AuthenticatedTestCase):
+    # setUp inherited from AuthenticatedTestCase
+
     def test_form_has_field_for_each_question(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         q1 = Question.objects.create(survey=survey, text="Question 1")
         q2 = Question.objects.create(survey=survey, text="Question 2")
 
@@ -73,8 +75,7 @@ class SurveyAnswerFormTest(TestCase):
         self.assertIn(f"response_{q2.id}", form.fields)
 
     def test_form_saves_answers_for_each_question(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         q1 = Question.objects.create(survey=survey, text="Question 1")
         q2 = Question.objects.create(survey=survey, text="Question 2")
 
@@ -98,8 +99,7 @@ class SurveyAnswerFormTest(TestCase):
         )
 
     def test_form_renders_radio_buttons_for_multiple_choice(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         question = Question.objects.create(
             survey=survey,
             text="Rate this course",
@@ -115,8 +115,7 @@ class SurveyAnswerFormTest(TestCase):
         self.assertIn('value="Good"', form_html)
 
     def test_form_includes_comment_field_for_multiple_choice(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         question = Question.objects.create(
             survey=survey,
             text="Rate this course",
@@ -130,8 +129,7 @@ class SurveyAnswerFormTest(TestCase):
         self.assertIsInstance(form.fields[f"comment_{question.id}"], forms.CharField)
 
     def test_form_saves_comment_with_answer(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         question = Question.objects.create(
             survey=survey,
             text="Rate this course",
@@ -156,8 +154,7 @@ class SurveyAnswerFormTest(TestCase):
         self.assertEqual(answer.comment_text, "Great capybara!")
 
     def test_form_renders_radio_buttons_for_rating_scale(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         question = Question.objects.create(
             survey=survey,
             text="Rate capybara",
@@ -172,8 +169,7 @@ class SurveyAnswerFormTest(TestCase):
         self.assertIn('value="5"', form_html)
 
     def test_form_renders_checkboxes_for_checkbox_question(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         question = Question.objects.create(
             survey=survey,
             text="Which topics interested you?",
@@ -189,8 +185,7 @@ class SurveyAnswerFormTest(TestCase):
         self.assertIn('value="Capybaras"', form_html)
 
     def test_form_renders_radio_buttons_for_yes_no_question(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         question = Question.objects.create(
             survey=survey,
             text="Would you capybara?",
@@ -206,8 +201,7 @@ class SurveyAnswerFormTest(TestCase):
         self.assertIn('value="No"', form_html)
 
     def test_form_creates_submission_when_saving(self):
-        instructor = User.objects.create(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey()
         q1 = Question.objects.create(
             survey=survey, text="Question 1", question_type="text"
         )
