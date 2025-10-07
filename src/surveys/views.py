@@ -19,9 +19,7 @@ def home_page(request):
 def new_survey(request):
     form = QuestionForm(data=request.POST)
     if form.is_valid():
-        survey_name = (
-            request.POST.get("survey_name", "").strip() or "Survey"
-        )  # Default to "Survey"
+        survey_name = request.POST.get("survey_name", "").strip()
         new_survey = Survey.objects.create(name=survey_name)
         new_survey.owner = request.user  # set the owner to the logged-in user
         new_survey.save()

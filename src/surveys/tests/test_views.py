@@ -110,15 +110,6 @@ class NewSurveyTest(AuthenticatedTestCase):
         new_question = Question.objects.get()
         self.assertEqual(new_question.text, "How did you find the course?")
 
-    def test_survey_name_defaults_to_Survey_if_not_provided(self):
-        self.client.post(
-            "/surveys/new",
-            data={"survey_name": "", "text": "First question"},  # Empty name
-        )
-
-        new_survey = Survey.objects.get()
-        self.assertEqual(new_survey.name, "Survey")
-
 
 class InstructorSurveyViewTest(AuthenticatedTestCase):
     # setUp inherited from AuthenticatedTestCase
