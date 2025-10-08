@@ -120,10 +120,10 @@ class NewSurveyTest(AuthenticatedTestCase):
 class InstructorSurveyViewTest(AuthenticatedTestCase):
     # setUp inherited from AuthenticatedTestCase
 
-    def test_uses_question_template(self):
+    def test_uses_instructor_survey_template(self):
         survey = self.create_survey()
         response = self.client.get(f"/surveys/{survey.id}/")
-        self.assertTemplateUsed(response, "survey.html")
+        self.assertTemplateUsed(response, "instructor_survey.html")
 
     def test_renders_input_form(self):
         survey = self.create_survey()
@@ -188,10 +188,10 @@ class InstructorSurveyViewTest(AuthenticatedTestCase):
         self.post_invalid_input()
         self.assertEqual(Question.objects.count(), 0)
 
-    def test_for_invalid_input_renders_survey_template(self):
+    def test_for_invalid_input_renders_instructor_survey_template(self):
         response = self.post_invalid_input()
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "survey.html")
+        self.assertTemplateUsed(response, "instructor_survey.html")
 
     def test_for_invalid_input_shows_error_on_page(self):
         response = self.post_invalid_input()
@@ -211,7 +211,7 @@ class InstructorSurveyViewTest(AuthenticatedTestCase):
             data={"text": "no twins!"},
         )
 
-        self.assertTemplateUsed(response, "survey.html")
+        self.assertTemplateUsed(response, "instructor_survey.html")
         self.assertContains(response, html.escape(DUPLICATE_QUESTION_ERROR))
 
     def test_survey_page_displays_qr_code(self):

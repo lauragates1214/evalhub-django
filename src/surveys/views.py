@@ -62,7 +62,7 @@ def view_survey(request, survey_id):
                 {"survey": mysurvey, "form": form},
             )
 
-    return render(request, "survey.html", {"survey": mysurvey, "form": form})
+    return render(request, "instructor_survey.html", {"survey": mysurvey, "form": form})
 
 
 def my_surveys(request, email):
