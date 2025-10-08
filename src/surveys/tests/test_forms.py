@@ -7,7 +7,6 @@ from accounts.models import User
 from surveys.forms import (
     DUPLICATE_QUESTION_ERROR,
     EMPTY_QUESTION_ERROR,
-    ExistingSurveyQuestionForm,
     QuestionForm,
     SurveyAnswerForm,
 )
@@ -35,30 +34,21 @@ class QuestionFormTest(TestCase):
         self.assertEqual(new_question.text, "save me")
         self.assertEqual(new_question.survey, survey)
 
-
-class ExistingSurveyQuestionFormTest(TestCase):
-    def test_form_validation_for_blank_questions(self):
+    def test_form_can_be_initialized_with_survey(self):
         survey = Survey.objects.create()
-        form = ExistingSurveyQuestionForm(for_survey=survey, data={"text": ""})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors["text"], [EMPTY_QUESTION_ERROR])
+        form = QuestionForm(for_survey=survey, data={"text": "test question"})
+        self.assertTrue(form.is_valid())
+
+        new_question = form.save()
+        self.assertEqual(new_question.survey, survey)
 
     def test_form_validation_for_duplicate_questions(self):
         survey = Survey.objects.create()
         Question.objects.create(survey=survey, text="no twins!")
-        form = ExistingSurveyQuestionForm(for_survey=survey, data={"text": "no twins!"})
+        form = QuestionForm(for_survey=survey, data={"text": "no twins!"})
+
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors["text"], [DUPLICATE_QUESTION_ERROR])
-
-    def test_form_save(self):
-        survey = Survey.objects.create()
-        form = ExistingSurveyQuestionForm(for_survey=survey, data={"text": "hi"})
-        self.assertTrue(form.is_valid())
-
-        new_question = (
-            form.save()
-        )  # should not require arguments as already associated with survey in constructor
-        self.assertEqual(new_question, Question.objects.get())
 
 
 class SurveyAnswerFormTest(AuthenticatedTestCase):

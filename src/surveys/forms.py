@@ -14,10 +14,27 @@ class QuestionForm(forms.Form):
         required=True,
     )
 
-    # custom save method (override) to associate question with a survey
-    def save(self, for_survey):
+    def __init__(self, for_survey=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._for_survey = for_survey
+
+    def clean_text(self):
+        text = self.cleaned_data["text"]
+        if (
+            self._for_survey
+            and self._for_survey.question_set.filter(text=text).exists()
+        ):
+            raise forms.ValidationError(DUPLICATE_QUESTION_ERROR)
+        return text
+
+    def save(self, for_survey=None):
+        # Accept for_survey as parameter for backwards compatibility
+        survey = for_survey or self._for_survey
+        if not survey:
+            raise ValueError("A survey must be provided either in __init__ or save()")
+
         return Question.objects.create(
-            survey=for_survey,
+            survey=survey,
             text=self.cleaned_data["text"],
         )
 
@@ -32,23 +49,6 @@ class SurveyCreationForm(QuestionForm):
         survey = Survey.objects.create(name=self.cleaned_data["survey_name"])
         super().save(for_survey=survey)
         return survey
-
-
-class ExistingSurveyQuestionForm(QuestionForm):
-    def __init__(self, for_survey, *args, **kwargs):
-        super().__init__(*args, **kwargs)  # call parent constructor
-        self._for_survey = for_survey
-
-    # custom method for validation to prevent duplicate questions in the same survey
-    def clean_text(self):
-        text = self.cleaned_data["text"]
-        if self._for_survey.question_set.filter(text=text).exists():
-            raise forms.ValidationError(DUPLICATE_QUESTION_ERROR)
-        return text
-
-    # use parent class save method
-    def save(self):
-        return super().save(for_survey=self._for_survey)
 
 
 class SurveyAnswerForm(forms.Form):

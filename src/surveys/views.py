@@ -8,7 +8,6 @@ import qrcode
 
 from accounts.models import User
 from surveys.forms import (
-    ExistingSurveyQuestionForm,
     QuestionForm,
     SurveyAnswerForm,
     SurveyCreationForm,
@@ -34,17 +33,17 @@ def new_survey(request):
 
 def view_survey(request, survey_id):
     mysurvey = Survey.objects.get(id=survey_id)
-    form = ExistingSurveyQuestionForm(for_survey=mysurvey)
+    form = QuestionForm(for_survey=mysurvey)
 
     if request.method == "POST":
-        form = ExistingSurveyQuestionForm(for_survey=mysurvey, data=request.POST)
+        form = QuestionForm(for_survey=mysurvey, data=request.POST)
         if form.is_valid():
             form.save()
 
             # htmx automatically adds HX-Request header to every request it makes
             if request.headers.get("HX-Request"):
                 # Create fresh form (so input box is cleared)
-                form = ExistingSurveyQuestionForm(for_survey=mysurvey)
+                form = QuestionForm(for_survey=mysurvey)
                 # Return just the fragment, not full page
                 return render(
                     request,
