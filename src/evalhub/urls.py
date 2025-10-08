@@ -24,6 +24,12 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("", survey_views.home_page, name="home"),
+    path("dashboard/", survey_views.dashboard_view, name="dashboard"),
+    path(
+        "dashboard/surveys/new/",
+        survey_views.dashboard_create_survey,
+        name="dashboard_create_survey",
+    ),
     path("surveys/", include("surveys.urls")),
     path(
         "survey/<int:survey_id>/",

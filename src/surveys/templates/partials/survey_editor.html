@@ -1,0 +1,15 @@
+<h2>{{ survey.name }}</h2>
+<p>Survey created successfully!</p>
+
+<form method="POST" action="{% url 'view_survey' survey.id %}" 
+      hx-post="{% url 'view_survey' survey.id %}"
+      hx-target="#question-container"
+      hx-swap="innerHTML">
+  {% csrf_token %}
+  <input type="text" name="text" placeholder="Add a question">
+  <button type="submit">Add Question</button>
+</form>
+
+<div id="question-container">
+  <!-- Questions will appear here -->
+</div>

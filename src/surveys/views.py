@@ -19,6 +19,33 @@ def home_page(request):
     return render(request, "home.html", {"form": SurveyCreationForm()})
 
 
+@login_required
+def dashboard_view(request):
+    return render(request, "dashboard.html")
+
+
+@login_required
+def dashboard_create_survey(request):
+    if request.method == "POST":
+        survey_name = request.POST.get("survey_name")
+        if survey_name:
+            # Create the survey
+            survey = Survey.objects.create(owner=request.user, name=survey_name)
+            # If htmx request, return the survey editor partial
+            if request.headers.get("HX-Request"):
+                return render(
+                    request, "partials/survey_editor.html", {"survey": survey}
+                )
+            else:
+                return redirect(f"/surveys/{survey.id}/")
+
+    # GET request - show the create form
+    if request.headers.get("HX-Request"):
+        return render(request, "partials/create_survey.html")
+    else:
+        return render(request, "dashboard.html", {"initial_view": "create_survey"})
+
+
 @login_required  # ensure only logged-in users can create new surveys
 def new_survey(request):
     form = SurveyCreationForm(data=request.POST)

@@ -12,6 +12,12 @@ from surveys.forms import (
 from accounts.models import User
 from surveys.models import Answer, Question, Submission, Survey
 
+# src/accounts/tests/test_views.py
+
+from django.test import TestCase
+from django.urls import reverse
+from accounts.models import User
+
 
 class NewSurveyAuthTest(TestCase):
     def test_redirects_to_login_if_not_authenticated(self):

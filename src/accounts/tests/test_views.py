@@ -4,6 +4,24 @@ from tests.base import AuthenticatedTestCase
 from accounts.models import User
 
 
+class LoginRedirectTest(TestCase):
+    def test_instructor_redirected_to_dashboard_after_login(self):
+        # All users who login are instructors
+        # Students never login - they access surveys anonymously
+        instructor = User.objects.create_user(
+            email="instructor@example.com", password="testpass123"
+        )
+
+        # Post login credentials
+        response = self.client.post(
+            "/accounts/login/",
+            {"username": "instructor@example.com", "password": "testpass123"},
+        )
+
+        # All logged-in users should go to dashboard
+        self.assertRedirects(response, "/dashboard/")
+
+
 class LoginViewTest(TestCase):
     def test_shows_success_message_after_login(self):
         user = User.objects.create(email="test@example.com")
