@@ -26,9 +26,9 @@ class InstructorDashboardSPATest(FunctionalTest):
         self.assertIn("Create Survey", sidebar.text)
         self.assertIn("Analytics", sidebar.text)
 
-        # The main content area shows her survey list by default
+        # The main content area shows a welcome message by default
         main_content = self.browser.find_element(By.ID, "main-content")
-        self.assertIn("Your Surveys", main_content.text)
+        self.assertIn("Welcome to your dashboard", main_content.text)
 
         # She clicks "Create Survey" in the sidebar
         create_link = sidebar.find_element(By.LINK_TEXT, "Create Survey")
