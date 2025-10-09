@@ -124,9 +124,17 @@ class InstructorDashboardSPATest(FunctionalTest):
         my_surveys_link = self.browser.find_element(By.LINK_TEXT, "My Surveys")
         my_surveys_link.click()
 
-        # Both surveys are listed
+        # Wait for the survey list to load (not just check immediately)
+        self.wait_for(
+            lambda: self.assertIn(
+                "Your Surveys",  # Check for the heading first
+                self.browser.find_element(By.ID, "main-content").text,
+            )
+        )
+
+        # Then check both surveys are listed
         main_content = self.browser.find_element(By.ID, "main-content")
-        self.wait_for(lambda: self.assertIn("First Survey", main_content.text))
+        self.assertIn("First Survey", main_content.text)
         self.assertIn("Second Survey", main_content.text)
 
         # The sidebar never reloaded
