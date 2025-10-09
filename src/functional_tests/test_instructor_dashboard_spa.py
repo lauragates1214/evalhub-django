@@ -9,8 +9,8 @@ from surveys.models import Survey
 
 class InstructorDashboardSPATest(FunctionalTest):
     def test_instructor_experiences_spa_like_navigation(self):
-        # Sarah is an instructor who logs into EvalHub
-        self.login("sarah@instructor.com")
+        # Zhi is an instructor who logs into EvalHub
+        self.login("zhi@instructor.com")
 
         # After logging in, she's taken to her dashboard
         # which has a persistent navigation sidebar and main content area
@@ -81,3 +81,53 @@ class InstructorDashboardSPATest(FunctionalTest):
         # The sidebar never flickered or reloaded throughout the entire experience
         sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
         self.assertIn("Create Survey", sidebar.text)
+
+    def test_my_surveys_navigation_shows_user_surveys(self):
+        # Zhi logs in and creates two surveys
+        self.login("zhi@instructor.com")
+
+        # She's on the dashboard
+        self.wait_for(
+            lambda: self.assertEqual(
+                self.browser.current_url, self.live_server_url + "/dashboard/"
+            )
+        )
+
+        # She creates her first survey via the UI
+        create_link = self.browser.find_element(By.LINK_TEXT, "Create Survey")
+        create_link.click()
+
+        survey_name_input = self.browser.find_element(By.NAME, "survey_name")
+        survey_name_input.send_keys("First Survey")
+        survey_name_input.send_keys(Keys.ENTER)
+
+        # She goes back to My Surveys
+        my_surveys_link = self.browser.find_element(By.LINK_TEXT, "My Surveys")
+        my_surveys_link.click()
+
+        # She sees her survey listed
+        self.wait_for(
+            lambda: self.assertIn(
+                "First Survey", self.browser.find_element(By.ID, "main-content").text
+            )
+        )
+
+        # She creates another survey
+        create_link = self.browser.find_element(By.LINK_TEXT, "Create Survey")
+        create_link.click()
+
+        survey_name_input = self.browser.find_element(By.NAME, "survey_name")
+        survey_name_input.send_keys("Second Survey")
+        survey_name_input.send_keys(Keys.ENTER)
+
+        # Goes back to My Surveys again
+        my_surveys_link = self.browser.find_element(By.LINK_TEXT, "My Surveys")
+        my_surveys_link.click()
+
+        # Both surveys are listed
+        main_content = self.browser.find_element(By.ID, "main-content")
+        self.wait_for(lambda: self.assertIn("First Survey", main_content.text))
+        self.assertIn("Second Survey", main_content.text)
+
+        # The sidebar never reloaded
+        self.assertTrue(self.browser.find_element(By.ID, "dashboard-sidebar"))

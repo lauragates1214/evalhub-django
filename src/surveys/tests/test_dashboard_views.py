@@ -70,3 +70,23 @@ class DashboardCreateSurveyViewTest(TestCase):
         )
         new_survey = Survey.objects.first()
         self.assertRedirects(response, f"/surveys/{new_survey.id}/")
+
+
+class DashboardMySurveysViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="instructor@example.com", password="testpass123"
+        )
+        self.client.force_login(self.user)
+
+    def test_returns_survey_list_partial_for_htmx(self):
+        # Create some surveys
+        Survey.objects.create(name="Survey 1", owner=self.user)
+        Survey.objects.create(name="Survey 2", owner=self.user)
+
+        response = self.client.get("/dashboard/surveys/", HTTP_HX_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "partials/survey_list.html")
+        self.assertContains(response, "Survey 1")
+        self.assertContains(response, "Survey 2")

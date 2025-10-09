@@ -26,6 +26,11 @@ urlpatterns = [
     path("", survey_views.home_page, name="home"),
     path("dashboard/", survey_views.dashboard_view, name="dashboard"),
     path(
+        "dashboard/surveys/",
+        survey_views.dashboard_my_surveys,
+        name="dashboard_my_surveys",
+    ),
+    path(
         "dashboard/surveys/new/",
         survey_views.dashboard_create_survey,
         name="dashboard_create_survey",

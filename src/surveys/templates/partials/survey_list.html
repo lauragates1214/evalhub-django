@@ -1,0 +1,6 @@
+<h2>Your Surveys</h2>
+{% for survey in user.survey_set.all %}
+    <p>{{ survey.name }}</p>
+{% empty %}
+    <p>No surveys yet</p>
+{% endfor %}

@@ -12,7 +12,7 @@ from surveys.forms import (
     SurveyAnswerForm,
     SurveyCreationForm,
 )
-from surveys.models import Answer, Survey
+from surveys.models import Survey
 
 
 def home_page(request):
@@ -44,6 +44,17 @@ def dashboard_create_survey(request):
         return render(request, "partials/create_survey.html")
     else:
         return render(request, "dashboard.html", {"initial_view": "create_survey"})
+
+
+@login_required
+def dashboard_my_surveys(request):
+    if request.method == "GET":
+        surveys = Survey.objects.filter(owner=request.user).order_by("-created_at")
+        # If htmx request, return the survey list partial
+        if request.headers.get("HX-Request"):
+            return render(request, "partials/survey_list.html", {"surveys": surveys})
+        else:
+            return render(request, "dashboard.html", {"initial_view": "my_surveys"})
 
 
 @login_required  # ensure only logged-in users can create new surveys

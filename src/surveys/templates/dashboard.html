@@ -34,13 +34,13 @@
     </div>
 
     <main id="main-content" style="flex: 1;">
-        <h2>Your Surveys</h2>
-        <!-- Default content - list of surveys -->
-        {% for survey in user.survey_set.all %}
-            <p>{{ survey.name }}</p>
-        {% empty %}
-            <p>No surveys yet</p>
-        {% endfor %}
+        {% if initial_view == "my_surveys" %}
+            {% include 'partials/survey_list.html' %}
+        {% elif initial_view == "create_survey" %}
+            {% include 'partials/create_survey.html' %}
+        {% else %}
+            <p>Welcome to your dashboard! Please select an option from the sidebar.</p>
+        {% endif %}
     </main>
 </div>
 {% endblock %}

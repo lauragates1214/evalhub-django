@@ -13,6 +13,7 @@ class Survey(models.Model):
     )
     name = models.CharField(max_length=200, default="")
     text = models.TextField(default="")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def get_absolute_url(self):
         return reverse("view_survey", args=[self.id])
