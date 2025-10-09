@@ -33,9 +33,11 @@ def dashboard_create_survey(request):
             survey = Survey.objects.create(owner=request.user, name=survey_name)
             # If htmx request, return the survey editor partial
             if request.headers.get("HX-Request"):
-                return render(
+                response = render(
                     request, "partials/survey_editor.html", {"survey": survey}
                 )
+                response["HX-Push-Url"] = f"/dashboard/surveys/{survey.id}/"
+                return response
             else:
                 return redirect(f"/surveys/{survey.id}/")
 
@@ -44,6 +46,20 @@ def dashboard_create_survey(request):
         return render(request, "partials/create_survey.html")
     else:
         return render(request, "dashboard.html", {"initial_view": "create_survey"})
+
+
+@login_required
+def dashboard_survey_detail(request, survey_id):
+    survey_id = request.resolver_match.kwargs.get("survey_id")
+    survey = get_object_or_404(Survey, id=survey_id, owner=request.user)
+    if request.headers.get("HX-Request"):
+        return render(request, "partials/survey_editor.html", {"survey": survey})
+    else:
+        return render(
+            request,
+            "dashboard.html",
+            {"initial_view": "survey_detail", "survey": survey},
+        )
 
 
 @login_required

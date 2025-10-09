@@ -8,74 +8,112 @@ from .survey_page import SurveyPage
 class NewVisitorTest(FunctionalTest):
     # Acts as regression test
     def test_can_start_a_new_question(self):
-        # User 1 logs in
+        # Emma is an instructor who wants to create a survey
+        # She logs into EvalHub
         self.login("user@example.com")
 
-        # She goes to the EvalHub homepage to register as a new user
-        self.browser.get(self.live_server_url)
-
-        # She notices the page title mentions EvalHub
-        self.assertIn("EvalHub", self.browser.title)
-
-        # She notices the header mentions surveys
-        header_text = self.browser.find_element(By.TAG_NAME, "h1").text
-        self.assertIn("Survey", header_text)
-
-        # She is invited to create a new question
-        survey_page = SurveyPage(self)
-        inputbox = survey_page.get_question_input_box()
-
-        self.assertEqual(
-            inputbox.get_attribute("placeholder"), "Enter a survey question"
+        # After logging in, she's taken to her dashboard
+        self.wait_for(
+            lambda: self.assertEqual(
+                self.browser.current_url, self.live_server_url + "/dashboard/"
+            )
         )
 
-        # She types her first question and hits enter
+        # She sees the page title mentions Dashboard
+        header_text = self.browser.find_element(By.TAG_NAME, "h1").text
+        self.assertIn("Dashboard", header_text)
+
+        # She notices a "Create Survey" option in the sidebar and clicks it
+        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+
+        # The main area updates to show a survey creation form
+        self.wait_for(
+            lambda: self.assertIn(
+                "Create New Survey",
+                self.browser.find_element(By.ID, "main-content").text,
+            )
+        )
+
+        # She enters a name for her survey
+        name_input = self.browser.find_element(By.NAME, "survey_name")
+        name_input.send_keys("Test Survey")
+        name_input.send_keys(Keys.ENTER)
+
+        # The survey is created and she sees a form to add questions
+        self.wait_for(lambda: self.browser.find_element(By.NAME, "text"))
+
+        # She adds her first question about capybaras
+        survey_page = SurveyPage(self)
         survey_page.add_survey_question("How do you feel about capybara?")
 
-        # There is still a text box inviting her to add another question.
-        # She enters another question and hits enter
+        # The page updates and shows her question in a list
+        survey_page.wait_for_row_in_question_table("How do you feel about capybara?", 1)
+
+        # She adds another question
         survey_page.add_survey_question("How many capybara? Explain.")
 
-        # The page updates again, and now shows both questions in her list
-        survey_page.wait_for_row_in_question_table("How do you feel about capybara?", 1)
+        # Now she sees both questions listed
         survey_page.wait_for_row_in_question_table("How many capybara? Explain.", 2)
 
-        # Satisfied, she logs out to continue later.
+        # Satisfied, she logs out
+        self.browser.find_element(By.CSS_SELECTOR, "#id_logout").click()
 
     def test_multiple_users_can_start_questions_at_different_urls(self):
-        # User 1 logs in
+        # Zhi logs in and creates a survey
         self.login("user1@example.com")
 
-        # She starts a new survey
-        survey_page = SurveyPage(self).go_to_new_survey_page()
+        # He's on the dashboard and clicks Create Survey
+        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+
+        # He creates a survey
+        name_input = self.browser.find_element(By.NAME, "survey_name")
+        name_input.send_keys("Zhi's Survey")
+        name_input.send_keys(Keys.ENTER)
+
+        # He adds a question
+        self.wait_for(lambda: self.browser.find_element(By.ID, "id_text"))
+        survey_page = SurveyPage(self)
         survey_page.add_survey_question("How do you feel about capybara?")
 
-        # She notices that her survey has a unique URL
+        # He notices that his survey has a unique URL
         user1_survey_url = self.browser.current_url
         self.assertRegex(user1_survey_url, "/surveys/.+")
 
-        # Now a new user, User 2, comes along to the site
-        ## Delete all the browser's cookies as a way of simulating a brand new user session
+        # Now a new user, Kerrie, comes along to the site
+        # We use a new browser session to simulate a new user
         self.browser.delete_all_cookies()
 
-        # User 2 logs in
+        # Kerrie logs in
         self.login("user2@example.com")
 
-        # User 2 visits the home page. There is no sign of User 1's question
-        self.browser.get(self.live_server_url)
-        page_text = self.browser.find_element(By.TAG_NAME, "body").text
-        self.assertNotIn("How do you feel about capybara?", page_text)
+        # Kerrie is on her dashboard
+        self.wait_for(
+            lambda: self.assertEqual(
+                self.browser.current_url, self.live_server_url + "/dashboard/"
+            )
+        )
 
-        # User 2 starts a new survey by entering a new question
+        # Kerrie creates her own survey
+        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+
+        name_input = self.browser.find_element(By.NAME, "survey_name")
+        name_input.send_keys("Kerrie's Survey")
+        name_input.send_keys(Keys.ENTER)
+
+        # She adds a different question
+        self.wait_for(lambda: self.browser.find_element(By.ID, "id_text"))
         survey_page = SurveyPage(self)
         survey_page.add_survey_question("Why manatee? Explain.")
 
-        # User 2 gets their own unique URL
+        # Kerrie gets her own unique URL
         user2_survey_url = self.browser.current_url
         self.assertRegex(user2_survey_url, "/surveys/.+")
         self.assertNotEqual(user2_survey_url, user1_survey_url)
 
-        # Again, there is no trace of User 1's question
+        # There is no trace of Zhi's survey question
         page_text = self.browser.find_element(By.TAG_NAME, "body").text
         self.assertNotIn("How do you feel about capybara?", page_text)
         self.assertIn("Why manatee? Explain.", page_text)
@@ -115,7 +153,9 @@ class NewVisitorTest(FunctionalTest):
         inputbox.send_keys(Keys.ENTER)
 
         # She goes to "My Surveys" via the sidebar
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(
+            By.ID, "dashboard-sidebar"
+        )  # Re-find sidebar
         sidebar.find_element(By.LINK_TEXT, "My Surveys").click()
 
         # She sees her survey listed by name in the main content

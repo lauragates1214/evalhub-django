@@ -35,6 +35,11 @@ urlpatterns = [
         survey_views.dashboard_create_survey,
         name="dashboard_create_survey",
     ),
+    path(
+        "dashboard/surveys/<int:survey_id>/",
+        survey_views.dashboard_survey_detail,
+        name="dashboard_survey_detail",
+    ),
     path("surveys/", include("surveys.urls")),
     path(
         "survey/<int:survey_id>/",

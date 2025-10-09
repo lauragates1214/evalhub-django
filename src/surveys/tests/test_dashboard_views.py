@@ -71,6 +71,16 @@ class DashboardCreateSurveyViewTest(TestCase):
         new_survey = Survey.objects.first()
         self.assertRedirects(response, f"/surveys/{new_survey.id}/")
 
+    def test_post_sets_hx_push_url_header(self):
+        response = self.client.post(
+            "/dashboard/surveys/new/",
+            {"survey_name": "Test Survey"},
+            HTTP_HX_REQUEST="true",
+        )
+
+        survey = Survey.objects.first()
+        self.assertEqual(response["HX-Push-Url"], f"/dashboard/surveys/{survey.id}/")
+
 
 class DashboardMySurveysViewTest(TestCase):
     def setUp(self):
@@ -90,3 +100,42 @@ class DashboardMySurveysViewTest(TestCase):
         self.assertTemplateUsed(response, "partials/survey_list.html")
         self.assertContains(response, "Survey 1")
         self.assertContains(response, "Survey 2")
+
+
+class DashboardSurveyDetailViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="instructor@example.com", password="testpass123"
+        )
+        self.client.force_login(self.user)
+        self.survey = Survey.objects.create(name="Test Survey", owner=self.user)
+
+    def test_returns_survey_editor_partial_for_htmx(self):
+        response = self.client.get(
+            f"/dashboard/surveys/{self.survey.id}/", HTTP_HX_REQUEST="true"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "partials/survey_editor.html")
+        self.assertContains(response, "Test Survey")
+
+    def test_returns_full_dashboard_for_direct_navigation(self):
+        response = self.client.get(f"/dashboard/surveys/{self.survey.id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "dashboard.html")
+        self.assertEqual(response.context["initial_view"], "survey_detail")
+        self.assertEqual(response.context["survey"], self.survey)
+
+    def test_404_for_nonexistent_survey(self):
+        response = self.client.get("/dashboard/surveys/999/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_403_for_other_users_survey(self):
+        other_user = User.objects.create_user(
+            email="other@example.com", password="pass"
+        )
+        other_survey = Survey.objects.create(name="Other Survey", owner=other_user)
+
+        response = self.client.get(f"/dashboard/surveys/{other_survey.id}/")
+        self.assertEqual(
+            response.status_code, 404
+        )  # Should be 404, not expose existence

@@ -1,13 +1,14 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import WebDriverException
+
 import os
 import time
 from datetime import datetime
 from pathlib import Path
-from unittest import skip
 
 from .container_commands import reset_database
 

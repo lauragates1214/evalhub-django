@@ -15,7 +15,7 @@
                     <a href="/dashboard/" 
                        hx-get="/dashboard/surveys/" 
                        hx-target="#main-content"
-                       hx-push-url="/dashboard/">My Surveys</a>
+                       hx-push-url="true">My Surveys</a>
                 </li>
                 <li>
                     <a href="/dashboard/surveys/new/" 
@@ -38,6 +38,8 @@
             {% include 'partials/survey_list.html' %}
         {% elif initial_view == "create_survey" %}
             {% include 'partials/create_survey.html' %}
+        {% elif initial_view == "survey_detail" %}
+            {% include 'partials/survey_editor.html' %}
         {% else %}
             <p>Welcome to your dashboard! Please select an option from the sidebar.</p>
         {% endif %}

@@ -1,15 +1,21 @@
 <h2>{{ survey.name }}</h2>
 <p>Survey created successfully!</p>
 
-<form method="POST" action="{% url 'view_survey' survey.id %}" 
-      hx-post="{% url 'view_survey' survey.id %}"
-      hx-target="#question-container"
-      hx-swap="innerHTML">
-  {% csrf_token %}
-  <input type="text" name="text" placeholder="Add a question">
-  <button type="submit">Add Question</button>
-</form>
-
 <div id="question-container">
-  <!-- Questions will appear here -->
+  <form method="POST" action="{% url 'view_survey' survey.id %}" 
+        hx-post="{% url 'view_survey' survey.id %}"
+        hx-target="#question-container"
+        hx-swap="innerHTML">
+    {% csrf_token %}
+    <input type="text" id="id_text" name="text" placeholder="Add a question">
+    <button type="submit">Add Question</button>
+  </form>
+  
+  <table class="table" id="id_question_table">
+    {% for question in survey.question_set.all %}
+    <tr>
+      <td>{{ forloop.counter }}: {{ question.text }}</td>
+    </tr>
+    {% endfor %}
+  </table>
 </div>
