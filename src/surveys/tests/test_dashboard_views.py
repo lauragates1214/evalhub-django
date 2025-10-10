@@ -151,3 +151,19 @@ class DashboardSurveyDetailViewTest(TestCase):
         self.assertEqual(
             response.status_code, 404
         )  # Should be 404, not expose existence
+
+    def test_survey_detail_includes_qr_code(self):
+        response = self.client.get(
+            f"/dashboard/surveys/{self.survey.id}/", HTTP_HX_REQUEST="true"
+        )
+        self.assertContains(response, "qr-code")
+        self.assertContains(response, f"/surveys/{self.survey.id}/qr/")
+
+    def test_survey_detail_includes_response_and_export_links(self):
+        response = self.client.get(
+            f"/dashboard/surveys/{self.survey.id}/", HTTP_HX_REQUEST="true"
+        )
+        self.assertContains(response, "View Responses")
+        self.assertContains(response, f"/surveys/{self.survey.id}/responses/")
+        self.assertContains(response, "Export to CSV")
+        self.assertContains(response, f"/surveys/{self.survey.id}/export/")

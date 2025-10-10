@@ -190,6 +190,13 @@ class InstructorDashboardSPATest(FunctionalTest):
         self.wait_for(lambda: self.assertIn("Chemistry Feedback", main_content.text))
         self.assertIn("Rate the lab session", main_content.text)
 
-        # He can still see the sidebar - proving no full page reload
+        # He can still see the sidebar (htmx swapped only the main content)
         sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
         self.assertIn("My Surveys", sidebar.text)
+
+        # He sees the QR code for the survey
+        self.assertIn("qr-code", main_content.get_attribute("innerHTML"))
+
+        # He sees links for viewing responses and exporting
+        self.assertIn("View Responses", main_content.text)
+        self.assertIn("Export to CSV", main_content.text)
