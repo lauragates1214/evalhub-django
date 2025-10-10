@@ -139,3 +139,57 @@ class InstructorDashboardSPATest(FunctionalTest):
 
         # The sidebar never reloaded
         self.assertTrue(self.browser.find_element(By.ID, "dashboard-sidebar"))
+
+    def test_can_view_survey_in_dashboard(self):
+        # Zhi is an instructor with an existing survey
+        self.login("zhi@instructor.com")
+
+        # He's on the dashboard
+        self.wait_for(
+            lambda: self.assertEqual(
+                self.browser.current_url, self.live_server_url + "/dashboard/"
+            )
+        )
+
+        # He creates a survey first
+        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+
+        name_input = self.browser.find_element(By.NAME, "survey_name")
+        name_input.send_keys("Chemistry Feedback")
+        name_input.send_keys(Keys.ENTER)
+
+        # He adds a question to the survey
+        self.wait_for(lambda: self.browser.find_element(By.NAME, "text"))
+        inputbox = self.browser.find_element(By.NAME, "text")
+        inputbox.send_keys("Rate the lab session")
+        inputbox.send_keys(Keys.ENTER)
+
+        # He navigates to My Surveys
+        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar.find_element(By.LINK_TEXT, "My Surveys").click()
+
+        # He sees his survey listed and clicks on it
+        self.wait_for(
+            lambda: self.assertIn(
+                "Chemistry Feedback",
+                self.browser.find_element(By.ID, "main-content").text,
+            )
+        )
+
+        # He clicks on the survey name
+        survey_link = self.browser.find_element(By.LINK_TEXT, "Chemistry Feedback")
+        survey_link.click()
+
+        # The survey loads in the main content area (not a new page)
+        # He's still in the dashboard
+        self.assertIn("/dashboard/", self.browser.current_url)
+
+        # He sees the survey details and can add more questions
+        main_content = self.browser.find_element(By.ID, "main-content")
+        self.wait_for(lambda: self.assertIn("Chemistry Feedback", main_content.text))
+        self.assertIn("Rate the lab session", main_content.text)
+
+        # He can still see the sidebar - proving no full page reload
+        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        self.assertIn("My Surveys", sidebar.text)

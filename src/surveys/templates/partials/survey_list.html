@@ -1,6 +1,12 @@
 <h2>Your Surveys</h2>
 {% for survey in surveys %}
-    <p>{{ survey.name }}</p>
+    <!-- fallback url followed by htmx -->
+    <a href="/dashboard/surveys/{{ survey.id }}/"
+        hx-get="/dashboard/surveys/{{ survey.id }}/"
+        hx-target="#main-content"
+        hx-push-url="true">
+        {{ survey.name }}
+    </a>
 {% empty %}
     <p>No surveys yet</p>
 {% endfor %}

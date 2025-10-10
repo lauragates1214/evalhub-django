@@ -101,6 +101,18 @@ class DashboardMySurveysViewTest(TestCase):
         self.assertContains(response, "Survey 1")
         self.assertContains(response, "Survey 2")
 
+    def test_survey_names_are_clickable_links(self):
+        # Create some surveys
+        Survey.objects.create(name="Survey 1", owner=self.user)
+        Survey.objects.create(name="Survey 2", owner=self.user)
+
+        response = self.client.get("/dashboard/surveys/", HTTP_HX_REQUEST="true")
+
+        # Check that survey names are rendered as links with htmx attributes
+        self.assertContains(response, 'hx-get="/dashboard/surveys/')
+        self.assertContains(response, 'hx-target="#main-content"')
+        self.assertContains(response, "<a", count=2)  # Two surveys = two links
+
 
 class DashboardSurveyDetailViewTest(TestCase):
     def setUp(self):
