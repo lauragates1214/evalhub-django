@@ -40,6 +40,8 @@
             {% include 'partials/create_survey.html' %}
         {% elif initial_view == "survey_detail" %}
             {% include 'partials/survey_editor.html' %}
+        {% elif initial_view == "survey_responses" %}
+            {% include 'partials/survey_responses.html' %}
         {% else %}
             <p>Welcome to your dashboard! Please select an option from the sidebar.</p>
         {% endif %}

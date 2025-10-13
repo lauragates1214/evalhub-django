@@ -73,6 +73,19 @@ def dashboard_my_surveys(request):
             return render(request, "dashboard.html", {"initial_view": "my_surveys"})
 
 
+@login_required
+def dashboard_survey_responses(request, survey_id):
+    survey = get_object_or_404(Survey, id=survey_id)
+
+    if request.headers.get("HX-Request"):
+        return render(request, "partials/survey_responses.html", {"survey": survey})
+    return render(
+        request,
+        "dashboard.html",
+        {"initial_view": "survey_responses", "survey": survey},
+    )
+
+
 @login_required  # ensure only logged-in users can create new surveys
 def new_survey(request):
     form = SurveyCreationForm(data=request.POST)
@@ -161,11 +174,6 @@ def survey_qr_code(request, survey_id):
     buffer.seek(0)
 
     return HttpResponse(buffer.getvalue(), content_type="image/png")
-
-
-def survey_responses(request, survey_id):
-    survey = get_object_or_404(Survey, id=survey_id)
-    return render(request, "survey_responses.html", {"survey": survey})
 
 
 def export_responses(request, survey_id):

@@ -200,3 +200,53 @@ class InstructorDashboardSPATest(FunctionalTest):
         # He sees links for viewing responses and exporting
         self.assertIn("View Responses", main_content.text)
         self.assertIn("Export to CSV", main_content.text)
+
+    def test_can_view_responses_in_dashboard(self):
+        # Amy is an instructor who wants to view survey responses
+        self.login("amy@instructor.com")
+
+        # She has an existing survey with responses (create via helper)
+        survey = self.create_survey_with_questions(
+            "amy@instructor.com", ["How was the lecture?", "Any feedback?"]
+        )
+        survey.name = "Chemistry 101"
+        survey.save()
+
+        # Create some test responses
+        from surveys.models import Submission, Answer
+
+        submission = Submission.objects.create(survey=survey)
+        Answer.objects.create(
+            question=survey.question_set.first(),
+            answer_text="Very clear",
+            submission=submission,
+        )
+
+        # Amy navigates to her survey in the dashboard
+        self.browser.get(f"{self.live_server_url}/dashboard/surveys/{survey.id}/")
+
+        # She sees the View Responses link and clicks it
+        # Use wait_for to both wait for and return the element
+        responses_link = self.wait_for(
+            lambda: self.browser.find_element(By.LINK_TEXT, "View Responses")
+        )
+        # Click using JavaScript to bypass visibility checks
+        self.browser.execute_script("arguments[0].click();", responses_link)
+
+        # The responses load in the main content area - she's still in the dashboard
+        self.wait_for(lambda: self.assertIn("/dashboard/", self.browser.current_url))
+
+        # She can see the response data with proper title
+        main_content = self.browser.find_element(By.ID, "main-content")
+        self.wait_for(
+            lambda: self.assertIn(f"{survey.name} Responses", main_content.text)
+        )
+
+        # She sees the questions and their responses
+        self.assertIn("How was the lecture?", main_content.text)
+        self.assertIn("Very clear", main_content.text)
+        self.assertIn("Any feedback?", main_content.text)
+
+        # The sidebar is still visible - no full page reload happened
+        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        self.assertIn("My Surveys", sidebar.text)

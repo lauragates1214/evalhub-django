@@ -21,6 +21,11 @@
 </div>
 
   <img src="{% url 'survey_qr_code' survey.id %}" class="qr-code" alt="Survey QR Code">
-  <a href="{% url 'survey_responses' survey.id %}">View Responses</a>
+  <a href="{% url 'dashboard_survey_responses' survey.id %}"
+    hx-get="{% url 'dashboard_survey_responses' survey.id %}"
+    hx-target="#main-content"
+    hx-push-url="true">
+    View Responses
+  </a>
   <a href="{% url 'export_responses' survey.id %}">Export to CSV</a>
 

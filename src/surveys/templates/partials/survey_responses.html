@@ -1,0 +1,10 @@
+<h2>{{ survey.name }} Responses</h2>
+
+{% for question in survey.question_set.all %}
+    <h3>{{ question.text }}</h3>
+    <ul>
+        {% for answer in question.answer_set.all %}
+            <li>{{ answer.answer_text }}</li>
+        {% endfor %}
+    </ul>
+{% endfor %}

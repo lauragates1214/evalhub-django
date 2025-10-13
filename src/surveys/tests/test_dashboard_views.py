@@ -167,3 +167,33 @@ class DashboardSurveyDetailViewTest(TestCase):
         self.assertContains(response, f"/surveys/{self.survey.id}/responses/")
         self.assertContains(response, "Export to CSV")
         self.assertContains(response, f"/surveys/{self.survey.id}/export/")
+
+    def test_view_responses_link_has_htmx_attributes(self):
+        response = self.client.get(
+            f"/dashboard/surveys/{self.survey.id}/", HTTP_HX_REQUEST="true"
+        )
+
+        # Check that View Responses link has htmx attributes
+        self.assertContains(response, "hx-get=")
+        self.assertContains(response, 'hx-target="#main-content"')
+        # The link should point to a dashboard URL, not the old responses URL
+        self.assertContains(response, "/dashboard/surveys/")
+        self.assertContains(response, "/responses/")
+
+
+class DashboardSurveyResponsesViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="instructor@example.com", password="testpass123"
+        )
+        self.client.force_login(self.user)
+        self.survey = Survey.objects.create(name="Physics 101 Survey", owner=self.user)
+
+    def test_responses_page_shows_survey_name_in_title(self):
+        response = self.client.get(
+            f"/dashboard/surveys/{self.survey.id}/responses/", HTTP_HX_REQUEST="true"
+        )
+
+        self.assertContains(
+            response, "<h2>Physics 101 Survey Responses</h2>", html=True
+        )

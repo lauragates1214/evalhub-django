@@ -46,4 +46,9 @@ urlpatterns = [
         survey_views.student_survey_view,
         name="student_survey",
     ),
+    path(
+        "dashboard/surveys/<int:survey_id>/responses/",
+        survey_views.dashboard_survey_responses,
+        name="dashboard_survey_responses",
+    ),
 ]
