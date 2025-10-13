@@ -2,6 +2,8 @@ from django.urls import path
 
 from surveys import views
 
+app_name = "surveys"  # Namespace for survey URLs
+
 urlpatterns = [
     path("new", views.new_survey, name="new_survey"),
     path("<int:survey_id>/", views.view_survey, name="view_survey"),

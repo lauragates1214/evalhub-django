@@ -1,4 +1,4 @@
-<form method="POST" action="{% url 'view_survey' survey.id %}" 
+<form method="POST" action="{% url 'instructors:survey_list' %}" 
       hx-post="{% url 'view_survey' survey.id %}"
       hx-target="#question-container"
       hx-push-url="true">

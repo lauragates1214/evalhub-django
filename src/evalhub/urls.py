@@ -23,6 +23,9 @@ from surveys import views as survey_views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
+    path("instructor/", include("instructors.urls")),
+    path("student/", include("students.urls")),
+    # TODO: Remove the below urls - deprecated
     path("", survey_views.home_page, name="home"),
     path("dashboard/", survey_views.dashboard_view, name="dashboard"),
     path(

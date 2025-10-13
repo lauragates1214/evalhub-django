@@ -2,8 +2,8 @@
 <p>Survey created successfully!</p>
 
 <div id="question-container">
-  <form method="POST" action="{% url 'view_survey' survey.id %}" 
-        hx-post="{% url 'view_survey' survey.id %}"
+  <form method="POST" action="{% url 'instructors:survey_detail' survey.id %}" 
+        hx-post="{% url 'instructors:survey_detail' survey.id %}"
         hx-target="#question-container"
         hx-swap="innerHTML">
     {% csrf_token %}
@@ -20,12 +20,12 @@
   </table>
 </div>
 
-  <img src="{% url 'survey_qr_code' survey.id %}" class="qr-code" alt="Survey QR Code">
-  <a href="{% url 'dashboard_survey_responses' survey.id %}"
-    hx-get="{% url 'dashboard_survey_responses' survey.id %}"
+  <img src="{% url 'surveys:survey_qr_code' survey.id %}" class="qr-code" alt="Survey QR Code">
+  <a href="{% url 'instructors:survey_responses' survey.id %}"
+    hx-get="{% url 'instructors:survey_responses' survey.id %}"
     hx-target="#main-content"
     hx-push-url="true">
     View Responses
   </a>
-  <a href="{% url 'export_responses' survey.id %}">Export to CSV</a>
+  <a href="{% url 'surveys:export_responses' survey.id %}">Export to CSV</a>
 

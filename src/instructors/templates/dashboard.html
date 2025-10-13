@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block header_text %}Dashboard{% endblock %}
+
+{% block content %}
+
+{% endblock %}
+
+{% block table %}
+<div style="display: flex; gap: 2rem;">
+    <div id="instructor-sidebar" style="width: 200px;">
+        <nav>
+            <ul>
+                <li>
+                    <a href="{% url 'instructors:survey_list' %}" 
+                       hx-get="{% url 'instructors:survey_list' %}" 
+                       hx-target="#main-content"
+                       hx-push-url="true">My Surveys</a>
+                </li>
+                <li>
+                    <a href="{% url 'instructors:create_survey' %}" 
+                       hx-get="{% url 'instructors:create_survey' %}" 
+                       hx-target="#main-content"
+                       hx-push-url="true">Create Survey</a>
+                </li>
+                <li>
+                    <a href="{% url 'instructors:analytics' %}"
+                       hx-get="{% url 'instructors:analytics' %}"
+                       hx-target="#main-content"
+                       hx-push-url="true">Analytics</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <main id="main-content" style="flex: 1;">
+        {% if initial_view == "survey_list" %}
+            {% include 'partials/survey_list.html' %}
+        {% elif initial_view == "create_survey" %}
+            {% include 'partials/create_survey.html' %}
+        {% elif initial_view == "survey_detail" %}
+            {% include 'partials/survey_editor.html' %}
+        {% elif initial_view == "survey_responses" %}
+            {% include 'partials/survey_responses.html' %}
+        {% else %}
+            <p>Welcome to your dashboard! Please select an option from the sidebar.</p>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

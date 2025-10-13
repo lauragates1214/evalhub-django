@@ -1,7 +1,8 @@
 <h2>Create New Survey</h2>
 <form method="post" 
-      hx-post="/dashboard/surveys/new/"
-      hx-target="#main-content">
+      hx-post="{% url 'instructors:create_survey' %}"
+      hx-target="#main-content"
+      hx-push-url="true">
     {% csrf_token %}
     <input type="text" name="survey_name" placeholder="Survey name" required>
     <button type="submit">Create</button>

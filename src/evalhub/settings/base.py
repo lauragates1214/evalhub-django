@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "accounts",
+    "instructors",
+    "students",
     "surveys",
     "functional_tests",
 ]
@@ -103,7 +105,7 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = "accounts.User"
-LOGIN_REDIRECT_URL = "/dashboard/"
+LOGIN_REDIRECT_URL = "/instructor/"
 LOGOUT_REDIRECT_URL = "/"
 
 
