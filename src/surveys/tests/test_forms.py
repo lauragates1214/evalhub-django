@@ -9,6 +9,7 @@ from surveys.forms import (
     EMPTY_QUESTION_ERROR,
     QuestionForm,
     SurveyAnswerForm,
+    SurveyEditForm,
 )
 from surveys.models import Answer, Question, Submission, Survey
 
@@ -334,3 +335,19 @@ class SurveyAnswerFormTest(AuthenticatedTestCase):
 
         answer = Answer.objects.first()
         self.assertEqual(answer.answer_text, special_text)
+
+
+class SurveyEditFormTest(TestCase):
+    def test_form_saves_with_valid_name(self):
+        user = User.objects.create_user(email="test@example.com", password="pass")
+        survey = Survey.objects.create(name="Old Name", owner=user)
+
+        form = SurveyEditForm(instance=survey, data={"name": "New Name"})
+        self.assertTrue(form.is_valid())
+        updated_survey = form.save()
+        self.assertEqual(updated_survey.name, "New Name")
+
+    def test_form_validation_for_empty_name(self):
+        form = SurveyEditForm(data={"name": ""})
+        self.assertFalse(form.is_valid())
+        self.assertIn("name", form.errors)

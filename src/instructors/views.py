@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 import csv
 
+from surveys.forms import QuestionForm
 from surveys.models import Survey
 
 
@@ -53,8 +54,6 @@ def create_survey(request):
 
 @login_required
 def survey_detail(request, survey_id):
-    from surveys.forms import QuestionForm
-
     survey_id = request.resolver_match.kwargs.get("survey_id")
     survey = get_object_or_404(Survey, id=survey_id)
 
@@ -62,7 +61,23 @@ def survey_detail(request, survey_id):
         return HttpResponseForbidden()  # Returns 403
 
     if request.method == "POST":
-        # Handle adding a question
+        # Get survey name if provided
+        survey_name = request.POST.get("survey_name")
+
+        # Check if this is a survey name update (no question text)
+        if survey_name and not request.POST.get("text"):
+            # Update survey name
+            survey.name = survey_name
+            survey.save()
+
+            # For HTMX requests, return just the updated name container
+            if request.headers.get("HX-Request"):
+                # Return the display version (not edit form)
+                return render(
+                    request, "partials/survey_name_display.html", {"survey": survey}
+                )
+
+        # Handle adding a question (existing code)
         form = QuestionForm(for_survey=survey, data=request.POST)
 
         if form.is_valid():
@@ -95,6 +110,9 @@ def survey_detail(request, survey_id):
     form = QuestionForm(for_survey=survey)
 
     if request.headers.get("HX-Request"):
+        # Check if we're in edit mode
+        if request.GET.get("edit_mode") == "true":
+            return render(request, "partials/survey_name_edit.html", {"survey": survey})
         return render(
             request, "partials/survey_editor.html", {"survey": survey, "form": form}
         )

@@ -1,0 +1,26 @@
+<div id="survey-name-container">
+  <form method="POST" 
+        action="{% url 'instructors:survey_detail' survey.id %}"
+        hx-post="{% url 'instructors:survey_detail' survey.id %}"
+        hx-target="#survey-name-container"
+        hx-swap="outerHTML"
+        style="display: inline;">
+    {% csrf_token %}
+    <input type="text" 
+           id="survey-name-input" 
+           name="survey_name" 
+           value="{{ survey.name }}"
+           class="form-control d-inline" 
+           style="width: auto;"
+           autofocus>
+    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+    <button type="button" 
+            id="cancel-edit-btn" 
+            class="btn btn-sm btn-secondary"
+            hx-get="{% url 'instructors:survey_detail' survey.id %}"
+            hx-target="#survey-name-container"
+            hx-swap="outerHTML">
+      Cancel
+    </button>
+  </form>
+</div>

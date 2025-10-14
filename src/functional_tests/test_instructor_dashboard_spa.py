@@ -250,3 +250,70 @@ class InstructorDashboardSPATest(FunctionalTest):
         # The sidebar is still visible - no full page reload happened
         sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
         self.assertIn("My Surveys", sidebar.text)
+
+    def test_instructor_can_edit_survey_name(self):
+        # Emma logs in as an instructor
+        self.login("emma@instructor.com")
+
+        # She creates a survey first
+        self.browser.find_element(By.LINK_TEXT, "Create Survey").click()
+
+        survey_name_input = self.browser.find_element(By.NAME, "survey_name")
+        survey_name_input.send_keys("Initial Survey Name")
+        survey_name_input.send_keys(Keys.ENTER)
+
+        # Wait for the survey editor to load
+        self.wait_for(
+            lambda: self.assertIn(
+                "Initial Survey Name",
+                self.browser.find_element(By.ID, "main-content").text,
+            )
+        )
+
+        # She sees the survey name displayed and notices she can edit it
+        # There should be an edit button or the name should be clickable
+        survey_name_element = self.browser.find_element(By.ID, "survey-name-display")
+        self.assertEqual(survey_name_element.text, "Initial Survey Name")
+
+        # She clicks on the survey name or an edit button to make it editable
+        edit_button = self.browser.find_element(By.ID, "edit-survey-name-btn")
+        edit_button.click()
+
+        # The survey name becomes an input field
+        survey_name_input = self.wait_for(
+            lambda: self.browser.find_element(By.ID, "survey-name-input")
+        )
+
+        # She clears the field and enters a new name
+        survey_name_input.clear()
+        survey_name_input.send_keys("Updated Survey Name")
+
+        # She saves the change (either by pressing Enter or clicking Save)
+        survey_name_input.send_keys(Keys.ENTER)
+        # Or: self.browser.find_element(By.ID, "save-survey-name-btn").click()
+
+        # The page updates to show the new name
+        self.wait_for(
+            lambda: self.assertIn(
+                "Updated Survey Name",
+                self.browser.find_element(By.ID, "main-content").text,
+            )
+        )
+
+        # The input field disappears and the name is shown as text again
+        survey_name_display = self.browser.find_element(By.ID, "survey-name-display")
+        self.assertEqual(survey_name_display.text, "Updated Survey Name")
+
+        # She navigates to "My Surveys" to verify the change persisted
+        self.browser.find_element(By.LINK_TEXT, "My Surveys").click()
+
+        self.wait_for(
+            lambda: self.assertIn(
+                "Updated Survey Name",
+                self.browser.find_element(By.ID, "main-content").text,
+            )
+        )
+        # The old name should not appear
+        self.assertNotIn(
+            "Initial Survey Name", self.browser.find_element(By.ID, "main-content").text
+        )

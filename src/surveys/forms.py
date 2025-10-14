@@ -39,18 +39,6 @@ class QuestionForm(forms.Form):
         )
 
 
-class SurveyCreationForm(QuestionForm):
-    survey_name = forms.CharField(
-        error_messages={"required": EMPTY_SURVEY_NAME_ERROR},
-        required=True,
-    )
-
-    def save(self):
-        survey = Survey.objects.create(name=self.cleaned_data["survey_name"])
-        super().save(for_survey=survey)
-        return survey
-
-
 class SurveyAnswerForm(forms.Form):
     def __init__(self, survey, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -129,3 +117,37 @@ class SurveyAnswerForm(forms.Form):
                     comment_text=comment_text,
                     submission=submission,
                 )
+
+
+class SurveyCreationForm(QuestionForm):
+    survey_name = forms.CharField(
+        error_messages={"required": EMPTY_SURVEY_NAME_ERROR},
+        required=True,
+    )
+
+    def save(self):
+        survey = Survey.objects.create(name=self.cleaned_data["survey_name"])
+        super().save(for_survey=survey)
+        return survey
+
+
+class SurveyEditForm(forms.ModelForm):
+    class Meta:
+        model = Survey
+        fields = ["name"]
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Survey name",
+                    "id": "survey-name-input",
+                    "required": True,
+                }
+            )
+        }
+        error_messages = {
+            "name": {
+                "required": "Survey name cannot be empty",
+                "max_length": "Survey name is too long",
+            }
+        }

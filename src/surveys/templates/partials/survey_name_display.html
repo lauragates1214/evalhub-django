@@ -1,0 +1,11 @@
+<div id="survey-name-container">
+  <h2 id="survey-name-display" style="display: inline;">{{ survey.name }}</h2>
+  <button id="edit-survey-name-btn" 
+          type="button" 
+          class="btn btn-sm btn-link"
+          hx-get="{% url 'instructors:survey_detail' survey.id %}?edit_mode=true"
+          hx-target="#survey-name-container"
+          hx-swap="outerHTML">
+    Edit
+  </button>
+</div>
