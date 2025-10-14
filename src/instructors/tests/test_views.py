@@ -52,6 +52,32 @@ class InstructorSurveysListViewTest(TestCase):
         self.assertContains(response, "Survey 1")
         self.assertContains(response, "Survey 2")
 
+    def test_returns_survey_list_partial_for_htmx(self):
+        Survey.objects.create(name="Survey 1", owner=self.user)
+        Survey.objects.create(name="Survey 2", owner=self.user)
+
+        response = self.client.get(
+            reverse("instructors:survey_list"), HTTP_HX_REQUEST="true"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "partials/survey_list.html")
+        self.assertContains(response, "Survey 1")
+        self.assertContains(response, "Survey 2")
+
+    def test_survey_names_are_clickable_links_with_htmx(self):
+        Survey.objects.create(name="Survey 1", owner=self.user)
+        Survey.objects.create(name="Survey 2", owner=self.user)
+
+        response = self.client.get(
+            reverse("instructors:survey_list"), HTTP_HX_REQUEST="true"
+        )
+
+        # Check that survey names have htmx attributes
+        self.assertContains(response, 'hx-get="')
+        self.assertContains(response, 'hx-target="#main-content"')
+        self.assertContains(response, "<a", count=2)  # Two surveys = two links
+
 
 class InstructorCreateSurveyViewTest(TestCase):
     def setUp(self):
@@ -79,6 +105,44 @@ class InstructorCreateSurveyViewTest(TestCase):
         new_survey = Survey.objects.first()
         self.assertEqual(new_survey.name, "Test Survey")
         self.assertEqual(new_survey.owner, self.user)
+
+    def test_get_returns_create_form_partial_for_htmx(self):
+        response = self.client.get(
+            reverse("instructors:create_survey"), HTTP_HX_REQUEST="true"
+        )
+        self.assertTemplateUsed(response, "partials/create_survey.html")
+
+    def test_get_returns_full_page_without_htmx(self):
+        response = self.client.get(reverse("instructors:create_survey"))
+        self.assertTemplateUsed(response, "dashboard.html")
+
+    def test_post_returns_survey_editor_partial_for_htmx(self):
+        response = self.client.post(
+            reverse("instructors:create_survey"),
+            {"survey_name": "Test Survey"},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertTemplateUsed(response, "partials/survey_editor.html")
+        self.assertContains(response, "Test Survey")
+
+    def test_post_sets_hx_push_url_header(self):
+        response = self.client.post(
+            reverse("instructors:create_survey"),
+            {"survey_name": "Test Survey"},
+            HTTP_HX_REQUEST="true",
+        )
+
+        survey = Survey.objects.first()
+        self.assertEqual(response["HX-Push-Url"], f"/instructor/surveys/{survey.id}/")
+
+    def test_post_without_htmx_redirects_to_survey_detail(self):
+        response = self.client.post(
+            reverse("instructors:create_survey"), {"survey_name": "Test Survey"}
+        )
+        new_survey = Survey.objects.first()
+        self.assertRedirects(
+            response, reverse("instructors:survey_detail", args=[new_survey.id])
+        )
 
 
 class InstructorSurveyDetailViewTest(TestCase):
@@ -207,6 +271,37 @@ class InstructorSurveyDetailViewTest(TestCase):
         self.assertContains(response, "Export to CSV")
         self.assertContains(response, f"/surveys/{self.survey.id}/export/")
 
+    def test_returns_survey_editor_partial_for_htmx(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id]),
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "partials/survey_editor.html")
+        self.assertContains(response, "Test Survey")
+
+    def test_returns_full_dashboard_for_direct_navigation(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "dashboard.html")
+        self.assertEqual(response.context["initial_view"], "survey_detail")
+        self.assertEqual(response.context["survey"], self.survey)
+
+    def test_view_responses_link_has_htmx_attributes(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id]),
+            HTTP_HX_REQUEST="true",
+        )
+
+        # Check that View Responses link has htmx attributes
+        self.assertContains(response, "hx-get=")
+        self.assertContains(response, 'hx-target="#main-content"')
+        # The link should point to the instructor URL
+        self.assertContains(response, "/instructor/surveys/")
+        self.assertContains(response, "/responses/")
+
 
 class InstructorSurveyResponsesViewTest(TestCase):
     def setUp(self):
@@ -228,6 +323,16 @@ class InstructorSurveyResponsesViewTest(TestCase):
             reverse("instructors:survey_responses", args=[self.survey.id])
         )
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Test Survey")
+
+    def test_responses_page_returns_partial_for_htmx(self):
+        response = self.client.get(
+            reverse("instructors:survey_responses", args=[self.survey.id]),
+            HTTP_HX_REQUEST="true",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "partials/survey_responses.html")
         self.assertContains(response, "Test Survey")
 
 

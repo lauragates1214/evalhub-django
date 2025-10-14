@@ -78,7 +78,7 @@ class SurveyModelTest(AuthenticatedTestCase):
 
     def test_get_absolute_url(self):
         survey = self.create_survey()
-        self.assertEqual(survey.get_absolute_url(), f"/surveys/{survey.id}/")
+        self.assertEqual(survey.get_absolute_url(), f"/instructor/surveys/{survey.id}/")
 
     def test_survey_questions_order(self):
         survey = self.create_survey()
