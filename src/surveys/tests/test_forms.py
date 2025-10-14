@@ -205,3 +205,132 @@ class SurveyAnswerFormTest(AuthenticatedTestCase):
         submission = Submission.objects.first()
         self.assertEqual(submission.survey, survey)
         self.assertEqual(submission.answers.count(), 1)
+
+    def test_form_saves_multiple_checkbox_selections(self):
+        survey = self.create_survey()
+        question = Question.objects.create(
+            survey=survey,
+            text="Which topics interested you?",
+            question_type="checkbox",
+            options=["Python", "Django", "Testing", "Deployment"],
+        )
+
+        form = SurveyAnswerForm(
+            survey=survey,
+            data={
+                f"response_{question.id}": ["Python", "Django", "Testing"],
+            },
+        )
+
+        self.assertTrue(form.is_valid())
+        form.save()
+
+        answer = Answer.objects.first()
+        # Checkbox answers should be stored as comma-separated or list format
+        # Adjust assertion based on how your model handles multiple selections
+        self.assertIn("Python", answer.answer_text)
+        self.assertIn("Django", answer.answer_text)
+        self.assertIn("Testing", answer.answer_text)
+
+    def test_form_with_empty_survey(self):
+        survey = self.create_survey()
+
+        form = SurveyAnswerForm(survey=survey)
+
+        # Form with no fields should have no fields to validate
+        self.assertEqual(len(form.fields), 0)
+
+        # When submitting empty data, form should still be valid
+        form = SurveyAnswerForm(survey=survey, data={})
+        self.assertTrue(form.is_valid())
+
+        # Should create submission but no answers
+        form.save()
+        self.assertEqual(Submission.objects.count(), 1)
+        self.assertEqual(Answer.objects.count(), 0)
+
+    def test_form_handles_mixed_question_types(self):
+        survey = self.create_survey()
+
+        text_q = Question.objects.create(
+            survey=survey, text="Name", question_type="text"
+        )
+
+        rating_q = Question.objects.create(
+            survey=survey,
+            text="Rate the course",
+            question_type="rating",
+            options=[1, 2, 3, 4, 5],
+        )
+
+        checkbox_q = Question.objects.create(
+            survey=survey,
+            text="Select topics",
+            question_type="checkbox",
+            options=["Topic A", "Topic B"],
+        )
+
+        form = SurveyAnswerForm(
+            survey=survey,
+            data={
+                f"response_{text_q.id}": "John Doe",
+                f"response_{rating_q.id}": "4",
+                f"response_{checkbox_q.id}": ["Topic A"],
+                f"comment_{rating_q.id}": "Good course",
+            },
+        )
+
+        self.assertTrue(form.is_valid())
+        form.save()
+
+        # Check all answers were saved correctly
+        self.assertEqual(Answer.objects.count(), 3)
+
+        text_answer = Answer.objects.get(question=text_q)
+        self.assertEqual(text_answer.answer_text, "John Doe")
+
+        rating_answer = Answer.objects.get(question=rating_q)
+        self.assertEqual(rating_answer.answer_text, "4")
+        self.assertEqual(rating_answer.comment_text, "Good course")
+
+        checkbox_answer = Answer.objects.get(question=checkbox_q)
+        self.assertIn("Topic A", checkbox_answer.answer_text)
+
+    def test_form_validates_required_fields_when_configured(self):
+        survey = self.create_survey()
+        question = Question.objects.create(
+            survey=survey,
+            text="Required question",
+            question_type="text",
+            # Assuming there might be a 'required' field in future
+        )
+
+        form = SurveyAnswerForm(
+            survey=survey,
+            data={f"response_{question.id}": ""},
+        )
+
+        # Currently all fields are optional (required=False)
+        # This test documents current behaviour
+        self.assertTrue(form.is_valid())
+
+        # If implement required fields later, update this test
+
+    def test_form_handles_special_characters_in_answers(self):
+        survey = self.create_survey()
+        question = Question.objects.create(
+            survey=survey, text="Feedback", question_type="text"
+        )
+
+        special_text = "Test with 'quotes' and \"double quotes\" & symbols < > /"
+
+        form = SurveyAnswerForm(
+            survey=survey,
+            data={f"response_{question.id}": special_text},
+        )
+
+        self.assertTrue(form.is_valid())
+        form.save()
+
+        answer = Answer.objects.first()
+        self.assertEqual(answer.answer_text, special_text)
