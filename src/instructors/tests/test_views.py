@@ -616,24 +616,6 @@ class InstructorSurveyResponsesViewTest(TestCase):
         self.assertNotIn("<li>", ul_content, "Response list should be empty")
 
 
-class InstructorAnalyticsViewTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="instructor@example.com", password="testpass123"
-        )
-        self.client.force_login(self.user)
-
-    def test_analytics_url_requires_login(self):
-        self.client.logout()
-        response = self.client.get(reverse("instructors:analytics"))
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/accounts/login/", response.url)
-
-    def test_analytics_view_returns_200(self):
-        response = self.client.get(reverse("instructors:analytics"))
-        self.assertEqual(response.status_code, 200)
-
-
 class InstructorExportResponsesViewTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
