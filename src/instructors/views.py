@@ -183,8 +183,3 @@ def export_responses(request, survey_id):
         writer.writerow(row)
 
     return response
-
-
-@login_required
-def analytics(request):
-    return HttpResponse("Instructor analytics placeholder")

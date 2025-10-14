@@ -26,9 +26,4 @@ urlpatterns = [
         views.export_responses,
         name="export_responses",
     ),
-    path(
-        "analytics/",
-        views.analytics,
-        name="analytics",
-    ),
 ]
