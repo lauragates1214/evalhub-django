@@ -7,7 +7,17 @@
         hx-target="#question-container"
         hx-swap="innerHTML">
     {% csrf_token %}
-    <input type="text" id="id_text" name="text" placeholder="Add a question">
+    <input type="text" 
+           id="id_text" 
+           name="text" 
+           placeholder="Add a question"
+           class="form-control {% if form.errors %}is-invalid{% endif %}"
+           value="{{ form.text.value|default:'' }}">
+    {% if form.errors %}
+      <div class="invalid-feedback">
+        {{ form.errors.text.0 }}
+      </div>
+    {% endif %}
     <button type="submit">Add Question</button>
   </form>
   
@@ -27,5 +37,4 @@
     hx-push-url="true">
     View Responses
   </a>
-  <a href="{% url 'surveys:export_responses' survey.id %}">Export to CSV</a>
-
+  <a href="{% url 'instructors:export_responses' survey.id %}">Export to CSV</a>

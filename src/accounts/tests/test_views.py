@@ -5,6 +5,10 @@ from accounts.models import User
 
 
 class LoginRedirectTest(TestCase):
+    def test_unauthenticated_root_redirects_to_login(self):
+        response = self.client.get("/")
+        self.assertRedirects(response, "/accounts/login/?next=/")
+
     def test_instructor_redirected_to_dashboard_after_login(self):
         # All users who login are instructors
         # Students never login - they access surveys anonymously
@@ -18,8 +22,8 @@ class LoginRedirectTest(TestCase):
             {"username": "instructor@example.com", "password": "testpass123"},
         )
 
-        # All logged-in users should go to dashboard
-        self.assertRedirects(response, "/dashboard/")
+        # All logged-in users should go to instructor dashboard
+        self.assertRedirects(response, "/instructor/")
 
 
 class LoginViewTest(TestCase):

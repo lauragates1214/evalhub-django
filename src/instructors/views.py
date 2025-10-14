@@ -2,6 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
+import csv
+
 from surveys.models import Survey
 
 
@@ -51,19 +53,56 @@ def create_survey(request):
 
 @login_required
 def survey_detail(request, survey_id):
+    from surveys.forms import QuestionForm
+
     survey_id = request.resolver_match.kwargs.get("survey_id")
     survey = get_object_or_404(Survey, id=survey_id)
 
     if survey.owner != request.user:  # Check ownership
         return HttpResponseForbidden()  # Returns 403
 
+    if request.method == "POST":
+        # Handle adding a question
+        form = QuestionForm(for_survey=survey, data=request.POST)
+
+        if form.is_valid():
+            form.save()
+            # Return updated question list for htmx
+            if request.headers.get("HX-Request"):
+                form = QuestionForm(for_survey=survey)  # Fresh form
+                return render(
+                    request,
+                    "partials/question_list.html",
+                    {"survey": survey, "form": form},
+                )
+            return redirect("instructors:survey_detail", survey_id=survey.id)
+        else:
+            # Return form with errors
+            if request.headers.get("HX-Request"):
+                return render(
+                    request,
+                    "partials/question_list.html",
+                    {"survey": survey, "form": form},
+                )
+            # For non-htmx, show full page with errors
+            return render(
+                request,
+                "dashboard.html",
+                {"initial_view": "survey_detail", "survey": survey, "form": form},
+            )
+
+    # GET request - create fresh form
+    form = QuestionForm(for_survey=survey)
+
     if request.headers.get("HX-Request"):
-        return render(request, "partials/survey_editor.html", {"survey": survey})
+        return render(
+            request, "partials/survey_editor.html", {"survey": survey, "form": form}
+        )
     else:
         return render(
             request,
             "dashboard.html",
-            {"initial_view": "survey_detail", "survey": survey},
+            {"initial_view": "survey_detail", "survey": survey, "form": form},
         )
 
 
@@ -78,6 +117,39 @@ def survey_responses(request, survey_id):
         "dashboard.html",
         {"initial_view": "survey_responses", "survey": survey},
     )
+
+
+@login_required
+def export_responses(request, survey_id):
+    survey = get_object_or_404(Survey, id=survey_id)
+
+    # Check ownership
+    if survey.owner != request.user:
+        return HttpResponseForbidden()
+
+    # Create the HttpResponse object with CSV header
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = (
+        f'attachment; filename="survey_{survey_id}_responses.csv"'
+    )
+
+    writer = csv.writer(response)
+
+    # Write header row with submission ID and question texts
+    questions = survey.question_set.all()
+    header = ["Submission ID"] + [q.text for q in questions]
+    writer.writerow(header)
+
+    # Write data rows - one row per submission
+    for submission in survey.submissions.all():
+        row = [submission.id]
+        for question in questions:
+            # Find the answer for this question in this submission
+            answer = submission.answers.filter(question=question).first()
+            row.append(answer.answer_text if answer else "")
+        writer.writerow(row)
+
+    return response
 
 
 @login_required

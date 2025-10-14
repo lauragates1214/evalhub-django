@@ -13,7 +13,6 @@ class StudentSurveyViewTest(TestCase):
         self.question = Question.objects.create(survey=self.survey, text="How was it?")
 
     def test_student_can_access_survey_without_login(self):
-        """Students don't need to log in to take surveys"""
         response = self.client.get(reverse("students:survey", args=[self.survey.id]))
         self.assertEqual(response.status_code, 200)
 
@@ -28,6 +27,16 @@ class StudentSurveyViewTest(TestCase):
     def test_survey_view_shows_questions(self):
         response = self.client.get(reverse("students:survey", args=[self.survey.id]))
         self.assertContains(response, "How was it?")
+
+    def test_survey_view_displays_form_inputs_for_questions(self):
+        q1 = Question.objects.create(survey=self.survey, text="Question 1")
+        q2 = Question.objects.create(survey=self.survey, text="Question 2")
+
+        response = self.client.get(reverse("students:survey", args=[self.survey.id]))
+
+        self.assertContains(response, f'name="response_{q1.id}"')
+        self.assertContains(response, f'name="response_{q2.id}"')
+        self.assertContains(response, 'type="submit"')
 
     def test_survey_view_404_for_nonexistent_survey(self):
         response = self.client.get(reverse("students:survey", args=[999]))

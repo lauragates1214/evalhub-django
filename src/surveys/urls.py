@@ -14,5 +14,4 @@ urlpatterns = [
         views.dashboard_survey_responses,
         name="dashboard_survey_responses",
     ),
-    path("<int:survey_id>/export/", views.export_responses, name="export_responses"),
 ]

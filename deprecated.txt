@@ -30,3 +30,6 @@ URLs in evalhub/urls.py and surveys/urls.py:
 
 Old /dashboard/ routes
 Old home page routes
+
+The old view_survey view at /surveys/{id}/ should also be deprecated and eventually removed, along with its URL mapping.
+my_surveys view and its URL

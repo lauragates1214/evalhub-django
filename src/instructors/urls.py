@@ -22,6 +22,11 @@ urlpatterns = [
         name="survey_responses",
     ),
     path(
+        "surveys/<int:survey_id>/export/",
+        views.export_responses,
+        name="export_responses",
+    ),
+    path(
         "analytics/",
         views.analytics,
         name="analytics",
