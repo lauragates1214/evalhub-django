@@ -87,6 +87,20 @@ class FunctionalTest(StaticLiveServerTestCase):
             )
         )
 
+    def scroll_to_and_click(self, element):
+        """Scroll an element into view and click it, like a real user would"""
+        import time
+
+        # Scroll into view
+        self.browser.execute_script(
+            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+            element,
+        )
+        # Give the scroll a moment to complete
+        time.sleep(0.5)
+        # Use JavaScript click as Firefox is being strict about viewport positioning
+        self.browser.execute_script("arguments[0].click();", element)
+
     def create_survey_with_questions(self, owner_email, question_texts):
         """Helper to create a survey with questions for testing (bypasses UI)"""
         from accounts.models import User

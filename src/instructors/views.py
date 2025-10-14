@@ -57,8 +57,8 @@ def survey_detail(request, survey_id):
     survey_id = request.resolver_match.kwargs.get("survey_id")
     survey = get_object_or_404(Survey, id=survey_id)
 
-    if survey.owner != request.user:  # Check ownership
-        return HttpResponseForbidden()  # Returns 403
+    if survey.owner != request.user:
+        return HttpResponse("403 - Forbidden", status=403)
 
     if request.method == "POST":
         # Get survey name if provided
@@ -128,12 +128,27 @@ def survey_detail(request, survey_id):
 def survey_responses(request, survey_id):
     survey = get_object_or_404(Survey, id=survey_id)
 
+    # Check ownership
+    if survey.owner != request.user:
+        return HttpResponse("403 - Forbidden", status=403)
+
+    # Group answers by question for easier display
+    questions_with_answers = []
+    for question in survey.question_set.all():
+        answers = []
+        for submission in survey.submissions.all():
+            for answer in submission.answers.filter(question=question):
+                answers.append(answer)
+        questions_with_answers.append({"question": question, "answers": answers})
+
+    context = {"survey": survey, "questions_with_answers": questions_with_answers}
+
     if request.headers.get("HX-Request"):
-        return render(request, "partials/survey_responses.html", {"survey": survey})
+        return render(request, "partials/survey_responses.html", context)
     return render(
         request,
         "dashboard.html",
-        {"initial_view": "survey_responses", "survey": survey},
+        {"initial_view": "survey_responses", **context},
     )
 
 

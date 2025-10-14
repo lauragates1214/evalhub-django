@@ -394,6 +394,37 @@ class InstructorSurveyDetailViewTest(TestCase):
         # Should have the current survey name as the value
         self.assertContains(response, 'value="Test Survey"')
 
+    def test_forbidden_response_contains_403_in_body(self):
+        other_user = User.objects.create_user(
+            email="other@example.com", password="pass"
+        )
+        other_survey = Survey.objects.create(name="Other Survey", owner=other_user)
+
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[other_survey.id])
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertContains(response, "403", status_code=403)
+
+    def test_view_responses_link_is_accessible(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id])
+        )
+
+        # Check the link exists
+        self.assertContains(
+            response,
+            f'href="{reverse("instructors:survey_responses", args=[self.survey.id])}"',
+        )
+        # Check it contains the text "View Responses"
+        self.assertContains(response, "View Responses")
+        # Check it's an anchor tag by looking for the opening tag with href
+        self.assertContains(
+            response,
+            f'<a href="{reverse("instructors:survey_responses", args=[self.survey.id])}"',
+        )
+
 
 class InstructorSurveyResponsesViewTest(TestCase):
     def setUp(self):
@@ -523,6 +554,66 @@ class InstructorSurveyResponsesViewTest(TestCase):
 
         self.assertContains(response, "5")
         self.assertContains(response, "Excellent course with great examples!")
+
+    def test_404_response_contains_not_found(self):
+        response = self.client.get(reverse("instructors:survey_responses", args=[999]))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertContains(response, "Not Found", status_code=404)
+
+    def test_empty_survey_responses_has_no_list_items(self):
+        Question.objects.create(survey=self.survey, text="Question with no answers")
+
+        response = self.client.get(
+            reverse("instructors:survey_responses", args=[self.survey.id])
+        )
+
+        # Check that the response doesn't contain any <li> tags within the response section
+        # Since there are no answers, there should be no list items
+        content = response.content.decode()
+
+        # Find the section after the question text
+        question_pos = content.find("Question with no answers")
+        self.assertNotEqual(question_pos, -1, "Question should be in response")
+
+        # Get content after the question
+        content_after_question = content[question_pos:]
+
+        # Find the next </ul> tag
+        ul_close = content_after_question.find("</ul>")
+        if ul_close != -1:
+            # Check the content between question and </ul> has no <li> tags
+            ul_content = content_after_question[:ul_close]
+            self.assertNotIn(
+                "<li>", ul_content, "Should have no list items when no answers exist"
+            )
+
+    def test_empty_list_html_structure(self):
+        Question.objects.create(survey=self.survey, text="Question with no answers")
+
+        response = self.client.get(
+            reverse("instructors:survey_responses", args=[self.survey.id])
+        )
+
+        # Check that the main content area has no response list items
+        # Look specifically in the main-content section
+        content = response.content.decode()
+
+        # Find the main-content div
+        main_start = content.find('<main id="main-content"')
+        main_end = content.find("</main>")
+        main_content = content[main_start:main_end]
+
+        # Find the ul after the question
+        question_pos = main_content.find("Question with no answers")
+        content_after_question = main_content[question_pos:]
+
+        # Check that there are no <li> tags in the response list
+        ul_start = content_after_question.find("<ul>")
+        ul_end = content_after_question.find("</ul>")
+        ul_content = content_after_question[ul_start:ul_end]
+
+        self.assertNotIn("<li>", ul_content, "Response list should be empty")
 
 
 class InstructorAnalyticsViewTest(TestCase):

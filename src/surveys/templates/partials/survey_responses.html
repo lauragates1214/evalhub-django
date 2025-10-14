@@ -1,10 +1,15 @@
 <h2>{{ survey.name }} Responses</h2>
 
-{% for question in survey.question_set.all %}
-    <h3>{{ question.text }}</h3>
+{% for item in questions_with_answers %}
+    <h3>{{ item.question.text }}</h3>
     <ul>
-        {% for answer in question.answer_set.all %}
-            <li>{{ answer.answer_text }}</li>
+        {% for answer in item.answers %}
+            <li>
+                {{ answer.answer_text }}
+                {% if answer.comment_text %}
+                    - {{ answer.comment_text }}
+                {% endif %}
+            </li>
         {% endfor %}
     </ul>
 {% endfor %}
