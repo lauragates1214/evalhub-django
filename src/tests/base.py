@@ -20,7 +20,7 @@ class AuthenticatedTestCase(TestCase):
         user.save()
         return user
 
-    def create_survey(self, owner=None):
+    def create_survey(self, owner=None, name="Test Survey"):
         """Helper to create a survey with optional owner"""
         if owner is None:
             owner = self.user

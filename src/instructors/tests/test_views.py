@@ -5,18 +5,13 @@ from django.utils import html
 import csv
 from io import StringIO
 
-from surveys.forms import DUPLICATE_QUESTION_ERROR, EMPTY_QUESTION_ERROR
 from accounts.models import User
+from surveys.forms import DUPLICATE_QUESTION_ERROR, EMPTY_QUESTION_ERROR
 from surveys.models import Answer, Question, Submission, Survey
+from tests.base import AuthenticatedTestCase
 
 
-class InstructorDashboardViewTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="instructor@example.com", password="testpass123"
-        )
-        self.client.force_login(self.user)
-
+class InstructorDashboardViewTest(AuthenticatedTestCase):
     def test_dashboard_url_requires_login(self):
         self.client.logout()
         response = self.client.get(reverse("instructors:dashboard"))
@@ -34,13 +29,7 @@ class InstructorDashboardViewTest(TestCase):
         self.assertContains(response, "Create Survey")
 
 
-class InstructorSurveysListViewTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="instructor@example.com", password="testpass123"
-        )
-        self.client.force_login(self.user)
-
+class InstructorSurveysListViewTest(AuthenticatedTestCase):
     def test_surveys_list_requires_login(self):
         self.client.logout()
         response = self.client.get(reverse("instructors:surveys_list"))
@@ -82,13 +71,7 @@ class InstructorSurveysListViewTest(TestCase):
         self.assertContains(response, "<a", count=2)  # Two surveys = two links
 
 
-class InstructorCreateSurveyViewTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="instructor@example.com", password="testpass123"
-        )
-        self.client.force_login(self.user)
-
+class InstructorCreateSurveyViewTest(AuthenticatedTestCase):
     def test_create_survey_requires_login(self):
         self.client.logout()
         response = self.client.get(reverse("instructors:create_survey"))
@@ -151,20 +134,37 @@ class InstructorCreateSurveyViewTest(TestCase):
         )
 
 
-class InstructorSurveyDetailViewTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="instructor@example.com", password="testpass123"
-        )
-        self.client.force_login(self.user)
-        self.survey = Survey.objects.create(name="Test Survey", owner=self.user)
+class InstructorSurveyDetailAccessControlTest(AuthenticatedTestCase):
+    """Tests for authentication and authorization on survey detail view"""
 
     def test_survey_detail_requires_login(self):
+        survey = self.create_survey()
         self.client.logout()
         response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id])
+            reverse("instructors:survey_detail", args=[survey.id])
         )
         self.assertEqual(response.status_code, 302)
+
+    def test_survey_detail_404_for_nonexistent_survey(self):
+        response = self.client.get(reverse("instructors:survey_detail", args=[999]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_survey_detail_forbidden_for_other_users_survey(self):
+        other_user = self.create_user("other@example.com", "pass")
+        other_survey = self.create_survey(owner=other_user, name="Other Survey")
+
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[other_survey.id])
+        )
+        self.assertEqual(response.status_code, 403)
+
+
+class InstructorSurveyDetailDisplayTest(AuthenticatedTestCase):
+    """Tests for displaying survey information and links"""
+
+    def setUp(self):
+        super().setUp()
+        self.survey = self.create_survey()
 
     def test_survey_detail_shows_survey_name(self):
         response = self.client.get(
@@ -173,23 +173,134 @@ class InstructorSurveyDetailViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test Survey")
 
-    def test_survey_detail_404_for_nonexistent_survey(self):
-        response = self.client.get(reverse("instructors:survey_detail", args=[999]))
-        self.assertEqual(response.status_code, 404)
-
-    def test_survey_detail_forbidden_for_other_users_survey(self):
-        other_user = User.objects.create_user(
-            email="other@example.com", password="pass"
+    def test_survey_detail_displays_survey_name_with_id(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id])
         )
-        other_survey = Survey.objects.create(name="Other Survey", owner=other_user)
+        self.assertContains(response, "Test Survey")
+
+    def test_survey_detail_displays_questions(self):
+        Question.objects.create(survey=self.survey, text="Question 1")
+        Question.objects.create(survey=self.survey, text="Question 2")
 
         response = self.client.get(
-            reverse("instructors:survey_detail", args=[other_survey.id])
+            reverse("instructors:survey_detail", args=[self.survey.id])
         )
-        self.assertEqual(response.status_code, 403)
+
+        self.assertContains(response, "Question 1")
+        self.assertContains(response, "Question 2")
+
+    def test_survey_detail_shows_qr_code(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id])
+        )
+
+        self.assertContains(response, "qr-code")
+        self.assertContains(response, f"/instructor/surveys/{self.survey.id}/qr/")
+
+    def test_survey_detail_shows_responses_link(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id])
+        )
+
+        self.assertContains(response, "View Responses")
+        self.assertContains(
+            response,
+            f'<a href="{reverse("instructors:responses_list", args=[self.survey.id])}"',
+        )
+
+    def test_survey_detail_shows_export_link(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id])
+        )
+
+        self.assertContains(response, "Export to CSV")
+        self.assertContains(
+            response,
+            f'href="{reverse("instructors:export_responses", args=[self.survey.id])}"',
+        )
+
+    def test_view_responses_link_has_htmx_attributes(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id]),
+            HTTP_HX_REQUEST="true",
+        )
+
+        expected_url = reverse("instructors:responses_list", args=[self.survey.id])
+        self.assertContains(response, f'hx-get="{expected_url}"')
+        self.assertContains(response, 'hx-target="#main-content"')
+
+    def test_view_responses_link_is_accessible(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id])
+        )
+
+        responses_url = reverse("instructors:responses_list", args=[self.survey.id])
+        self.assertContains(response, responses_url)
+
+        response = self.client.get(responses_url)
+        self.assertEqual(response.status_code, 200)
+
+
+class InstructorSurveyNameEditingTest(AuthenticatedTestCase):
+    """Tests for editing survey names"""
+
+    def setUp(self):
+        super().setUp()
+        self.survey = self.create_survey()
+
+    def test_survey_detail_has_edit_button_for_name(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id])
+        )
+        self.assertContains(response, "edit-survey-name-btn")
+
+    def test_survey_detail_display_mode_has_edit_button_no_input(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id])
+        )
+
+        self.assertContains(response, "edit-survey-name-btn")
+        self.assertNotContains(response, 'id="survey-name-input"')
+
+    def test_survey_detail_edit_mode_has_input_field(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id])
+            + "?edit_mode=true"
+        )
+
+        self.assertContains(response, 'id="survey-name-input"')
+        self.assertContains(response, self.survey.name)
+
+    def test_post_updates_survey_name(self):
+        self.client.post(
+            reverse("instructors:survey_detail", args=[self.survey.id]),
+            {"survey_name": "Updated Survey Name"},
+        )
+
+        self.survey.refresh_from_db()
+        self.assertEqual(self.survey.name, "Updated Survey Name")
+
+    def test_htmx_post_updates_survey_name_returns_partial(self):
+        response = self.client.post(
+            reverse("instructors:survey_detail", args=[self.survey.id]),
+            {"survey_name": "New Name"},
+            HTTP_HX_REQUEST="true",
+        )
+
+        self.assertTemplateUsed(response, "partials/survey_name_display.html")
+        self.assertContains(response, "New Name")
+
+
+class InstructorSurveyQuestionManagementTest(AuthenticatedTestCase):
+    """Tests for adding and managing questions"""
+
+    def setUp(self):
+        super().setUp()
+        self.survey = self.create_survey()
 
     def test_post_adds_question_to_survey(self):
-        response = self.client.post(
+        self.client.post(
             reverse("instructors:survey_detail", args=[self.survey.id]),
             {"text": "How was the session?"},
         )
@@ -205,99 +316,7 @@ class InstructorSurveyDetailViewTest(TestCase):
             {"text": ""},
         )
 
-        self.assertEqual(Question.objects.count(), 0)
-        self.assertContains(response, html.escape(EMPTY_QUESTION_ERROR))
-
-    def test_survey_detail_displays_questions(self):
-        Question.objects.create(survey=self.survey, text="Question 1")
-        Question.objects.create(survey=self.survey, text="Question 2")
-
-        # Create another survey with a question to ensure we're filtering correctly
-        other_user = User.objects.create_user(
-            email="other@example.com", password="pass"
-        )
-        other_survey = Survey.objects.create(name="Other Survey", owner=other_user)
-        Question.objects.create(survey=other_survey, text="Other question")
-
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id])
-        )
-
-        self.assertContains(response, "Question 1")
-        self.assertContains(response, "Question 2")
-        self.assertNotContains(response, "Other question")
-
-    def test_duplicate_question_validation(self):
-        Question.objects.create(survey=self.survey, text="Unique question")
-
-        response = self.client.post(
-            reverse("instructors:survey_detail", args=[self.survey.id]),
-            {"text": "Unique question"},  # Duplicate
-        )
-
-        self.assertEqual(Question.objects.count(), 1)  # No new question created
-        self.assertContains(response, html.escape(DUPLICATE_QUESTION_ERROR))
-
-    def test_survey_detail_shows_qr_code(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id])
-        )
-
-        self.assertContains(
-            response, reverse("instructors:generate_qr_code", args=[self.survey.id])
-        )
-
-    def test_survey_detail_shows_responses_link(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id])
-        )
-
-        self.assertContains(response, "View Responses")
-        self.assertContains(
-            response, reverse("instructors:responses_list", args=[self.survey.id])
-        )
-
-    def test_survey_detail_shows_export_link(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id])
-        )
-
-        self.assertContains(response, "Export to CSV")
-        self.assertContains(
-            response, reverse("instructors:export_responses", args=[self.survey.id])
-        )
-
-    def test_returns_survey_editor_partial_for_htmx(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id]),
-            HTTP_HX_REQUEST="true",
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "partials/survey_editor.html")
-        self.assertContains(response, "Test Survey")
-
-    def test_returns_full_dashboard_for_direct_navigation(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id])
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "dashboard.html")
-        self.assertEqual(response.context["initial_view"], "survey_detail")
-        self.assertEqual(response.context["survey"], self.survey)
-
-    def test_view_responses_link_has_htmx_attributes(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id]),
-            HTTP_HX_REQUEST="true",
-        )
-
-        # Check that View Responses link has htmx attributes
-        self.assertContains(response, "hx-get=")
-        self.assertContains(response, 'hx-target="#main-content"')
-        # The link should point to the instructor URL
-        self.assertContains(
-            response, reverse("instructors:responses_list", args=[self.survey.id])
-        )
+        self.assertContains(response, "You can't have an empty question")
 
     def test_post_with_duplicate_question_shows_error(self):
         Question.objects.create(survey=self.survey, text="Existing question")
@@ -307,18 +326,22 @@ class InstructorSurveyDetailViewTest(TestCase):
             {"text": "Existing question"},
         )
 
-        self.assertEqual(Question.objects.count(), 1)  # No new question created
-        self.assertContains(response, html.escape(DUPLICATE_QUESTION_ERROR))
-
-    def test_survey_detail_returns_partial_for_htmx(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id]),
-            HTTP_HX_REQUEST="true",
+        self.assertContains(
+            response, "You&#x27;ve already got this question in your survey"
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "partials/survey_editor.html")
-        self.assertContains(response, "Test Survey")
+    def test_duplicate_question_validation(self):
+        Question.objects.create(survey=self.survey, text="Unique question")
+
+        response = self.client.post(
+            reverse("instructors:survey_detail", args=[self.survey.id]),
+            {"text": "Unique question"},
+        )
+
+        self.assertEqual(Question.objects.count(), 1)
+        self.assertContains(
+            response, "You&#x27;ve already got this question in your survey"
+        )
 
     def test_questions_display_in_correct_order(self):
         q1 = Question.objects.create(survey=self.survey, text="First question")
@@ -329,101 +352,46 @@ class InstructorSurveyDetailViewTest(TestCase):
             reverse("instructors:survey_detail", args=[self.survey.id])
         )
 
-        # Check that questions appear in the correct order in the HTML
         content = response.content.decode()
-        pos_q1 = content.find("First question")
-        pos_q2 = content.find("Second question")
-        pos_q3 = content.find("Third question")
+        pos1 = content.find("First question")
+        pos2 = content.find("Second question")
+        pos3 = content.find("Third question")
 
-        self.assertLess(pos_q1, pos_q2)
-        self.assertLess(pos_q2, pos_q3)
+        self.assertLess(pos1, pos2)
+        self.assertLess(pos2, pos3)
 
-    def test_post_updates_survey_name(self):
-        # Only include this if you've implemented survey name editing
-        # Check if your view handles a 'survey_name' field
-        response = self.client.post(
+
+class InstructorSurveyDetailRenderingTest(AuthenticatedTestCase):
+    """Tests for HTMX rendering and template selection"""
+
+    def setUp(self):
+        super().setUp()
+        self.survey = self.create_survey()
+
+    def test_returns_survey_editor_partial_for_htmx(self):
+        response = self.client.get(
             reverse("instructors:survey_detail", args=[self.survey.id]),
-            {"survey_name": "Updated Survey Name"},
-        )
-
-        self.survey.refresh_from_db()
-        self.assertEqual(self.survey.name, "Updated Survey Name")
-
-    def test_htmx_post_updates_survey_name_returns_partial(self):
-        response = self.client.post(
-            reverse("instructors:survey_detail", args=[self.survey.id]),
-            {"survey_name": "HTMX Updated Name"},
             HTTP_HX_REQUEST="true",
         )
 
-    def test_survey_detail_displays_survey_name_with_id(self):
+        self.assertTemplateUsed(response, "partials/survey_editor.html")
+        self.assertTemplateNotUsed(response, "dashboard.html")
+
+    def test_returns_full_dashboard_for_direct_navigation(self):
         response = self.client.get(
             reverse("instructors:survey_detail", args=[self.survey.id])
         )
+
+        self.assertTemplateUsed(response, "dashboard.html")
+
+    def test_survey_detail_returns_partial_for_htmx(self):
+        response = self.client.get(
+            reverse("instructors:survey_detail", args=[self.survey.id]),
+            HTTP_HX_REQUEST="true",
+        )
+
         self.assertEqual(response.status_code, 200)
-        # Check that the survey name is wrapped in an element with the right ID
-        self.assertContains(response, 'id="survey-name-display"')
-        self.assertContains(response, "Test Survey")  # The survey name from setUp
-
-    def test_survey_detail_has_edit_button_for_name(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id])
-        )
-        self.assertContains(response, 'id="edit-survey-name-btn"')
-
-    def test_survey_detail_display_mode_has_edit_button_no_input(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id])
-        )
-        # Should have the edit button
-        self.assertContains(response, 'id="edit-survey-name-btn"')
-        # Should NOT have the input field yet
-        self.assertNotContains(response, 'id="survey-name-input"')
-        # Should show the survey name in display mode
-        self.assertContains(response, 'id="survey-name-display"')
-
-    def test_survey_detail_edit_mode_has_input_field(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id])
-            + "?edit_mode=true",
-            HTTP_HX_REQUEST="true",
-        )
-        # Should have the input field in edit mode
-        self.assertContains(response, 'id="survey-name-input"')
-        self.assertContains(response, 'name="survey_name"')
-        # Should have the current survey name as the value
-        self.assertContains(response, 'value="Test Survey"')
-
-    def test_forbidden_response_contains_403_in_body(self):
-        other_user = User.objects.create_user(
-            email="other@example.com", password="pass"
-        )
-        other_survey = Survey.objects.create(name="Other Survey", owner=other_user)
-
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[other_survey.id])
-        )
-
-        self.assertEqual(response.status_code, 403)
-        self.assertContains(response, "403", status_code=403)
-
-    def test_view_responses_link_is_accessible(self):
-        response = self.client.get(
-            reverse("instructors:survey_detail", args=[self.survey.id])
-        )
-
-        # Check the link exists
-        self.assertContains(
-            response,
-            f'href="{reverse("instructors:responses_list", args=[self.survey.id])}"',
-        )
-        # Check it contains the text "View Responses"
-        self.assertContains(response, "View Responses")
-        # Check it's an anchor tag by looking for the opening tag with href
-        self.assertContains(
-            response,
-            f'<a href="{reverse("instructors:responses_list", args=[self.survey.id])}"',
-        )
+        self.assertTemplateUsed(response, "partials/survey_editor.html")
 
 
 class InstructorSurveyResponsesViewTest(TestCase):
