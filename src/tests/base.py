@@ -24,7 +24,7 @@ class AuthenticatedTestCase(TestCase):
         """Helper to create a survey with optional owner"""
         if owner is None:
             owner = self.user
-        return Survey.objects.create(owner=owner)
+        return Survey.objects.create(owner=owner, name=name)
 
     def parse_html(self, response):
         """Parse HTML response into lxml object"""

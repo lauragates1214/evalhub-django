@@ -1,4 +1,3 @@
-from django.test import TestCase
 from django.urls import reverse
 from django.utils import html
 
@@ -266,7 +265,8 @@ class InstructorSurveyNameEditingTest(AuthenticatedTestCase):
     def test_survey_detail_edit_mode_has_input_field(self):
         response = self.client.get(
             reverse("instructors:survey_detail", args=[self.survey.id])
-            + "?edit_mode=true"
+            + "?edit_mode=true",
+            HTTP_HX_REQUEST="true",
         )
 
         self.assertContains(response, 'id="survey-name-input"')
@@ -316,7 +316,7 @@ class InstructorSurveyQuestionManagementTest(AuthenticatedTestCase):
             {"text": ""},
         )
 
-        self.assertContains(response, "You can't have an empty question")
+        self.assertContains(response, html.escape("You can't have an empty question"))
 
     def test_post_with_duplicate_question_shows_error(self):
         Question.objects.create(survey=self.survey, text="Existing question")
@@ -394,13 +394,10 @@ class InstructorSurveyDetailRenderingTest(AuthenticatedTestCase):
         self.assertTemplateUsed(response, "partials/survey_editor.html")
 
 
-class InstructorSurveyResponsesViewTest(TestCase):
+class InstructorSurveyResponsesViewTest(AuthenticatedTestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="instructor@example.com", password="testpass123"
-        )
-        self.client.force_login(self.user)
-        self.survey = Survey.objects.create(name="Test Survey", owner=self.user)
+        super().setUp()
+        self.survey = self.create_survey()
 
     def test_responses_list_requires_login(self):
         self.client.logout()
@@ -584,13 +581,10 @@ class InstructorSurveyResponsesViewTest(TestCase):
         self.assertNotIn("<li>", ul_content, "Response list should be empty")
 
 
-class InstructorExportResponsesViewTest(TestCase):
+class InstructorExportResponsesViewTest(AuthenticatedTestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="instructor@example.com", password="testpass123"
-        )
-        self.client.force_login(self.user)
-        self.survey = Survey.objects.create(name="Test Survey", owner=self.user)
+        super().setUp()
+        self.survey = self.create_survey()
 
     def test_export_url_exists(self):
         response = self.client.get(
