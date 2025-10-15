@@ -65,7 +65,8 @@ class FunctionalTest(StaticLiveServerTestCase):
             f"{self.__class__.__name__}.{self._testMethodName}-{timestamp}.{extension}"
         )
 
-    def login(self, email, password="password"):
+    def create_test_user(self, email, password="password"):
+        """Helper to create a user (without logging in)"""
         from django.contrib.auth import get_user_model
 
         if self.test_server:
@@ -77,6 +78,11 @@ class FunctionalTest(StaticLiveServerTestCase):
             user = User.objects.create(email=email)
             user.set_password(password)
             user.save()
+        return user
+
+    def login(self, email, password="password"):
+        """Create user and log in via UI"""
+        self.create_test_user(email, password)
 
         self.browser.get(self.live_server_url + "/accounts/login/")
         self.browser.find_element(By.NAME, "username").send_keys(email)

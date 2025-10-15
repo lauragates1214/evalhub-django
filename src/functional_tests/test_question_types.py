@@ -1,10 +1,14 @@
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
+
 from .base import FunctionalTest
-from surveys.models import Survey, Question
+from .pages import StudentSurveyPage
+
 from accounts.models import User
+from surveys.models import Survey, Question
 
 
-class MultipleChoiceQuestionTest(FunctionalTest):
+class QuestionTypesTest(FunctionalTest):
     def test_student_can_answer_multiple_choice_question(self):
         # Instructor creates a survey with a multiple choice question
         # Create and login the instructor
@@ -22,77 +26,56 @@ class MultipleChoiceQuestionTest(FunctionalTest):
         self.logout()
 
         # Student visits the survey
-        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
+        survey_page = StudentSurveyPage(self)
+        survey_page.navigate_to_survey(survey.id)
 
         # They see radio buttons for the multiple choice question
-        self.assertIn("How would you rate this course?", self.browser.page_source)
-        excellent_radio = self.browser.find_element(
-            By.CSS_SELECTOR, 'input[type="radio"][value="Excellent"]'
-        )
+        survey_page.check_question_exists("How would you rate this course?")
 
         # They select an option
-        excellent_radio.click()
+        survey_page.select_radio_option("Excellent")
 
         # They can also add an optional comment
-        comment_box = self.browser.find_element(By.NAME, f"comment_{question.id}")
-        comment_box.send_keys("Great instructor!")
+        survey_page.add_comment(question.id, "Great instructor!")
 
         # They submit
-        submit_button = self.browser.find_element(
-            By.CSS_SELECTOR, 'button[type="submit"]'
-        )
-        submit_button.click()
+        survey_page.submit()
 
         # They see confirmation
-        self.wait_for(lambda: self.assertIn("Thank you", self.browser.page_source))
+        survey_page.wait_for_confirmation()
 
-
-class RatingScaleQuestionTest(FunctionalTest):
     def test_student_can_answer_rating_scale_question(self):
         # Instructor creates a survey with a rating scale question
-        # Create and login the instructor
         self.login("instructor@test.com")
-
-        # Get the user and create the survey with custom question
         instructor = User.objects.get(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(
             survey=survey,
             text="How likely are you to recommend capybara?",
             question_type="rating",
-            options=[1, 2, 3, 4, 5],  # 1-5 scale
+            options=[1, 2, 3, 4, 5],
         )
         self.logout()
 
         # Student visits the survey
-        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
+        survey_page = StudentSurveyPage(self)
+        survey_page.navigate_to_survey(survey.id)
 
-        # They see radio buttons for the rating scale
-        self.assertIn(
-            "How likely are you to recommend capybara?", self.browser.page_source
-        )
-        rating_5 = self.browser.find_element(
-            By.CSS_SELECTOR, 'input[type="radio"][value="5"]'
-        )
+        # They see the rating scale question
+        survey_page.check_question_exists("How likely are you to recommend capybara?")
 
         # They select a rating
-        rating_5.click()
+        survey_page.select_radio_option("5")
 
-        # They can add an optional comment
-        comment_box = self.browser.find_element(By.NAME, f"comment_{question.id}")
-        comment_box.send_keys("Best capybara ever!")
+        # They add an optional comment
+        survey_page.add_comment(question.id, "Best capybara ever!")
 
         # They submit
-        submit_button = self.browser.find_element(
-            By.CSS_SELECTOR, 'button[type="submit"]'
-        )
-        submit_button.click()
+        survey_page.submit()
 
         # They see confirmation
-        self.wait_for(lambda: self.assertIn("Thank you", self.browser.page_source))
+        survey_page.wait_for_confirmation()
 
-
-class CheckboxQuestionTest(FunctionalTest):
     def test_student_can_answer_checkbox_question(self):
         # Instructor creates a survey with a checkbox question
         # Create and login the instructor
@@ -110,36 +93,25 @@ class CheckboxQuestionTest(FunctionalTest):
         self.logout()
 
         # Student visits the survey
-        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
+        survey_page = StudentSurveyPage(self)
+        survey_page.navigate_to_survey(survey.id)
 
         # They see checkboxes
-        self.assertIn("Which topics interested you most?", self.browser.page_source)
-        python_checkbox = self.browser.find_element(
-            By.CSS_SELECTOR, 'input[type="checkbox"][value="Capybara"]'
-        )
-        testing_checkbox = self.browser.find_element(
-            By.CSS_SELECTOR, 'input[type="checkbox"][value="Capybaras"]'
-        )
+        survey_page.check_question_exists("Which topics interested you most?")
 
         # They select multiple options
-        python_checkbox.click()
-        testing_checkbox.click()
+        survey_page.select_checkbox_option("Capybara")
+        survey_page.select_checkbox_option("Capybaras")
 
         # They can add a comment
-        comment_box = self.browser.find_element(By.NAME, f"comment_{question.id}")
-        comment_box.send_keys("Looking forward to more cap!")
+        survey_page.add_comment(question.id, "Looking forward to more cap!")
 
         # They submit
-        submit_button = self.browser.find_element(
-            By.CSS_SELECTOR, 'button[type="submit"]'
-        )
-        submit_button.click()
+        survey_page.submit()
 
         # They see confirmation
-        self.wait_for(lambda: self.assertIn("Thank you", self.browser.page_source))
+        survey_page.wait_for_confirmation()
 
-
-class YesNoQuestionTest(FunctionalTest):
     def test_student_can_answer_yes_no_question(self):
         # Instructor creates a survey with a yes/no question
         # Create and login the instructor
@@ -157,78 +129,68 @@ class YesNoQuestionTest(FunctionalTest):
         self.logout()
 
         # Student visits the survey
-        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
+        survey_page = StudentSurveyPage(self)
+        survey_page.navigate_to_survey(survey.id)
 
         # They see radio buttons for yes/no
-        self.assertIn("Would you capybara?", self.browser.page_source)
-        yes_radio = self.browser.find_element(
-            By.CSS_SELECTOR, 'input[type="radio"][value="Yes"]'
-        )
+        survey_page.check_question_exists("Would you capybara?")
 
         # They select an option
-        yes_radio.click()
+        survey_page.select_radio_option("Yes")
 
         # They can add a comment
-        comment_box = self.browser.find_element(By.NAME, f"comment_{question.id}")
-        comment_box.send_keys("Definitely!")
+        survey_page.add_comment(question.id, "Definitely!")
 
         # They submit
-        submit_button = self.browser.find_element(
-            By.CSS_SELECTOR, 'button[type="submit"]'
-        )
-        submit_button.click()
+        survey_page.submit()
 
         # They see confirmation
-        self.wait_for(lambda: self.assertIn("Thank you", self.browser.page_source))
+        survey_page.wait_for_confirmation()
 
+    def test_comment_boxes_appear_for_non_text_questions_only(self):
+        # Instructor creates a survey with multiple question types
+        self.login("instructor@test.com")
 
-def test_comment_boxes_appear_for_non_text_questions_only(self):
-    # Instructor creates a survey with multiple question types
-    self.login("instructor@test.com")
+        instructor = User.objects.get(email="instructor@test.com")
+        survey = Survey.objects.create(owner=instructor)
 
-    instructor = User.objects.get(email="instructor@test.com")
-    survey = Survey.objects.create(owner=instructor)
+        # Create one of each question type
+        text_q = Question.objects.create(
+            survey=survey, text="Text question", question_type="text"
+        )
+        mc_q = Question.objects.create(
+            survey=survey,
+            text="MC question",
+            question_type="multiple_choice",
+            options=["A", "B"],
+        )
+        rating_q = Question.objects.create(
+            survey=survey,
+            text="Rating question",
+            question_type="rating",
+            options=[1, 2, 3],
+        )
+        checkbox_q = Question.objects.create(
+            survey=survey,
+            text="Checkbox question",
+            question_type="checkbox",
+            options=["X", "Y"],
+        )
+        yn_q = Question.objects.create(
+            survey=survey,
+            text="Yes/No question",
+            question_type="yes_no",
+            options=["Yes", "No"],
+        )
+        self.logout()
 
-    # Create one of each question type
-    text_q = Question.objects.create(
-        survey=survey, text="Text question", question_type="text"
-    )
-    mc_q = Question.objects.create(
-        survey=survey,
-        text="MC question",
-        question_type="multiple_choice",
-        options=["A", "B"],
-    )
-    rating_q = Question.objects.create(
-        survey=survey,
-        text="Rating question",
-        question_type="rating",
-        options=[1, 2, 3],
-    )
-    checkbox_q = Question.objects.create(
-        survey=survey,
-        text="Checkbox question",
-        question_type="checkbox",
-        options=["X", "Y"],
-    )
-    yn_q = Question.objects.create(
-        survey=survey,
-        text="Yes/No question",
-        question_type="yes_no",
-        options=["Yes", "No"],
-    )
-    self.logout()
+        # A student visits the survey
+        survey_page = StudentSurveyPage(self)
+        survey_page.navigate_to_survey(survey.id)
 
-    # A student visits the survey
-    self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
+        # They notice that text questions don't have comment boxes
+        self.assertFalse(survey_page.comment_box_exists(text_q.id))
 
-    # They notice that text questions don't have comment boxes
-    from selenium.common.exceptions import NoSuchElementException
-
-    with self.assertRaises(NoSuchElementException):
-        self.browser.find_element(By.NAME, f"comment_{text_q.id}")
-
-    # But all other question types (MC, rating, checkbox, yes/no) have optional comment boxes
-    for q in [mc_q, rating_q, checkbox_q, yn_q]:
-        comment_box = self.browser.find_element(By.NAME, f"comment_{q.id}")
-        self.assertIsNotNone(comment_box)
+        # But all other question types (MC, rating, checkbox, yes/no) have optional comment boxes
+        for q in [mc_q, rating_q, checkbox_q, yn_q]:
+            self.assertTrue(survey_page.comment_box_exists(q.id))

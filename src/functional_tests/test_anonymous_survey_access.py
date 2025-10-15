@@ -1,8 +1,9 @@
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 from .base import FunctionalTest
+from .pages import StudentSurveyPage
 
 
 class AnonymousSurveyAccessTest(FunctionalTest):
@@ -16,26 +17,21 @@ class AnonymousSurveyAccessTest(FunctionalTest):
 
         # Student scans QR code (simulated by visiting the survey URL directly)
         # QR code would encode something like: /survey/abc123/
-        survey_url = self.live_server_url + f"/student/survey/{survey.id}/"
-        self.browser.get(survey_url)
+        survey_page = StudentSurveyPage(self)
+        survey_page.navigate_to_survey(survey.id)
 
         # They see the survey title and first question
-        self.assertIn("How was the session?", self.browser.page_source)
+        survey_page.check_question_exists("How was the session?")
 
         # They fill in their response to the first question
-        response_input = self.browser.find_element(By.NAME, "response_1")
-        response_input.send_keys("It was great!")
+        survey_page.fill_text_response_by_number(1, "It was great!")
 
         # They see and fill in the second question
-        self.assertIn("Any suggestions?", self.browser.page_source)
-        response_input_2 = self.browser.find_element(By.NAME, "response_2")
-        response_input_2.send_keys("More examples please")
+        survey_page.check_question_exists("Any suggestions?")
+        survey_page.fill_text_response_by_number(2, "More examples please")
 
         # They submit the survey
-        submit_button = self.browser.find_element(
-            By.CSS_SELECTOR, 'button[type="submit"]'
-        )
-        submit_button.click()
+        survey_page.submit()
 
         # They see a confirmation message
         WebDriverWait(self.browser, 10).until(

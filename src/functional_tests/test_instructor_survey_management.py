@@ -1,6 +1,11 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from .base import FunctionalTest
+from .pages import (
+    InstructorDashboardPage,
+    InstructorSurveyCreatePage,
+    InstructorSurveyDetailPage,
+)
 from surveys.models import Survey, Question, Submission, Answer
 from accounts.models import User
 
@@ -12,22 +17,16 @@ class InstructorSurveyManagementTest(FunctionalTest):
         self.login("sarah@instructor.com")
 
         # She creates a new survey
-        self.browser.get(f"{self.live_server_url}/instructor/")
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+        dashboard = InstructorDashboardPage(self)
+        dashboard.navigate_to_dashboard()
+        dashboard.click_create_survey()
 
-        name_input = self.wait_for(
-            lambda: self.browser.find_element(By.NAME, "survey_name")
-        )
-        name_input.send_keys("Student Feedback")
-        name_input.send_keys(Keys.ENTER)
+        create_page = InstructorSurveyCreatePage(self)
+        create_page.create_survey("Student Feedback")
 
         # She adds a question
-        question_input = self.wait_for(
-            lambda: self.browser.find_element(By.NAME, "text")
-        )
-        question_input.send_keys("What did you think of the course?")
-        question_input.send_keys(Keys.ENTER)
+        survey_detail = InstructorSurveyDetailPage(self)
+        survey_detail.add_question("What did you think of the course?")
 
         # She sees the question appear in the table
         self.wait_for(
@@ -60,37 +59,23 @@ class InstructorSurveyManagementTest(FunctionalTest):
         self.login("tom@instructor.com")
 
         # He creates a survey through the UI
-        self.browser.get(f"{self.live_server_url}/instructor/")
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+        dashboard = InstructorDashboardPage(self)
+        dashboard.navigate_to_dashboard()
+        dashboard.click_create_survey()
 
-        name_input = self.wait_for(
-            lambda: self.browser.find_element(By.NAME, "survey_name")
-        )
-        name_input.send_keys("Course Evaluation")
-        name_input.send_keys(Keys.ENTER)
+        create_page = InstructorSurveyCreatePage(self)
+        create_page.create_survey("Course Evaluation")
 
         # He adds questions in a specific order
-        question_input = self.wait_for(
-            lambda: self.browser.find_element(By.NAME, "text")
-        )
-
+        survey_detail = InstructorSurveyDetailPage(self)
         questions = ["One capybara?", "Two capybara?", "No capybara?"]
-        for i, q_text in enumerate(questions, 1):
-            question_input = self.browser.find_element(By.NAME, "text")
-            question_input.send_keys(q_text)
-            question_input.send_keys(Keys.ENTER)
 
-            # Wait for the question to appear
-            self.wait_for(
-                lambda: self.assertIn(
-                    f"{i}: {q_text}",
-                    self.browser.find_element(By.ID, "id_question_table").text,
-                )
-            )
+        for question_text in questions:
+            survey_detail.add_question(question_text)
 
-        # Verify all questions are in the correct order
-        table_text = self.browser.find_element(By.ID, "id_question_table").text
+        # He sees all questions in the table
+        table = self.browser.find_element(By.ID, "id_question_table")
+        table_text = table.text
         self.assertIn("1: One capybara?", table_text)
         self.assertIn("2: Two capybara?", table_text)
         self.assertIn("3: No capybara?", table_text)
@@ -107,33 +92,24 @@ class InstructorSurveyManagementTest(FunctionalTest):
         self.login("jaydean@instructor.com")
 
         # She's on the dashboard
-        self.browser.get(f"{self.live_server_url}/instructor/")
+        dashboard = InstructorDashboardPage(self)
+        dashboard.navigate_to_dashboard()
 
         # She sees the sidebar
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        self.assertIn("My Surveys", sidebar.text)
-        self.assertIn("Create Survey", sidebar.text)
+        dashboard.check_sidebar_visible()
 
         # She clicks Create Survey
-        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+        dashboard.click_create_survey()
 
         # The URL updates
-        self.wait_for(
-            lambda: self.assertIn(
-                "/instructor/surveys/create", self.browser.current_url
-            )
-        )
+        dashboard.wait_for_url("/instructor/surveys/create")
 
         # The sidebar is still visible
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        self.assertIn("My Surveys", sidebar.text)
+        dashboard.check_sidebar_visible()
 
         # She creates a survey
-        name_input = self.wait_for(
-            lambda: self.browser.find_element(By.NAME, "survey_name")
-        )
-        name_input.send_keys("Test Survey")
-        name_input.send_keys(Keys.ENTER)
+        create_page = InstructorSurveyCreatePage(self)
+        create_page.create_survey("Test Survey")
 
         # URL updates to show the new survey
         self.wait_for(
@@ -141,8 +117,7 @@ class InstructorSurveyManagementTest(FunctionalTest):
         )
 
         # Sidebar is still there
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        self.assertIn("My Surveys", sidebar.text)
+        dashboard.check_sidebar_persists()
 
     def test_cannot_access_another_instructors_survey(self):
         # Alice creates a survey (using helper to bypass UI)
@@ -207,10 +182,8 @@ class InstructorViewResponsesTest(FunctionalTest):
         self.browser.get(f"{self.live_server_url}/instructor/surveys/{survey.id}/")
 
         # He clicks View Responses
-        responses_link = self.wait_for(
-            lambda: self.browser.find_element(By.LINK_TEXT, "View Responses")
-        )
-        self.scroll_to_and_click(responses_link)
+        survey_detail = InstructorSurveyDetailPage(self)
+        survey_detail.click_view_responses()
 
         # He sees the responses organized by question
         self.wait_for(
@@ -280,7 +253,8 @@ class InstructorViewResponsesTest(FunctionalTest):
         self.assertIn("First question", self.browser.page_source)
 
         # But there are no answer items in the list
-        main_content = self.browser.find_element(By.ID, "main-content")
+        dashboard = InstructorDashboardPage(self)
+        main_content = dashboard.get_main_content()
         response_lists = main_content.find_elements(By.CSS_SELECTOR, "ul")
         for ul in response_lists:
             list_items = ul.find_elements(By.TAG_NAME, "li")
@@ -295,40 +269,37 @@ class InstructorViewResponsesTest(FunctionalTest):
         instructor = User.objects.get(email="igor@instructor.com")
         survey = Survey.objects.create(name="Quick Poll", owner=instructor)
         q = Question.objects.create(survey=survey, text="Your feedback?")
+
         submission = Submission.objects.create(survey=survey)
         Answer.objects.create(
             question=q, answer_text="Great session", submission=submission
         )
 
         # He starts at the dashboard
-        self.browser.get(f"{self.live_server_url}/instructor/")
+        dashboard = InstructorDashboardPage(self)
+        dashboard.navigate_to_dashboard()
 
         # He navigates to My Surveys via sidebar
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        sidebar.find_element(By.LINK_TEXT, "My Surveys").click()
+        dashboard.click_my_surveys()
 
         # He sees his survey listed
         self.wait_for(lambda: self.assertIn("Quick Poll", self.browser.page_source))
 
         # He clicks on the survey
-        survey_link = self.browser.find_element(By.LINK_TEXT, "Quick Poll")
-        survey_link.click()
+        dashboard.click_survey_link("Quick Poll")
 
         # He sees the survey detail with View Responses link
         self.wait_for(lambda: self.assertIn("View Responses", self.browser.page_source))
 
         # He clicks View Responses
-        responses_link = self.wait_for(
-            lambda: self.browser.find_element(By.LINK_TEXT, "View Responses")
-        )
-        self.scroll_to_and_click(responses_link)
+        survey_detail = InstructorSurveyDetailPage(self)
+        survey_detail.click_view_responses()
 
         # The URL updates to show responses
         self.wait_for(lambda: self.assertIn("/responses/", self.browser.current_url))
 
         # The sidebar is still visible (no full page reload)
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        self.assertIn("My Surveys", sidebar.text)
+        dashboard.check_sidebar_persists()
 
         # He sees the response
         self.assertIn("Quick Poll Responses", self.browser.page_source)

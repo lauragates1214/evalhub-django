@@ -5,7 +5,6 @@ import csv
 from io import StringIO
 
 from accounts.models import User
-from surveys.forms import DUPLICATE_QUESTION_ERROR, EMPTY_QUESTION_ERROR
 from surveys.models import Answer, Question, Submission, Survey
 from tests.base import AuthenticatedTestCase
 
