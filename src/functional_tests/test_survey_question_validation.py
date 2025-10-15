@@ -34,10 +34,6 @@ class QuestionValidationTest(FunctionalTest):
             lambda: self.browser.find_element(By.CSS_SELECTOR, "#id_text:valid")
         )
 
-        # She fills in the survey name
-        survey_name_input = self.browser.find_element(By.ID, "id_survey_name")
-        survey_name_input.send_keys("Test Survey")
-
         # And she can submit it successfully
         survey_page.get_question_input_box().send_keys(Keys.ENTER)
         survey_page.wait_for_row_in_question_table("Why capybara?", 1)

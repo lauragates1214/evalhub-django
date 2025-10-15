@@ -34,5 +34,15 @@ class SurveyPage:
         return self  # Return the instance for method chaining
 
     def go_to_new_survey_page(self):
-        self.test.browser.get(self.test.live_server_url)
+        self.test.browser.get(self.test.live_server_url + "/instructor/")
+        sidebar = self.test.browser.find_element(By.ID, "instructor-sidebar")
+        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+
+        # Enter a default survey name
+        name_input = self.test.browser.find_element(By.NAME, "survey_name")
+        name_input.send_keys("Test Survey")
+        name_input.send_keys(Keys.ENTER)
+
+        # Wait for the survey editor to load
+        self.test.wait_for(lambda: self.test.browser.find_element(By.ID, "id_text"))
         return self

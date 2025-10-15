@@ -15,7 +15,7 @@ class NewVisitorTest(FunctionalTest):
         # After logging in, she's taken to her dashboard
         self.wait_for(
             lambda: self.assertEqual(
-                self.browser.current_url, self.live_server_url + "/dashboard/"
+                self.browser.current_url, self.live_server_url + "/instructor/"
             )
         )
 
@@ -24,7 +24,7 @@ class NewVisitorTest(FunctionalTest):
         self.assertIn("Dashboard", header_text)
 
         # She notices a "Create Survey" option in the sidebar and clicks it
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
 
         # The main area updates to show a survey creation form
@@ -64,7 +64,7 @@ class NewVisitorTest(FunctionalTest):
         self.login("user1@example.com")
 
         # He's on the dashboard and clicks Create Survey
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
 
         # He creates a survey
@@ -79,7 +79,7 @@ class NewVisitorTest(FunctionalTest):
 
         # He notices that his survey has a unique URL
         user1_survey_url = self.browser.current_url
-        self.assertRegex(user1_survey_url, "/surveys/.+")
+        self.assertRegex(user1_survey_url, "/instructor/surveys/.+")
 
         # Now a new user, Kerrie, comes along to the site
         # We use a new browser session to simulate a new user
@@ -91,12 +91,12 @@ class NewVisitorTest(FunctionalTest):
         # Kerrie is on her dashboard
         self.wait_for(
             lambda: self.assertEqual(
-                self.browser.current_url, self.live_server_url + "/dashboard/"
+                self.browser.current_url, self.live_server_url + "/instructor/"
             )
         )
 
         # Kerrie creates her own survey
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
 
         name_input = self.browser.find_element(By.NAME, "survey_name")
@@ -110,7 +110,7 @@ class NewVisitorTest(FunctionalTest):
 
         # Kerrie gets her own unique URL
         user2_survey_url = self.browser.current_url
-        self.assertRegex(user2_survey_url, "/surveys/.+")
+        self.assertRegex(user2_survey_url, "/instructor/surveys/.+")
         self.assertNotEqual(user2_survey_url, user1_survey_url)
 
         # There is no trace of Zhi's survey question
@@ -125,7 +125,7 @@ class NewVisitorTest(FunctionalTest):
         self.login("instructor@test.com")  # This redirects to dashboard
 
         # She clicks "Create Survey" in the sidebar
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
 
         # She sees a field to name her survey
@@ -154,7 +154,7 @@ class NewVisitorTest(FunctionalTest):
 
         # She goes to "My Surveys" via the sidebar
         sidebar = self.browser.find_element(
-            By.ID, "dashboard-sidebar"
+            By.ID, "instructor-sidebar"
         )  # Re-find sidebar
         sidebar.find_element(By.LINK_TEXT, "My Surveys").click()
 
