@@ -19,6 +19,7 @@ class MultipleChoiceQuestionTest(FunctionalTest):
             question_type="multiple_choice",
             options=["Excellent", "Good", "Fair", "Poor"],
         )
+        self.logout()
 
         # Student visits the survey
         self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
@@ -61,6 +62,7 @@ class RatingScaleQuestionTest(FunctionalTest):
             question_type="rating",
             options=[1, 2, 3, 4, 5],  # 1-5 scale
         )
+        self.logout()
 
         # Student visits the survey
         self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
@@ -105,6 +107,7 @@ class CheckboxQuestionTest(FunctionalTest):
             question_type="checkbox",
             options=["Capybara", "Capybaras", "Cap", "ybara"],
         )
+        self.logout()
 
         # Student visits the survey
         self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
@@ -151,6 +154,7 @@ class YesNoQuestionTest(FunctionalTest):
             question_type="yes_no",
             options=["Yes", "No"],
         )
+        self.logout()
 
         # Student visits the survey
         self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
@@ -178,53 +182,53 @@ class YesNoQuestionTest(FunctionalTest):
         self.wait_for(lambda: self.assertIn("Thank you", self.browser.page_source))
 
 
-class QuestionCommentBoxTest(FunctionalTest):
-    def test_comment_boxes_appear_for_non_text_questions_only(self):
-        # Create and login the instructor
-        self.login("instructor@test.com")
+def test_comment_boxes_appear_for_non_text_questions_only(self):
+    # Instructor creates a survey with multiple question types
+    self.login("instructor@test.com")
 
-        # Get the user and create the survey with custom question
-        instructor = User.objects.get(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+    instructor = User.objects.get(email="instructor@test.com")
+    survey = Survey.objects.create(owner=instructor)
 
-        # Create one of each question type
-        text_q = Question.objects.create(
-            survey=survey, text="Text question", question_type="text"
-        )
-        mc_q = Question.objects.create(
-            survey=survey,
-            text="MC question",
-            question_type="multiple_choice",
-            options=["A", "B"],
-        )
-        rating_q = Question.objects.create(
-            survey=survey,
-            text="Rating question",
-            question_type="rating",
-            options=[1, 2, 3],
-        )
-        checkbox_q = Question.objects.create(
-            survey=survey,
-            text="Checkbox question",
-            question_type="checkbox",
-            options=["X", "Y"],
-        )
-        yn_q = Question.objects.create(
-            survey=survey,
-            text="Yes/No question",
-            question_type="yes_no",
-            options=["Yes", "No"],
-        )
+    # Create one of each question type
+    text_q = Question.objects.create(
+        survey=survey, text="Text question", question_type="text"
+    )
+    mc_q = Question.objects.create(
+        survey=survey,
+        text="MC question",
+        question_type="multiple_choice",
+        options=["A", "B"],
+    )
+    rating_q = Question.objects.create(
+        survey=survey,
+        text="Rating question",
+        question_type="rating",
+        options=[1, 2, 3],
+    )
+    checkbox_q = Question.objects.create(
+        survey=survey,
+        text="Checkbox question",
+        question_type="checkbox",
+        options=["X", "Y"],
+    )
+    yn_q = Question.objects.create(
+        survey=survey,
+        text="Yes/No question",
+        question_type="yes_no",
+        options=["Yes", "No"],
+    )
+    self.logout()
 
-        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
+    # A student visits the survey
+    self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
 
-        # Text question should NOT have comment box
-        from selenium.common.exceptions import NoSuchElementException
+    # They notice that text questions don't have comment boxes
+    from selenium.common.exceptions import NoSuchElementException
 
-        with self.assertRaises(NoSuchElementException):
-            self.browser.find_element(By.NAME, f"comment_{text_q.id}")
+    with self.assertRaises(NoSuchElementException):
+        self.browser.find_element(By.NAME, f"comment_{text_q.id}")
 
-        # All other types SHOULD have comment boxes
-        for q in [mc_q, rating_q, checkbox_q, yn_q]:
-            comment_box = self.browser.find_element(By.NAME, f"comment_{q.id}")
-            self.assertIsNotNone(comment_box)
+    # But all other question types (MC, rating, checkbox, yes/no) have optional comment boxes
+    for q in [mc_q, rating_q, checkbox_q, yn_q]:
+        comment_box = self.browser.find_element(By.NAME, f"comment_{q.id}")
+        self.assertIsNotNone(comment_box)

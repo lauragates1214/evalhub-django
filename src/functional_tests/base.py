@@ -87,6 +87,12 @@ class FunctionalTest(StaticLiveServerTestCase):
             )
         )
 
+    def logout(self):
+        self.browser.find_element(By.ID, "id_logout").click()
+        self.wait_for(
+            lambda: self.assertIn("logged out", self.browser.page_source.lower())
+        )
+
     def scroll_to_and_click(self, element):
         """Scroll an element into view and click it, like a real user would"""
         import time

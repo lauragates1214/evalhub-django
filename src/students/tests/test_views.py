@@ -65,6 +65,26 @@ class StudentSurveyViewTest(TestCase):
         self.assertEqual(answer.answer_text, "It was great!")
         self.assertEqual(answer.question, self.question)
 
+    def test_post_returns_confirmation_partial_for_htmx(self):
+        response = self.client.post(
+            reverse("students:take_survey", args=[self.survey.id]),
+            {f"response_{self.question.id}": "Great!"},
+            HTTP_HX_REQUEST="true",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "partials/confirmation_message.html")
+        self.assertContains(response, "Thank you")
+
+    def test_confirmation_partial_has_confirmation_message_class(self):
+        response = self.client.post(
+            reverse("students:take_survey", args=[self.survey.id]),
+            {f"response_{self.question.id}": "Great!"},
+            HTTP_HX_REQUEST="true",
+        )
+
+        self.assertContains(response, 'class="confirmation-message"')
+
     def test_post_shows_confirmation(self):
         response = self.client.post(
             reverse("students:take_survey", args=[self.survey.id]),

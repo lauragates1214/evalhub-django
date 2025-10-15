@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="icon" href="data:,"></link> <!-- Prevent browser from requesting favicon.ico -->
+    <link rel="icon" href="data:,"></link>
   </head>
 
   <body>
@@ -13,32 +13,8 @@
       <nav class="navbar">
         <div class="container-fluid">
           <a class="navbar-brand" href="/">EvalHub</a>
-          {% if user.is_authenticated %}
-            <div>
-              <span class="me-3">Logged in as {{ user.email }}</span>
-              <form method="POST" action="{% url 'accounts:logout' %}" style="display: inline;">
-                {% csrf_token %}
-                <button id="id_logout" type="submit" class="btn btn-link p-0">Log out</button>
-              </form>
-            </div>
-          {% else %}
-            <a id="id_login_link" href="{% url 'accounts:login' %}">Log in</a>
-          {% endif %}
         </div>
       </nav>
-
-      {% if messages %}
-        <div class="row mt-3">
-          <div class="col-lg-6 mx-auto">
-            {% for message in messages %}
-              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      {% endif %}
 
       <div class="row justify-content-center p-5 bg-body-tertiary rounded-3">
         <div class="col-lg-6 text-center">
@@ -46,27 +22,8 @@
           {% block content %}{% endblock %}
         </div>
       </div>
-
-      <div class="row justify-content-center">
-        <div class="col-lg-6">{% block table %}{% endblock %}</div>
-      </div>
     </div>
 
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script>
-      // Clear validation error on input
-      const attachErrorClearHandler = () => {
-        const textInput = document.querySelector("#id_text");
-        if (textInput) {
-          textInput.oninput = () => {
-            textInput.classList.remove("is-invalid");
-          };
-        }
-      };
-
-      window.onload = attachErrorClearHandler; // Attach on initial load
-      document.body.addEventListener('htmx:afterSwap', attachErrorClearHandler); // Attach after every htmx swap
-    </script>
-
   </body>
 </html>

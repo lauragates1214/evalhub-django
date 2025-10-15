@@ -7,11 +7,12 @@ from .base import FunctionalTest
 
 class AnonymousSurveyAccessTest(FunctionalTest):
     def test_student_can_access_survey_via_qr_code_link(self):
-        # Instructor creates a survey with questions
+        # Instructor logs in, creates a survey with questions, then logs out
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions(
             "instructor@test.com", ["How was the session?", "Any suggestions?"]
         )
+        self.logout()
 
         # Student scans QR code (simulated by visiting the survey URL directly)
         # QR code would encode something like: /survey/abc123/
