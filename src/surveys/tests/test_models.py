@@ -5,7 +5,6 @@ from django.db import IntegrityError  # for DB-level validation, save()
 from django.urls import reverse
 
 from tests.base import AuthenticatedTestCase
-from accounts.models import User
 from surveys.models import Answer, Question, Submission, Survey
 
 
@@ -212,13 +211,6 @@ class SubmissionModelTest(AuthenticatedTestCase):
 class SurveyModelTest(AuthenticatedTestCase):
     # setUp inherited from AuthenticatedTestCase
 
-    def test_get_absolute_url(self):
-        survey = self.create_survey()
-        self.assertEqual(
-            survey.get_absolute_url(),
-            reverse("instructors:survey_detail", args=[survey.id]),
-        )
-
     def test_survey_questions_order(self):
         survey = self.create_survey()
         question1 = Question.objects.create(survey=survey, text="i1")
@@ -248,15 +240,6 @@ class SurveyModelTest(AuthenticatedTestCase):
     def test_survey_can_have_a_name(self):
         survey = Survey.objects.create(owner=self.user, name="My Survey")
         self.assertEqual(survey.name, "My Survey")
-
-    def test_survey_can_generate_qr_code_url(self):
-        instructor = self.create_user("instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
-
-        qr_code_url = survey.get_qr_code_url()
-
-        self.assertIn("/student/survey/", qr_code_url)
-        self.assertIn(str(survey.id), qr_code_url)
 
     def test_survey_has_text_field(self):
         survey = Survey.objects.create(

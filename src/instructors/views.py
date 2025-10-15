@@ -147,7 +147,7 @@ def create_survey(request):
                 response["HX-Push-Url"] = f"/instructor/surveys/{survey.id}/"
                 return response
             else:
-                return redirect(survey)  # Uses get_absolute_url() from Survey model
+                return redirect("instructors:survey_detail", survey_id=survey.id)
 
     # GET request - show the create form
     if request.headers.get("HX-Request"):
@@ -205,7 +205,9 @@ def generate_qr_code(request, survey_id):
         return HttpResponse("403 - Forbidden", status=403)
 
     # Generate the full URL for the survey
-    survey_url = request.build_absolute_uri(survey.get_qr_code_url())
+    survey_url = request.build_absolute_uri(
+        reverse("students:take_survey", args=[survey_id])
+    )
 
     # Create QR code
     qr = qrcode.QRCode(version=1, box_size=10, border=5)

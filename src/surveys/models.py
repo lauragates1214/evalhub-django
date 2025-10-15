@@ -15,12 +15,6 @@ class Survey(models.Model):
     text = models.TextField(default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def get_absolute_url(self):
-        return reverse("instructors:survey_detail", args=[self.id])
-
-    def get_qr_code_url(self):
-        return f"/student/survey/{self.id}/"
-
 
 class Question(models.Model):
     QUESTION_TYPES = [
