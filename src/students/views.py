@@ -13,9 +13,17 @@ def take_survey(request, survey_id):
         form = SurveyAnswerForm(survey=survey, data=request.POST)
         if form.is_valid():
             form.save()
+            if request.headers.get("HX-Request"):
+                return render(
+                    request,
+                    "partials/confirmation_message.html",
+                    {"survey": survey, "submitted": True},
+                )
             # Render confirmation instead of redirecting
             return render(
-                request, "student_survey.html", {"survey": survey, "submitted": True}
+                request,
+                "student_survey.html",
+                {"survey": survey, "submitted": True},
             )
     else:
         form = SurveyAnswerForm(survey=survey)

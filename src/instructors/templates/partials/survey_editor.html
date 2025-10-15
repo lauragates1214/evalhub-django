@@ -14,8 +14,7 @@
 <div id="question-container">
   <form method="POST" action="{% url 'instructors:survey_detail' survey.id %}" 
         hx-post="{% url 'instructors:survey_detail' survey.id %}"
-        hx-target="#question-container"
-        hx-swap="innerHTML">
+        hx-target="#question-container">
     {% csrf_token %}
     <input type="text" 
            id="id_text" 

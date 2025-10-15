@@ -1,47 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if submitted %}
-    <h2>Thank you</h2>
-    <p>Your response has been recorded.</p>
-{% else %}
+<main id="survey-content">
     <h2>{{ survey.name }}</h2>
-    <form method="POST">
-        {% csrf_token %}
-        {% for question in survey.question_set.all %}
-            <div>
-                <label>{{ question.text }}</label>
-                
-                {% if question.question_type == "multiple_choice" or question.question_type == "yes_no" or question.question_type == "rating" %}
-                    {% for option in question.options %}
-                        <div>
-                            <input type="radio" 
-                                   name="response_{{ question.id }}" 
-                                   value="{{ option }}"
-                                   id="response_{{ question.id }}_{{ forloop.counter }}">
-                            <label for="response_{{ question.id }}_{{ forloop.counter }}">{{ option }}</label>
-                        </div>
-                    {% endfor %}
-                    <textarea name="comment_{{ question.id }}" placeholder="Optional comment"></textarea>
+    {% if submitted %}
+        {% include 'partials/confirmation_message.html' %}
+    {% else %}       
+        <form method="POST"
+            hx-post="{% url 'students:take_survey' survey.id %}"
+            hx-target="#survey-content">
+            {% csrf_token %}
+            {% for question in survey.question_set.all %}
+                <div>
+                    <label>{{ question.text }}</label>
                     
-                {% elif question.question_type == "checkbox" %}
-                    {% for option in question.options %}
-                        <div>
-                            <input type="checkbox" 
-                                   name="response_{{ question.id }}" 
-                                   value="{{ option }}"
-                                   id="response_{{ question.id }}_{{ forloop.counter }}">
-                            <label for="response_{{ question.id }}_{{ forloop.counter }}">{{ option }}</label>
-                        </div>
-                    {% endfor %}
-                    <textarea name="comment_{{ question.id }}" placeholder="Optional comment"></textarea>
-                    
-                {% else %}
-                    <input type="text" name="response_{{ question.id }}">
-                {% endif %}
-            </div>
-        {% endfor %}
-        <button type="submit">Submit</button>
-    </form>
-{% endif %}
+                    {% if question.question_type == "multiple_choice" or question.question_type == "yes_no" or question.question_type == "rating" %}
+                        {% for option in question.options %}
+                            <div>
+                                <input type="radio" 
+                                    name="response_{{ question.id }}" 
+                                    value="{{ option }}"
+                                    id="response_{{ question.id }}_{{ forloop.counter }}">
+                                <label for="response_{{ question.id }}_{{ forloop.counter }}">{{ option }}</label>
+                            </div>
+                        {% endfor %}
+                        <textarea name="comment_{{ question.id }}" placeholder="Optional comment"></textarea>
+                        
+                    {% elif question.question_type == "checkbox" %}
+                        {% for option in question.options %}
+                            <div>
+                                <input type="checkbox" 
+                                    name="response_{{ question.id }}" 
+                                    value="{{ option }}"
+                                    id="response_{{ question.id }}_{{ forloop.counter }}">
+                                <label for="response_{{ question.id }}_{{ forloop.counter }}">{{ option }}</label>
+                            </div>
+                        {% endfor %}
+                        <textarea name="comment_{{ question.id }}" placeholder="Optional comment"></textarea>
+                        
+                    {% else %}
+                        <input type="text" name="response_{{ question.id }}">
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit">Submit</button>
+        </form>
+    {% endif %}
+</main>
 {% endblock %}
