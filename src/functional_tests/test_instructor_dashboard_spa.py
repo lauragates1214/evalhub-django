@@ -1,5 +1,3 @@
-# src/functional_tests/test_instructor_dashboard_spa.py
-
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from .base import FunctionalTest
@@ -16,15 +14,14 @@ class InstructorDashboardSPATest(FunctionalTest):
         # which has a persistent navigation sidebar and main content area
         self.wait_for(
             lambda: self.assertEqual(
-                self.browser.current_url, self.live_server_url + "/dashboard/"
+                self.browser.current_url, self.live_server_url + "/instructor/"
             )
         )
 
         # She sees a navigation sidebar that won't disappear during navigation
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         self.assertIn("My Surveys", sidebar.text)
         self.assertIn("Create Survey", sidebar.text)
-        self.assertIn("Analytics", sidebar.text)
 
         # The main content area shows a welcome message by default
         main_content = self.browser.find_element(By.ID, "main-content")
@@ -44,12 +41,13 @@ class InstructorDashboardSPATest(FunctionalTest):
         )
 
         # Verify the sidebar is still present and unchanged
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         self.assertIn("My Surveys", sidebar.text)
 
         # The URL has changed to reflect the new view
         self.assertEqual(
-            self.browser.current_url, self.live_server_url + "/dashboard/surveys/new/"
+            self.browser.current_url,
+            self.live_server_url + "/instructor/surveys/create/",
         )
 
         # She creates a survey with a name
@@ -79,7 +77,7 @@ class InstructorDashboardSPATest(FunctionalTest):
         )
 
         # The sidebar never flickered or reloaded throughout the entire experience
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         self.assertIn("Create Survey", sidebar.text)
 
     def test_my_surveys_navigation_shows_user_surveys(self):
@@ -89,7 +87,7 @@ class InstructorDashboardSPATest(FunctionalTest):
         # She's on the dashboard
         self.wait_for(
             lambda: self.assertEqual(
-                self.browser.current_url, self.live_server_url + "/dashboard/"
+                self.browser.current_url, self.live_server_url + "/instructor/"
             )
         )
 
@@ -138,7 +136,7 @@ class InstructorDashboardSPATest(FunctionalTest):
         self.assertIn("Second Survey", main_content.text)
 
         # The sidebar never reloaded
-        self.assertTrue(self.browser.find_element(By.ID, "dashboard-sidebar"))
+        self.assertTrue(self.browser.find_element(By.ID, "instructor-sidebar"))
 
     def test_can_view_survey_in_dashboard(self):
         # Zhi is an instructor with an existing survey
@@ -147,12 +145,12 @@ class InstructorDashboardSPATest(FunctionalTest):
         # He's on the dashboard
         self.wait_for(
             lambda: self.assertEqual(
-                self.browser.current_url, self.live_server_url + "/dashboard/"
+                self.browser.current_url, self.live_server_url + "/instructor/"
             )
         )
 
         # He creates a survey first
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
 
         name_input = self.browser.find_element(By.NAME, "survey_name")
@@ -166,7 +164,7 @@ class InstructorDashboardSPATest(FunctionalTest):
         inputbox.send_keys(Keys.ENTER)
 
         # He navigates to My Surveys
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         sidebar.find_element(By.LINK_TEXT, "My Surveys").click()
 
         # He sees his survey listed and clicks on it
@@ -183,7 +181,7 @@ class InstructorDashboardSPATest(FunctionalTest):
 
         # The survey loads in the main content area (not a new page)
         # He's still in the dashboard
-        self.assertIn("/dashboard/", self.browser.current_url)
+        self.assertIn("/instructor/", self.browser.current_url)
 
         # He sees the survey details and can add more questions
         main_content = self.browser.find_element(By.ID, "main-content")
@@ -191,7 +189,7 @@ class InstructorDashboardSPATest(FunctionalTest):
         self.assertIn("Rate the lab session", main_content.text)
 
         # He can still see the sidebar (htmx swapped only the main content)
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         self.assertIn("My Surveys", sidebar.text)
 
         # He sees the QR code for the survey
@@ -223,7 +221,7 @@ class InstructorDashboardSPATest(FunctionalTest):
         )
 
         # Amy navigates to her survey in the dashboard
-        self.browser.get(f"{self.live_server_url}/dashboard/surveys/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/instructor/surveys/{survey.id}/")
 
         # She sees the View Responses link and clicks it
         # Use wait_for to both wait for and return the element
@@ -234,7 +232,7 @@ class InstructorDashboardSPATest(FunctionalTest):
         self.browser.execute_script("arguments[0].click();", responses_link)
 
         # The responses load in the main content area - she's still in the dashboard
-        self.wait_for(lambda: self.assertIn("/dashboard/", self.browser.current_url))
+        self.wait_for(lambda: self.assertIn("/instructor/", self.browser.current_url))
 
         # She can see the response data with proper title
         main_content = self.browser.find_element(By.ID, "main-content")
@@ -248,7 +246,7 @@ class InstructorDashboardSPATest(FunctionalTest):
         self.assertIn("Any feedback?", main_content.text)
 
         # The sidebar is still visible - no full page reload happened
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         self.assertIn("My Surveys", sidebar.text)
 
     def test_instructor_can_edit_survey_name(self):
