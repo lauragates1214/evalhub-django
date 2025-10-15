@@ -1,5 +1,3 @@
-from django.urls import reverse
-
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -17,9 +15,7 @@ class AnonymousSurveyAccessTest(FunctionalTest):
 
         # Student scans QR code (simulated by visiting the survey URL directly)
         # QR code would encode something like: /survey/abc123/
-        survey_url = self.live_server_url + reverse(
-            "students:take_survey", args=[survey.id]
-        )
+        survey_url = self.live_server_url + f"/student/survey/{survey.id}/"
         self.browser.get(survey_url)
 
         # They see the survey title and first question
