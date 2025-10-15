@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if submitted %}
+    <h2>Thank you</h2>
+    <p>Your response has been recorded.</p>
+{% else %}
+    <h2>{{ survey.name }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {% for question in survey.question_set.all %}
+            <div>
+                <label>{{ question.text }}</label>
+                <input type="text" name="response_{{ question.id }}">
+            </div>
+        {% endfor %}
+        <button type="submit">Submit</button>
+    </form>
+{% endif %}
+{% endblock %}

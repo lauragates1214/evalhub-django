@@ -1,36 +1,9 @@
 What we know is deprecated:
 
-Forms:
-
-SurveyCreationForm in surveys/forms.py (creates survey + question together; replaced by separate creation)
-
-
 Views in surveys/views.py:
 
 home_page (old landing page)
-new_survey (old survey creation)
-dashboard_view (moved to instructors.dashboard)
-dashboard_create_survey (moved to instructors.create_survey)
-dashboard_my_surveys (moved to instructors.survey_list)
-dashboard_survey_detail (moved to instructors.survey_detail)
-dashboard_survey_responses (moved to instructors.survey_responses)
 
-
-Tests in surveys/tests/test_views.py:
-
-Tests for home_page and new_survey
-
-
-Tests in surveys/tests/test_dashboard_views.py:
-
-All tests (functionality moved to instructors/tests/test_views.py)
-
-
-URLs in evalhub/urls.py and surveys/urls.py:
-
-Old /dashboard/ routes
 Old home page routes
 
-The old view_survey view at /surveys/{id}/ should also be deprecated and eventually removed, along with its URL mapping.
-my_surveys view and its URL
 SurveyPage? Implement Page Pattern for new architecture?
