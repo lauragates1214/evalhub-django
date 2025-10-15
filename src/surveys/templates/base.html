@@ -16,13 +16,13 @@
           {% if user.is_authenticated %}
             <div>
               <span class="me-3">Logged in as {{ user.email }}</span>
-              <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+              <form method="POST" action="{% url 'accounts:logout' %}" style="display: inline;">
                 {% csrf_token %}
                 <button id="id_logout" type="submit" class="btn btn-link p-0">Log out</button>
               </form>
             </div>
           {% else %}
-            <a id="id_login_link" href="{% url 'login' %}">Log in</a>
+            <a id="id_login_link" href="{% url 'accounts:login' %}">Log in</a>
           {% endif %}
         </div>
       </nav>

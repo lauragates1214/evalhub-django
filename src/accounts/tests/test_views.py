@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.urls import reverse
 
 from tests.base import AuthenticatedTestCase
 from accounts.models import User
@@ -6,8 +7,9 @@ from accounts.models import User
 
 class LoginRedirectTest(TestCase):
     def test_unauthenticated_root_redirects_to_login(self):
-        response = self.client.get("/")
-        self.assertRedirects(response, "/accounts/login/?next=/")
+        response = self.client.get(reverse("home"))
+        expected_url = f"{reverse('accounts:login')}?next=/"
+        self.assertRedirects(response, expected_url)
 
     def test_instructor_redirected_to_dashboard_after_login(self):
         # All users who login are instructors
@@ -18,12 +20,12 @@ class LoginRedirectTest(TestCase):
 
         # Post login credentials
         response = self.client.post(
-            "/accounts/login/",
+            reverse("accounts:login"),
             {"username": "instructor@example.com", "password": "testpass123"},
         )
 
         # All logged-in users should go to instructor dashboard
-        self.assertRedirects(response, "/instructor/")
+        self.assertRedirects(response, reverse("instructors:dashboard"))
 
 
 class LoginViewTest(TestCase):
@@ -33,7 +35,7 @@ class LoginViewTest(TestCase):
         user.save()
 
         response = self.client.post(
-            "/accounts/login/",
+            reverse("accounts:login"),
             {"username": "test@example.com", "password": "password"},
             follow=True,
         )
@@ -46,6 +48,6 @@ class LogoutViewTest(AuthenticatedTestCase):
 
     def test_shows_success_message_after_logout(self):
         # Then log out
-        response = self.client.post("/accounts/logout/", follow=True)
+        response = self.client.post(reverse("accounts:logout"), follow=True)
 
         self.assertContains(response, "You have been logged out")

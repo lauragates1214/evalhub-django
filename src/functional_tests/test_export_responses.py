@@ -5,7 +5,7 @@ from accounts.models import User
 
 
 class ExportResponsesTest(FunctionalTest):
-    def test_instructor_can_export_survey_responses_to_csv(self):
+    def test_instructor_can_export_responses_list_to_csv(self):
         # Aya creates a survey with responses
         # Create and login the instructor first
         self.login("instructor@test.com")

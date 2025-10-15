@@ -12,8 +12,8 @@
         <nav>
             <ul>
                 <li>
-                    <a href="{% url 'instructors:list_surveys' %}" 
-                       hx-get="{% url 'instructors:list_surveys' %}" 
+                    <a href="{% url 'instructors:surveys_list' %}" 
+                       hx-get="{% url 'instructors:surveys_list' %}" 
                        hx-target="#main-content"
                        hx-push-url="true">My Surveys</a>
                 </li>
@@ -28,14 +28,14 @@
     </div>
 
     <main id="main-content" style="flex: 1;">
-        {% if initial_view == "survey_list" %}
-            {% include 'partials/survey_list.html' %}
-        {% elif initial_view == "create_survey" %}
-            {% include 'partials/create_survey.html' %}
+        {% if initial_view == "surveys_list" %}
+            {% include 'partials/surveys_list.html' %}
         {% elif initial_view == "survey_detail" %}
             {% include 'partials/survey_editor.html' %}
-        {% elif initial_view == "survey_responses" %}
-            {% include 'partials/survey_responses.html' %}
+        {% elif initial_view == "create_survey" %}
+            {% include 'partials/create_survey.html' %}        
+        {% elif initial_view == "responses_list" %}
+            {% include 'partials/responses_list.html' %}
         {% else %}
             <p>Welcome to your dashboard! Please select an option from the sidebar.</p>
         {% endif %}

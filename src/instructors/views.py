@@ -15,43 +15,33 @@ def dashboard(request):
     return render(request, "dashboard.html")
 
 
+# Display views
 @login_required
-def survey_list(request):
-    if request.method == "GET":
-        surveys = Survey.objects.filter(owner=request.user).order_by("-created_at")
-        # If htmx request, return the survey list partial
-        if request.headers.get("HX-Request"):
-            return render(request, "partials/survey_list.html", {"surveys": surveys})
-        else:
-            return render(
-                request,
-                "dashboard.html",
-                {"initial_view": "survey_list", "surveys": surveys},
-            )
+def responses_list(request, survey_id):
+    survey = get_object_or_404(Survey, id=survey_id)
 
+    # Check ownership
+    if survey.owner != request.user:
+        return HttpResponse("403 - Forbidden", status=403)
 
-@login_required
-def create_survey(request):
-    if request.method == "POST":
-        survey_name = request.POST.get("survey_name")
-        if survey_name:
-            # Create the survey
-            survey = Survey.objects.create(owner=request.user, name=survey_name)
-            # If htmx request, return the survey editor partial
-            if request.headers.get("HX-Request"):
-                response = render(
-                    request, "partials/survey_editor.html", {"survey": survey}
-                )
-                response["HX-Push-Url"] = f"/instructor/surveys/{survey.id}/"
-                return response
-            else:
-                return redirect(survey)  # Uses get_absolute_url() from Survey model
+    # Group answers by question for easier display
+    questions_with_answers = []
+    for question in survey.question_set.all():
+        answers = []
+        for submission in survey.submissions.all():
+            for answer in submission.answers.filter(question=question):
+                answers.append(answer)
+        questions_with_answers.append({"question": question, "answers": answers})
 
-    # GET request - show the create form
+    context = {"survey": survey, "questions_with_answers": questions_with_answers}
+
     if request.headers.get("HX-Request"):
-        return render(request, "partials/create_survey.html")
-    else:
-        return render(request, "dashboard.html", {"initial_view": "create_survey"})
+        return render(request, "partials/responses_list.html", context)
+    return render(
+        request,
+        "dashboard.html",
+        {"initial_view": "responses_list", **context},
+    )
 
 
 @login_required
@@ -127,31 +117,43 @@ def survey_detail(request, survey_id):
 
 
 @login_required
-def survey_responses(request, survey_id):
-    survey = get_object_or_404(Survey, id=survey_id)
+def surveys_list(request):
+    if request.method == "GET":
+        surveys = Survey.objects.filter(owner=request.user).order_by("-created_at")
+        # If htmx request, return the survey list partial
+        if request.headers.get("HX-Request"):
+            return render(request, "partials/surveys_list.html", {"surveys": surveys})
+        else:
+            return render(
+                request,
+                "dashboard.html",
+                {"initial_view": "surveys_list", "surveys": surveys},
+            )
 
-    # Check ownership
-    if survey.owner != request.user:
-        return HttpResponse("403 - Forbidden", status=403)
 
-    # Group answers by question for easier display
-    questions_with_answers = []
-    for question in survey.question_set.all():
-        answers = []
-        for submission in survey.submissions.all():
-            for answer in submission.answers.filter(question=question):
-                answers.append(answer)
-        questions_with_answers.append({"question": question, "answers": answers})
+# Action views
+@login_required
+def create_survey(request):
+    if request.method == "POST":
+        survey_name = request.POST.get("survey_name")
+        if survey_name:
+            # Create the survey
+            survey = Survey.objects.create(owner=request.user, name=survey_name)
+            # If htmx request, return the survey editor partial
+            if request.headers.get("HX-Request"):
+                response = render(
+                    request, "partials/survey_editor.html", {"survey": survey}
+                )
+                response["HX-Push-Url"] = f"/instructor/surveys/{survey.id}/"
+                return response
+            else:
+                return redirect(survey)  # Uses get_absolute_url() from Survey model
 
-    context = {"survey": survey, "questions_with_answers": questions_with_answers}
-
+    # GET request - show the create form
     if request.headers.get("HX-Request"):
-        return render(request, "partials/survey_responses.html", context)
-    return render(
-        request,
-        "dashboard.html",
-        {"initial_view": "survey_responses", **context},
-    )
+        return render(request, "partials/create_survey.html")
+    else:
+        return render(request, "dashboard.html", {"initial_view": "create_survey"})
 
 
 @login_required
@@ -195,7 +197,7 @@ def export_responses(request, survey_id):
 
 
 @login_required
-def survey_qr_code(request, survey_id):
+def generate_qr_code(request, survey_id):
     survey = get_object_or_404(Survey, id=survey_id)
 
     # Only survey owner can get the QR code

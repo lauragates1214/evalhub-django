@@ -6,7 +6,7 @@ from surveys.forms import (
 from surveys.models import Survey
 
 
-def survey(request, survey_id):
+def take_survey(request, survey_id):
     survey = get_object_or_404(Survey, id=survey_id)
 
     if request.method == "POST":

@@ -2,6 +2,7 @@ from django.core.exceptions import (
     ValidationError,
 )  # for model-level validation, full_clean()
 from django.db import IntegrityError  # for DB-level validation, save()
+from django.urls import reverse
 
 from tests.base import AuthenticatedTestCase
 from accounts.models import User
@@ -213,7 +214,10 @@ class SurveyModelTest(AuthenticatedTestCase):
 
     def test_get_absolute_url(self):
         survey = self.create_survey()
-        self.assertEqual(survey.get_absolute_url(), f"/instructor/surveys/{survey.id}/")
+        self.assertEqual(
+            survey.get_absolute_url(),
+            reverse("instructors:survey_detail", args=[survey.id]),
+        )
 
     def test_survey_questions_order(self):
         survey = self.create_survey()

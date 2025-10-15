@@ -1,7 +1,7 @@
 <div id="survey-name-container">
   <form method="POST" 
-        action="{% url 'instructors:view_survey' survey.id %}"
-        hx-post="{% url 'instructors:view_survey' survey.id %}"
+        action="{% url 'instructors:survey_detail' survey.id %}"
+        hx-post="{% url 'instructors:survey_detail' survey.id %}"
         hx-target="#survey-name-container"
         hx-swap="outerHTML"
         style="display: inline;">

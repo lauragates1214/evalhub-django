@@ -165,7 +165,7 @@ class InstructorSurveyManagementTest(FunctionalTest):
 
 class InstructorViewResponsesTest(FunctionalTest):
 
-    def test_can_view_survey_responses_with_comments(self):
+    def test_can_view_responses_list_with_comments(self):
         # Mahmoud logs in
         self.login("mahmoud@instructor.com")
 

@@ -43,28 +43,28 @@ class InstructorSurveysListViewTest(TestCase):
 
     def test_surveys_list_requires_login(self):
         self.client.logout()
-        response = self.client.get(reverse("instructors:survey_list"))
+        response = self.client.get(reverse("instructors:surveys_list"))
         self.assertEqual(response.status_code, 302)
 
     def test_surveys_list_shows_user_surveys(self):
         Survey.objects.create(name="Survey 1", owner=self.user)
         Survey.objects.create(name="Survey 2", owner=self.user)
 
-        response = self.client.get(reverse("instructors:survey_list"))
+        response = self.client.get(reverse("instructors:surveys_list"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Survey 1")
         self.assertContains(response, "Survey 2")
 
-    def test_returns_survey_list_partial_for_htmx(self):
+    def test_returns_surveys_list_partial_for_htmx(self):
         Survey.objects.create(name="Survey 1", owner=self.user)
         Survey.objects.create(name="Survey 2", owner=self.user)
 
         response = self.client.get(
-            reverse("instructors:survey_list"), HTTP_HX_REQUEST="true"
+            reverse("instructors:surveys_list"), HTTP_HX_REQUEST="true"
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "partials/survey_list.html")
+        self.assertTemplateUsed(response, "partials/surveys_list.html")
         self.assertContains(response, "Survey 1")
         self.assertContains(response, "Survey 2")
 
@@ -73,7 +73,7 @@ class InstructorSurveysListViewTest(TestCase):
         Survey.objects.create(name="Survey 2", owner=self.user)
 
         response = self.client.get(
-            reverse("instructors:survey_list"), HTTP_HX_REQUEST="true"
+            reverse("instructors:surveys_list"), HTTP_HX_REQUEST="true"
         )
 
         # Check that survey names have htmx attributes
@@ -136,7 +136,10 @@ class InstructorCreateSurveyViewTest(TestCase):
         )
 
         survey = Survey.objects.first()
-        self.assertEqual(response["HX-Push-Url"], f"/instructor/surveys/{survey.id}/")
+        self.assertEqual(
+            response["HX-Push-Url"],
+            reverse("instructors:survey_detail", args=[survey.id]),
+        )
 
     def test_post_without_htmx_redirects_to_survey_detail(self):
         response = self.client.post(
@@ -240,8 +243,9 @@ class InstructorSurveyDetailViewTest(TestCase):
             reverse("instructors:survey_detail", args=[self.survey.id])
         )
 
-        self.assertContains(response, "qr-code")
-        self.assertContains(response, f"/surveys/{self.survey.id}/qr/")
+        self.assertContains(
+            response, reverse("instructors:generate_qr_code", args=[self.survey.id])
+        )
 
     def test_survey_detail_shows_responses_link(self):
         response = self.client.get(
@@ -250,7 +254,7 @@ class InstructorSurveyDetailViewTest(TestCase):
 
         self.assertContains(response, "View Responses")
         self.assertContains(
-            response, reverse("instructors:survey_responses", args=[self.survey.id])
+            response, reverse("instructors:responses_list", args=[self.survey.id])
         )
 
     def test_survey_detail_shows_export_link(self):
@@ -259,7 +263,9 @@ class InstructorSurveyDetailViewTest(TestCase):
         )
 
         self.assertContains(response, "Export to CSV")
-        self.assertContains(response, f"/instructor/surveys/{self.survey.id}/export/")
+        self.assertContains(
+            response, reverse("instructors:export_responses", args=[self.survey.id])
+        )
 
     def test_returns_survey_editor_partial_for_htmx(self):
         response = self.client.get(
@@ -289,8 +295,9 @@ class InstructorSurveyDetailViewTest(TestCase):
         self.assertContains(response, "hx-get=")
         self.assertContains(response, 'hx-target="#main-content"')
         # The link should point to the instructor URL
-        self.assertContains(response, "/instructor/surveys/")
-        self.assertContains(response, "/responses/")
+        self.assertContains(
+            response, reverse("instructors:responses_list", args=[self.survey.id])
+        )
 
     def test_post_with_duplicate_question_shows_error(self):
         Question.objects.create(survey=self.survey, text="Existing question")
@@ -408,14 +415,14 @@ class InstructorSurveyDetailViewTest(TestCase):
         # Check the link exists
         self.assertContains(
             response,
-            f'href="{reverse("instructors:survey_responses", args=[self.survey.id])}"',
+            f'href="{reverse("instructors:responses_list", args=[self.survey.id])}"',
         )
         # Check it contains the text "View Responses"
         self.assertContains(response, "View Responses")
         # Check it's an anchor tag by looking for the opening tag with href
         self.assertContains(
             response,
-            f'<a href="{reverse("instructors:survey_responses", args=[self.survey.id])}"',
+            f'<a href="{reverse("instructors:responses_list", args=[self.survey.id])}"',
         )
 
 
@@ -427,28 +434,28 @@ class InstructorSurveyResponsesViewTest(TestCase):
         self.client.force_login(self.user)
         self.survey = Survey.objects.create(name="Test Survey", owner=self.user)
 
-    def test_survey_responses_requires_login(self):
+    def test_responses_list_requires_login(self):
         self.client.logout()
         response = self.client.get(
-            reverse("instructors:survey_responses", args=[self.survey.id])
+            reverse("instructors:responses_list", args=[self.survey.id])
         )
         self.assertEqual(response.status_code, 302)
 
-    def test_survey_responses_shows_survey_name(self):
+    def test_responses_list_shows_survey_name(self):
         response = self.client.get(
-            reverse("instructors:survey_responses", args=[self.survey.id])
+            reverse("instructors:responses_list", args=[self.survey.id])
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test Survey")
 
     def test_responses_page_returns_partial_for_htmx(self):
         response = self.client.get(
-            reverse("instructors:survey_responses", args=[self.survey.id]),
+            reverse("instructors:responses_list", args=[self.survey.id]),
             HTTP_HX_REQUEST="true",
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "partials/survey_responses.html")
+        self.assertTemplateUsed(response, "partials/responses_list.html")
         self.assertContains(response, "Test Survey")
 
     def test_responses_page_displays_actual_submissions(self):
@@ -469,7 +476,7 @@ class InstructorSurveyResponsesViewTest(TestCase):
         )
 
         response = self.client.get(
-            reverse("instructors:survey_responses", args=[self.survey.id])
+            reverse("instructors:responses_list", args=[self.survey.id])
         )
 
         self.assertContains(response, "Answer 1A")
@@ -483,13 +490,13 @@ class InstructorSurveyResponsesViewTest(TestCase):
         other_survey = Survey.objects.create(name="Other Survey", owner=other_user)
 
         response = self.client.get(
-            reverse("instructors:survey_responses", args=[other_survey.id])
+            reverse("instructors:responses_list", args=[other_survey.id])
         )
 
         self.assertEqual(response.status_code, 403)
 
     def test_responses_404_for_nonexistent_survey(self):
-        response = self.client.get(reverse("instructors:survey_responses", args=[999]))
+        response = self.client.get(reverse("instructors:responses_list", args=[999]))
 
         self.assertEqual(response.status_code, 404)
 
@@ -506,7 +513,7 @@ class InstructorSurveyResponsesViewTest(TestCase):
         )
 
         response = self.client.get(
-            reverse("instructors:survey_responses", args=[self.survey.id])
+            reverse("instructors:responses_list", args=[self.survey.id])
         )
 
         content = response.content.decode()
@@ -542,23 +549,23 @@ class InstructorSurveyResponsesViewTest(TestCase):
         )
 
         response = self.client.get(
-            reverse("instructors:survey_responses", args=[self.survey.id])
+            reverse("instructors:responses_list", args=[self.survey.id])
         )
 
         self.assertContains(response, "5")
         self.assertContains(response, "Excellent course with great examples!")
 
     def test_404_response_contains_not_found(self):
-        response = self.client.get(reverse("instructors:survey_responses", args=[999]))
+        response = self.client.get(reverse("instructors:responses_list", args=[999]))
 
         self.assertEqual(response.status_code, 404)
         self.assertContains(response, "Not Found", status_code=404)
 
-    def test_empty_survey_responses_has_no_list_items(self):
+    def test_empty_responses_list_has_no_list_items(self):
         Question.objects.create(survey=self.survey, text="Question with no answers")
 
         response = self.client.get(
-            reverse("instructors:survey_responses", args=[self.survey.id])
+            reverse("instructors:responses_list", args=[self.survey.id])
         )
 
         # Check that the response doesn't contain any <li> tags within the response section
@@ -585,7 +592,7 @@ class InstructorSurveyResponsesViewTest(TestCase):
         Question.objects.create(survey=self.survey, text="Question with no answers")
 
         response = self.client.get(
-            reverse("instructors:survey_responses", args=[self.survey.id])
+            reverse("instructors:responses_list", args=[self.survey.id])
         )
 
         # Check that the main content area has no response list items

@@ -19,6 +19,7 @@ def home_page(request):
     return redirect("/instructor/")
 
 
+# TODO: Remove the below deprecated dashboard views - replaced by instructors app
 @login_required
 def dashboard_view(request):
     return render(request, "dashboard.html")
@@ -68,7 +69,7 @@ def dashboard_my_surveys(request):
         surveys = Survey.objects.filter(owner=request.user).order_by("-created_at")
         # If htmx request, return the survey list partial
         if request.headers.get("HX-Request"):
-            return render(request, "partials/survey_list.html", {"surveys": surveys})
+            return render(request, "partials/surveys_list.html", {"surveys": surveys})
         else:
             return render(request, "dashboard.html", {"initial_view": "my_surveys"})
 

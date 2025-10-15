@@ -3,7 +3,7 @@
   <button id="edit-survey-name-btn" 
           type="button" 
           class="btn btn-sm btn-link"
-          hx-get="{% url 'instructors:view_survey' survey.id %}?edit_mode=true"
+          hx-get="{% url 'instructors:survey_detail' survey.id %}?edit_mode=true"
           hx-target="#survey-name-container"
           hx-swap="outerHTML">
     Edit
@@ -12,8 +12,8 @@
 <p>Survey created successfully!</p>
 
 <div id="question-container">
-  <form method="POST" action="{% url 'instructors:view_survey' survey.id %}" 
-        hx-post="{% url 'instructors:view_survey' survey.id %}"
+  <form method="POST" action="{% url 'instructors:survey_detail' survey.id %}" 
+        hx-post="{% url 'instructors:survey_detail' survey.id %}"
         hx-target="#question-container"
         hx-swap="innerHTML">
     {% csrf_token %}
@@ -41,8 +41,8 @@
 </div>
 
   <img src="{% url 'instructors:generate_qr_code' survey.id %}" class="qr-code" alt="Survey QR Code">
-  <a href="{% url 'instructors:view_responses' survey.id %}"
-    hx-get="{% url 'instructors:view_responses' survey.id %}"
+  <a href="{% url 'instructors:responses_list' survey.id %}"
+    hx-get="{% url 'instructors:responses_list' survey.id %}"
     hx-target="#main-content"
     hx-push-url="true">
     View Responses

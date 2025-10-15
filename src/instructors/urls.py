@@ -5,21 +5,23 @@ app_name = "instructors"  # Namespace for instructor URLs
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
-    path("surveys/", views.survey_list, name="list_surveys"),
+    # Display URLs
     path(
-        "surveys/create/",
-        views.create_survey,
-        name="create_survey",
+        "surveys/<int:survey_id>/responses/",
+        views.responses_list,
+        name="responses_list",
     ),
     path(
         "surveys/<int:survey_id>/",
         views.survey_detail,
-        name="view_survey",
+        name="survey_detail",
     ),
+    path("surveys/", views.surveys_list, name="surveys_list"),
+    # Action URLs
     path(
-        "surveys/<int:survey_id>/responses/",
-        views.survey_responses,
-        name="view_responses",
+        "surveys/create/",
+        views.create_survey,
+        name="create_survey",
     ),
     path(
         "surveys/<int:survey_id>/export/",
@@ -28,7 +30,7 @@ urlpatterns = [
     ),
     path(
         "surveys/<int:survey_id>/qr/",
-        views.survey_qr_code,
+        views.generate_qr_code,
         name="generate_qr_code",
     ),
 ]

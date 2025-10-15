@@ -1,5 +1,5 @@
-<form method="POST" action="{% url 'instructors:view_survey' survey.id %}" 
-      hx-post="{% url 'instructors:view_survey' survey.id %}"
+<form method="POST" action="{% url 'instructors:survey_detail' survey.id %}" 
+      hx-post="{% url 'instructors:survey_detail' survey.id %}"
       hx-target="#question-container"
       hx-push-url="true">
   {% csrf_token %}

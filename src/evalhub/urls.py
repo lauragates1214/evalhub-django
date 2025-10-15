@@ -22,31 +22,10 @@ from surveys import views as survey_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path(
+        "", survey_views.home_page, name="home"
+    ),  # TODO: Replace with landing page, move out of surveys app
     path("accounts/", include("accounts.urls")),
     path("instructor/", include("instructors.urls")),
     path("student/", include("students.urls")),
-    # TODO: Remove the below urls - deprecated
-    path("", survey_views.home_page, name="home"),
-    path("dashboard/", survey_views.dashboard_view, name="dashboard"),
-    path(
-        "dashboard/surveys/",
-        survey_views.dashboard_my_surveys,
-        name="dashboard_my_surveys",
-    ),
-    path(
-        "dashboard/surveys/new/",
-        survey_views.dashboard_create_survey,
-        name="dashboard_create_survey",
-    ),
-    path(
-        "dashboard/surveys/<int:survey_id>/",
-        survey_views.dashboard_survey_detail,
-        name="dashboard_survey_detail",
-    ),
-    path("surveys/", include("surveys.urls")),
-    path(
-        "dashboard/surveys/<int:survey_id>/responses/",
-        survey_views.dashboard_survey_responses,
-        name="dashboard_survey_responses",
-    ),
 ]
