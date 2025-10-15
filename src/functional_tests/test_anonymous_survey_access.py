@@ -16,7 +16,7 @@ class AnonymousSurveyAccessTest(FunctionalTest):
 
         # Student scans QR code (simulated by visiting the survey URL directly)
         # QR code would encode something like: /survey/abc123/
-        survey_url = f"{self.live_server_url}/survey/{survey.id}/"
+        survey_url = f"{self.live_server_url}/student/survey/{survey.id}/"
         self.browser.get(survey_url)
 
         # They see the survey title and first question

@@ -27,15 +27,18 @@ class ViewResponsesTest(FunctionalTest):
         )
 
         # Instructor visits their survey page
-        self.browser.get(f"{self.live_server_url}/surveys/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/instructor/surveys/{survey.id}/")
 
         # They see a link to view responses
         responses_link = self.browser.find_element(By.LINK_TEXT, "View Responses")
-        responses_link.click()
+        self.scroll_to_and_click(responses_link)
 
         # They're taken to a responses page
-        self.assertIn("/surveys/", self.browser.current_url)
-        self.assertIn("/responses/", self.browser.current_url)
+        # Wait for the URL to update
+        self.wait_for(lambda: self.assertIn("/responses/", self.browser.current_url))
+        self.assertIn(
+            f"/instructor/surveys/{survey.id}/responses/", self.browser.current_url
+        )
 
         # They see all the responses grouped by question
         self.assertIn("How was the session?", self.browser.page_source)

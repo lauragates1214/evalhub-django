@@ -19,7 +19,7 @@ class Survey(models.Model):
         return reverse("instructors:survey_detail", args=[self.id])
 
     def get_qr_code_url(self):
-        return f"/survey/{self.id}/"
+        return f"/student/survey/{self.id}/"
 
 
 class Question(models.Model):

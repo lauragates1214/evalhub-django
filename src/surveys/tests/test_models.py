@@ -251,7 +251,7 @@ class SurveyModelTest(AuthenticatedTestCase):
 
         qr_code_url = survey.get_qr_code_url()
 
-        self.assertIn("/survey/", qr_code_url)
+        self.assertIn("/student/survey/", qr_code_url)
         self.assertIn(str(survey.id), qr_code_url)
 
     def test_survey_has_text_field(self):

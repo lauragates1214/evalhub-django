@@ -40,7 +40,7 @@ class QRCodeGenerationTest(FunctionalTest):
         self.assertIn(f"/surveys/{survey.id}/qr/", qr_code_url)
 
         # When a student visits the survey URL (what the QR code encodes)
-        self.browser.get(f"{self.live_server_url}/survey/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
 
         # They see the survey question
         self.assertIn("Test question", self.browser.page_source)

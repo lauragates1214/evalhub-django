@@ -21,7 +21,7 @@ class MultipleChoiceQuestionTest(FunctionalTest):
         )
 
         # Student visits the survey
-        self.browser.get(f"{self.live_server_url}/survey/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
 
         # They see radio buttons for the multiple choice question
         self.assertIn("How would you rate this course?", self.browser.page_source)
@@ -63,7 +63,7 @@ class RatingScaleQuestionTest(FunctionalTest):
         )
 
         # Student visits the survey
-        self.browser.get(f"{self.live_server_url}/survey/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
 
         # They see radio buttons for the rating scale
         self.assertIn(
@@ -107,7 +107,7 @@ class CheckboxQuestionTest(FunctionalTest):
         )
 
         # Student visits the survey
-        self.browser.get(f"{self.live_server_url}/survey/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
 
         # They see checkboxes
         self.assertIn("Which topics interested you most?", self.browser.page_source)
@@ -153,7 +153,7 @@ class YesNoQuestionTest(FunctionalTest):
         )
 
         # Student visits the survey
-        self.browser.get(f"{self.live_server_url}/survey/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
 
         # They see radio buttons for yes/no
         self.assertIn("Would you capybara?", self.browser.page_source)
@@ -216,7 +216,7 @@ class QuestionCommentBoxTest(FunctionalTest):
             options=["Yes", "No"],
         )
 
-        self.browser.get(f"{self.live_server_url}/survey/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/student/survey/{survey.id}/")
 
         # Text question should NOT have comment box
         from selenium.common.exceptions import NoSuchElementException
