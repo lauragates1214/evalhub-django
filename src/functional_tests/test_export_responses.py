@@ -7,10 +7,8 @@ from accounts.models import User
 class ExportResponsesTest(FunctionalTest):
     def test_instructor_can_export_responses_list_to_csv(self):
         # Aya creates a survey with responses
-        # Create and login the instructor first
         self.login("instructor@test.com")
 
-        # Then get the user and create the survey with custom questions
         instructor = User.objects.get(email="instructor@test.com")
         survey = Survey.objects.create(owner=instructor)
         q1 = Question.objects.create(
@@ -35,10 +33,10 @@ class ExportResponsesTest(FunctionalTest):
         # She goes to the survey detail page
         self.browser.get(f"{self.live_server_url}/instructor/surveys/{survey.id}/")
 
-        # They see an "Export to CSV" button
+        # She sees an "Export to CSV" button
         export_button = self.browser.find_element(By.LINK_TEXT, "Export to CSV")
 
-        # They click it (can't easily test the actual download in Selenium,
-        # but can verify the link exists and points to the right URL)
+        # She verifies the link points to the right URL
+        # (can't easily test the actual download in Selenium)
         export_url = export_button.get_attribute("href")
         self.assertIn(f"/instructor/surveys/{survey.id}/export/", export_url)

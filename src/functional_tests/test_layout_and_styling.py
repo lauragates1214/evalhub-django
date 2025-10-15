@@ -1,10 +1,13 @@
 import os
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from unittest import skipIf
 
 from .base import FunctionalTest
-from .survey_page import SurveyPage
+from .pages.instructor_pages import (
+    InstructorDashboardPage,
+    InstructorSurveyCreatePage,
+    InstructorSurveyDetailPage,
+)
 
 
 class LayoutAndStylingTest(FunctionalTest):
@@ -14,45 +17,37 @@ class LayoutAndStylingTest(FunctionalTest):
         self.login("aya@example.com")
 
         # She goes to the dashboard and clicks Create Survey
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+        dashboard = InstructorDashboardPage(self)
+        dashboard.navigate_to_dashboard()
+        dashboard.click_create_survey()
 
-        # She enters a survey name
-        name_input = self.browser.find_element(By.NAME, "survey_name")
-        name_input.send_keys("Test Survey")
-        name_input.send_keys(Keys.ENTER)
+        # She creates a survey
+        create_page = InstructorSurveyCreatePage(self)
+        create_page.create_survey("Test Survey")
 
-        # Wait for the survey editor with the question input
+        # Wait for the survey editor to load
+        survey_detail = InstructorSurveyDetailPage(self)
         self.wait_for(lambda: self.browser.find_element(By.ID, "id_text"))
 
         # Her browser window is set to a very specific size
         self.browser.set_window_size(1024, 768)
 
-        # She notices the input box is nicely centered within the main content area, not the full window
-        # With sidebar ~200px, the center would be around (200 + (1024-200)/2) = 612px
+        # She notices the input box is nicely centred within the main content area, not the full window
+        # With sidebar ~200px, the centre would be around (200 + (1024-200)/2) = 612px
         inputbox = self.browser.find_element(By.ID, "id_text")
         self.assertAlmostEqual(
             inputbox.location["x"] + inputbox.size["width"] / 2,
-            593,  # Actual centered position with sidebar
+            593,  # Actual centred position with sidebar
             delta=10,
         )
 
         # She adds a question
+        survey_detail.add_question("testing")
+
+        # The input is still nicely centred
         inputbox = self.browser.find_element(By.ID, "id_text")
-        inputbox.send_keys("testing")
-        inputbox.send_keys(Keys.ENTER)
-
-        # Wait for the page to update after adding the question
-        # Wait for the question to appear in the table to ensure the page has updated
-        from .survey_page import SurveyPage
-
-        survey_page = SurveyPage(self)
-        survey_page.wait_for_row_in_question_table("testing", 1)
-
-        # The input is still nicely centered
-        inputbox = self.browser.find_element(By.ID, "id_text")  # Get the element again
         self.assertAlmostEqual(
             inputbox.location["x"] + inputbox.size["width"] / 2,
-            593,  # Actual centered position with sidebar
+            593,  # Actual centred position with sidebar
             delta=10,
         )

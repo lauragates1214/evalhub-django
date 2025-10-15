@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from .base import FunctionalTest
+from .pages.instructor_pages import InstructorDashboardPage, InstructorSurveyCreatePage
 from accounts.models import User
 from surveys.models import Survey
 
@@ -14,42 +14,23 @@ class URLRefactoringTest(FunctionalTest):
 
         # After logging in, she's redirected to the instructor dashboard
         # at /instructor/ (not /dashboard/)
-        self.wait_for(
-            lambda: self.assertEqual(
-                self.browser.current_url, self.live_server_url + "/instructor/"
-            )
-        )
+        dashboard = InstructorDashboardPage(self)
+        dashboard.wait_for_url("/instructor/")
 
         # She sees the instructor navigation sidebar
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        self.assertIn("My Surveys", sidebar.text)
-        self.assertIn("Create Survey", sidebar.text)
+        dashboard.check_sidebar_visible()
 
         # She clicks "My Surveys" and the URL changes to /instructor/surveys/
-        my_surveys_link = sidebar.find_element(By.LINK_TEXT, "My Surveys")
-        my_surveys_link.click()
-
-        self.wait_for(
-            lambda: self.assertEqual(
-                self.browser.current_url, self.live_server_url + "/instructor/surveys/"
-            )
-        )
+        dashboard.click_my_surveys()
+        dashboard.wait_for_url("/instructor/surveys/")
 
         # She clicks "Create Survey" and the URL changes to /instructor/surveys/create/
-        create_link = sidebar.find_element(By.LINK_TEXT, "Create Survey")
-        create_link.click()
-
-        self.wait_for(
-            lambda: self.assertEqual(
-                self.browser.current_url,
-                self.live_server_url + "/instructor/surveys/create/",
-            )
-        )
+        dashboard.click_create_survey()
+        dashboard.wait_for_url("/instructor/surveys/create/")
 
         # She creates a survey
-        name_input = self.browser.find_element(By.NAME, "survey_name")
-        name_input.send_keys("Capybara Survey")
-        name_input.send_keys(Keys.ENTER)
+        create_page = InstructorSurveyCreatePage(self)
+        create_page.create_survey("Capybara Survey")
 
         # After creation, she's taken to edit that survey at
         # /instructor/surveys/<id>/

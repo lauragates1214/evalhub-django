@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 from .base import FunctionalTest
+from .pages.instructor_pages import InstructorSurveyDetailPage
 from surveys.models import Answer, Submission, Survey, Question
 from accounts.models import User
 
@@ -29,9 +30,9 @@ class ViewResponsesTest(FunctionalTest):
         # Instructor visits their survey page
         self.browser.get(f"{self.live_server_url}/instructor/surveys/{survey.id}/")
 
-        # They see a link to view responses
-        responses_link = self.browser.find_element(By.LINK_TEXT, "View Responses")
-        self.scroll_to_and_click(responses_link)
+        # They see a link to view responses and click it
+        survey_detail = InstructorSurveyDetailPage(self)
+        survey_detail.click_view_responses()
 
         # They're taken to a responses page
         # Wait for the URL to update

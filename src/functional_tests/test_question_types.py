@@ -1,22 +1,16 @@
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
-
 from .base import FunctionalTest
 from .pages import StudentSurveyPage
 
-from accounts.models import User
-from surveys.models import Survey, Question
+from surveys.models import Question
 
 
 class QuestionTypesTest(FunctionalTest):
     def test_student_can_answer_multiple_choice_question(self):
         # Instructor creates a survey with a multiple choice question
-        # Create and login the instructor
         self.login("instructor@test.com")
+        survey = self.create_survey_with_questions("instructor@test.com", [])
 
-        # Get the user and create the survey with custom question
-        instructor = User.objects.get(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        # Add the specific question type
         question = Question.objects.create(
             survey=survey,
             text="How would you rate this course?",
@@ -47,8 +41,8 @@ class QuestionTypesTest(FunctionalTest):
     def test_student_can_answer_rating_scale_question(self):
         # Instructor creates a survey with a rating scale question
         self.login("instructor@test.com")
-        instructor = User.objects.get(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey_with_questions("instructor@test.com", [])
+
         question = Question.objects.create(
             survey=survey,
             text="How likely are you to recommend capybara?",
@@ -78,12 +72,9 @@ class QuestionTypesTest(FunctionalTest):
 
     def test_student_can_answer_checkbox_question(self):
         # Instructor creates a survey with a checkbox question
-        # Create and login the instructor
         self.login("instructor@test.com")
+        survey = self.create_survey_with_questions("instructor@test.com", [])
 
-        # Get the user and create the survey with custom question
-        instructor = User.objects.get(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(
             survey=survey,
             text="Which topics interested you most?",
@@ -114,12 +105,9 @@ class QuestionTypesTest(FunctionalTest):
 
     def test_student_can_answer_yes_no_question(self):
         # Instructor creates a survey with a yes/no question
-        # Create and login the instructor
         self.login("instructor@test.com")
+        survey = self.create_survey_with_questions("instructor@test.com", [])
 
-        # Get the user and create the survey with custom question
-        instructor = User.objects.get(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
         question = Question.objects.create(
             survey=survey,
             text="Would you capybara?",
@@ -150,9 +138,7 @@ class QuestionTypesTest(FunctionalTest):
     def test_comment_boxes_appear_for_non_text_questions_only(self):
         # Instructor creates a survey with multiple question types
         self.login("instructor@test.com")
-
-        instructor = User.objects.get(email="instructor@test.com")
-        survey = Survey.objects.create(owner=instructor)
+        survey = self.create_survey_with_questions("instructor@test.com", [])
 
         # Create one of each question type
         text_q = Question.objects.create(

@@ -1,8 +1,11 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 
 from .base import FunctionalTest
-from .survey_page import SurveyPage
+from .pages.instructor_pages import (
+    InstructorDashboardPage,
+    InstructorSurveyCreatePage,
+    InstructorSurveyDetailPage,
+)
 
 
 class NewVisitorTest(FunctionalTest):
@@ -13,48 +16,32 @@ class NewVisitorTest(FunctionalTest):
         self.login("user@example.com")
 
         # After logging in, she's taken to her dashboard
-        self.wait_for(
-            lambda: self.assertEqual(
-                self.browser.current_url, self.live_server_url + "/instructor/"
-            )
-        )
+        dashboard = InstructorDashboardPage(self)
+        dashboard.wait_for_url("/instructor/")
 
         # She sees the page title mentions Dashboard
         header_text = self.browser.find_element(By.TAG_NAME, "h1").text
         self.assertIn("Dashboard", header_text)
 
         # She notices a "Create Survey" option in the sidebar and clicks it
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+        dashboard.click_create_survey()
 
         # The main area updates to show a survey creation form
-        self.wait_for(
-            lambda: self.assertIn(
-                "Create New Survey",
-                self.browser.find_element(By.ID, "main-content").text,
-            )
-        )
+        dashboard.wait_for_content("Create New Survey")
 
-        # She enters a name for her survey
-        name_input = self.browser.find_element(By.NAME, "survey_name")
-        name_input.send_keys("Test Survey")
-        name_input.send_keys(Keys.ENTER)
+        # She creates her survey
+        create_page = InstructorSurveyCreatePage(self)
+        create_page.create_survey("Test Survey")
 
         # The survey is created and she sees a form to add questions
+        survey_detail = InstructorSurveyDetailPage(self)
         self.wait_for(lambda: self.browser.find_element(By.NAME, "text"))
 
         # She adds her first question about capybaras
-        survey_page = SurveyPage(self)
-        survey_page.add_survey_question("How do you feel about capybara?")
-
-        # The page updates and shows her question in a list
-        survey_page.wait_for_row_in_question_table("How do you feel about capybara?", 1)
+        survey_detail.add_question("How do you feel about capybara?")
 
         # She adds another question
-        survey_page.add_survey_question("How many capybara? Explain.")
-
-        # Now she sees both questions listed
-        survey_page.wait_for_row_in_question_table("How many capybara? Explain.", 2)
+        survey_detail.add_question("How many capybara? Explain.")
 
         # Satisfied, she logs out
         self.browser.find_element(By.CSS_SELECTOR, "#id_logout").click()
@@ -63,19 +50,16 @@ class NewVisitorTest(FunctionalTest):
         # Zhi logs in and creates a survey
         self.login("user1@example.com")
 
-        # He's on the dashboard and clicks Create Survey
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+        # He's on the dashboard and creates a survey
+        dashboard = InstructorDashboardPage(self)
+        dashboard.click_create_survey()
 
-        # He creates a survey
-        name_input = self.browser.find_element(By.NAME, "survey_name")
-        name_input.send_keys("Zhi's Survey")
-        name_input.send_keys(Keys.ENTER)
+        create_page = InstructorSurveyCreatePage(self)
+        create_page.create_survey("Zhi's Survey")
 
         # He adds a question
-        self.wait_for(lambda: self.browser.find_element(By.ID, "id_text"))
-        survey_page = SurveyPage(self)
-        survey_page.add_survey_question("How do you feel about capybara?")
+        survey_detail = InstructorSurveyDetailPage(self)
+        survey_detail.add_question("How do you feel about capybara?")
 
         # He notices that his survey has a unique URL
         user1_survey_url = self.browser.current_url
@@ -89,24 +73,14 @@ class NewVisitorTest(FunctionalTest):
         self.login("user2@example.com")
 
         # Kerrie is on her dashboard
-        self.wait_for(
-            lambda: self.assertEqual(
-                self.browser.current_url, self.live_server_url + "/instructor/"
-            )
-        )
+        dashboard.wait_for_url("/instructor/")
 
         # Kerrie creates her own survey
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
-
-        name_input = self.browser.find_element(By.NAME, "survey_name")
-        name_input.send_keys("Kerrie's Survey")
-        name_input.send_keys(Keys.ENTER)
+        dashboard.click_create_survey()
+        create_page.create_survey("Kerrie's Survey")
 
         # She adds a different question
-        self.wait_for(lambda: self.browser.find_element(By.ID, "id_text"))
-        survey_page = SurveyPage(self)
-        survey_page.add_survey_question("Why manatee? Explain.")
+        survey_detail.add_question("Why manatee? Explain.")
 
         # Kerrie gets her own unique URL
         user2_survey_url = self.browser.current_url
@@ -122,45 +96,31 @@ class NewVisitorTest(FunctionalTest):
 
     def test_instructor_can_name_their_survey(self):
         # Instructor logs in
-        self.login("instructor@test.com")  # This redirects to dashboard
+        self.login("instructor@test.com")
 
         # She clicks "Create Survey" in the sidebar
-        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
-        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
+        dashboard = InstructorDashboardPage(self)
+        dashboard.click_create_survey()
 
         # She sees a field to name her survey
         name_input = self.browser.find_element(By.NAME, "survey_name")
-        self.assertEqual(
-            name_input.get_attribute("placeholder"),
-            "Survey name",  # Note: might need to check what the actual placeholder is
-        )
+        self.assertEqual(name_input.get_attribute("placeholder"), "Survey name")
 
-        # She enters a name for her survey
-        name_input.send_keys("Q4 Capybara Evaluation")
-        name_input.send_keys(Keys.ENTER)
+        # She creates her survey
+        create_page = InstructorSurveyCreatePage(self)
+        create_page.create_survey("Q4 Capybara Evaluation")
 
         # Wait for the survey to be created and editor to load
-        self.wait_for(
-            lambda: self.assertIn(
-                "Q4 Capybara Evaluation",
-                self.browser.find_element(By.ID, "main-content").text,
-            )
-        )
+        dashboard.wait_for_content("Q4 Capybara Evaluation")
 
         # She adds her first question
-        inputbox = self.browser.find_element(By.NAME, "text")
-        inputbox.send_keys("How did you find the capybara?")
-        inputbox.send_keys(Keys.ENTER)
+        survey_detail = InstructorSurveyDetailPage(self)
+        survey_detail.add_question("How did you find the capybara?")
 
         # She goes to "My Surveys" via the sidebar
-        sidebar = self.browser.find_element(
-            By.ID, "instructor-sidebar"
-        )  # Re-find sidebar
-        sidebar.find_element(By.LINK_TEXT, "My Surveys").click()
+        dashboard.click_my_surveys()
 
         # She sees her survey listed by name in the main content
+        dashboard.wait_for_content("Q4 Capybara Evaluation")
         main_content = self.browser.find_element(By.ID, "main-content")
-        self.wait_for(
-            lambda: self.assertIn("Q4 Capybara Evaluation", main_content.text)
-        )
         self.assertNotIn("How did you find the capybara?", main_content.text)
