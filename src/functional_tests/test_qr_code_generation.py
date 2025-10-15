@@ -16,7 +16,7 @@ class QRCodeGenerationTest(FunctionalTest):
         )
 
         # They visit their survey page
-        self.browser.get(f"{self.live_server_url}/surveys/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/instructor/surveys/{survey.id}/")
 
         # They see a QR code image displayed
         qr_code_img = self.browser.find_element(By.CSS_SELECTOR, "img.qr-code")
@@ -30,7 +30,7 @@ class QRCodeGenerationTest(FunctionalTest):
         )
 
         # They visit their survey page
-        self.browser.get(f"{self.live_server_url}/surveys/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/instructor/surveys/{survey.id}/")
 
         # They see the QR code
         qr_code_img = self.browser.find_element(By.CSS_SELECTOR, "img.qr-code")
