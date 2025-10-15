@@ -2,9 +2,10 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import html
 
-from unittest import skip
+import csv
+from io import StringIO
 
-from surveys.forms import EMPTY_QUESTION_ERROR
+from surveys.forms import DUPLICATE_QUESTION_ERROR, EMPTY_QUESTION_ERROR
 from accounts.models import User
 from surveys.models import Answer, Question, Submission, Survey
 
@@ -205,8 +206,6 @@ class InstructorSurveyDetailViewTest(TestCase):
         self.assertContains(response, html.escape(EMPTY_QUESTION_ERROR))
 
     def test_survey_detail_displays_questions(self):
-        from surveys.models import Question
-
         Question.objects.create(survey=self.survey, text="Question 1")
         Question.objects.create(survey=self.survey, text="Question 2")
 
@@ -226,10 +225,6 @@ class InstructorSurveyDetailViewTest(TestCase):
         self.assertNotContains(response, "Other question")
 
     def test_duplicate_question_validation(self):
-        from django.utils import html
-        from surveys.models import Question
-        from surveys.forms import DUPLICATE_QUESTION_ERROR
-
         Question.objects.create(survey=self.survey, text="Unique question")
 
         response = self.client.post(
@@ -264,7 +259,7 @@ class InstructorSurveyDetailViewTest(TestCase):
         )
 
         self.assertContains(response, "Export to CSV")
-        self.assertContains(response, f"/surveys/{self.survey.id}/export/")
+        self.assertContains(response, f"/instructor/surveys/{self.survey.id}/export/")
 
     def test_returns_survey_editor_partial_for_htmx(self):
         response = self.client.get(
@@ -298,8 +293,6 @@ class InstructorSurveyDetailViewTest(TestCase):
         self.assertContains(response, "/responses/")
 
     def test_post_with_duplicate_question_shows_error(self):
-        from surveys.forms import DUPLICATE_QUESTION_ERROR
-
         Question.objects.create(survey=self.survey, text="Existing question")
 
         response = self.client.post(
@@ -625,14 +618,12 @@ class InstructorExportResponsesViewTest(TestCase):
         self.survey = Survey.objects.create(name="Test Survey", owner=self.user)
 
     def test_export_url_exists(self):
-        """Test that export endpoint returns 200"""
         response = self.client.get(
             reverse("instructors:export_responses", args=[self.survey.id])
         )
         self.assertEqual(response.status_code, 200)
 
     def test_export_returns_csv_file(self):
-        """Test that response has correct CSV headers"""
         response = self.client.get(
             reverse("instructors:export_responses", args=[self.survey.id])
         )
@@ -641,11 +632,6 @@ class InstructorExportResponsesViewTest(TestCase):
         self.assertIn("attachment; filename=", response["Content-Disposition"])
 
     def test_export_includes_question_headers(self):
-        """Test that CSV includes question headers"""
-        from surveys.models import Question
-        import csv
-        from io import StringIO
-
         Question.objects.create(
             survey=self.survey, text="Question 1", question_type="text"
         )
@@ -667,11 +653,6 @@ class InstructorExportResponsesViewTest(TestCase):
         self.assertIn("Question 2", header)
 
     def test_export_includes_answer_data(self):
-        """Test that CSV includes answer data"""
-        from surveys.models import Question, Submission, Answer
-        import csv
-        from io import StringIO
-
         q1 = Question.objects.create(
             survey=self.survey, text="Question 1", question_type="text"
         )
@@ -700,11 +681,6 @@ class InstructorExportResponsesViewTest(TestCase):
         self.assertEqual(rows[1], [str(submission.id), "Answer 1A", "Answer 2A"])
 
     def test_export_with_no_submissions_only_shows_header(self):
-        """Test that CSV with no submissions only has header"""
-        from surveys.models import Question
-        import csv
-        from io import StringIO
-
         Question.objects.create(
             survey=self.survey, text="Question 1", question_type="text"
         )
@@ -738,3 +714,110 @@ class InstructorExportResponsesViewTest(TestCase):
             reverse("instructors:export_responses", args=[other_survey.id])
         )
         self.assertEqual(response.status_code, 403)
+
+    def test_export_includes_comments(self):
+        question = Question.objects.create(
+            survey=self.survey,
+            text="Rate this course",
+            question_type="rating",
+            options=[1, 2, 3, 4, 5],
+        )
+
+        submission = Submission.objects.create(survey=self.survey)
+        Answer.objects.create(
+            question=question,
+            answer_text="5",
+            comment_text="Excellent teaching!",
+            submission=submission,
+        )
+
+        response = self.client.get(
+            reverse("instructors:export_responses", args=[self.survey.id])
+        )
+
+        content = response.content.decode("utf-8")
+        csv_reader = csv.reader(StringIO(content))
+        header = next(csv_reader)
+        data_row = next(csv_reader)
+
+        # Check that comment is included in export
+        # Depending on implementation, might be in same cell or separate column
+        row_text = " ".join(data_row)
+        self.assertIn("5", row_text)
+        self.assertIn("Excellent teaching!", row_text)
+
+    def test_export_with_different_question_types(self):
+        # Create different question types
+        text_q = Question.objects.create(
+            survey=self.survey, text="Your name", question_type="text"
+        )
+        rating_q = Question.objects.create(
+            survey=self.survey,
+            text="Rate this",
+            question_type="rating",
+            options=[1, 2, 3, 4, 5],
+        )
+        checkbox_q = Question.objects.create(
+            survey=self.survey,
+            text="Select topics",
+            question_type="checkbox",
+            options=["Python", "Django", "Testing"],
+        )
+        yes_no_q = Question.objects.create(
+            survey=self.survey,
+            text="Would you recommend?",
+            question_type="yes_no",
+            options=["Yes", "No"],
+        )
+
+        submission = Submission.objects.create(survey=self.survey)
+        Answer.objects.create(
+            question=text_q, answer_text="John Doe", submission=submission
+        )
+        Answer.objects.create(
+            question=rating_q,
+            answer_text="4",
+            comment_text="Good course",
+            submission=submission,
+        )
+        Answer.objects.create(
+            question=checkbox_q,
+            answer_text="Python,Django",  # Assuming comma-separated for multiple selections
+            submission=submission,
+        )
+        Answer.objects.create(
+            question=yes_no_q, answer_text="Yes", submission=submission
+        )
+
+        response = self.client.get(
+            reverse("instructors:export_responses", args=[self.survey.id])
+        )
+
+        content = response.content.decode("utf-8")
+        csv_reader = csv.reader(StringIO(content))
+        header = next(csv_reader)
+        data_row = next(csv_reader)
+
+        # Verify all question types are exported correctly
+        self.assertIn("Your name", header)
+        self.assertIn("Rate this", header)
+        self.assertIn("Select topics", header)
+        self.assertIn("Would you recommend?", header)
+
+        row_text = " ".join(data_row)
+        self.assertIn("John Doe", row_text)
+        self.assertIn("4", row_text)
+        self.assertIn("Python", row_text)
+        self.assertIn("Django", row_text)
+        self.assertIn("Yes", row_text)
+
+    def test_export_filename_format(self):
+        response = self.client.get(
+            reverse("instructors:export_responses", args=[self.survey.id])
+        )
+
+        content_disposition = response["Content-Disposition"]
+
+        # Check that filename includes survey ID
+        self.assertIn(f"survey_{self.survey.id}", content_disposition.lower())
+        self.assertIn("_responses.csv", content_disposition.lower())

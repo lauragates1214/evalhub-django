@@ -158,7 +158,7 @@ def export_responses(request, survey_id):
 
     # Check ownership
     if survey.owner != request.user:
-        return HttpResponseForbidden()
+        return HttpResponse("403 - Forbidden", status=403)
 
     # Create the HttpResponse object with CSV header
     response = HttpResponse(content_type="text/csv")
@@ -179,7 +179,14 @@ def export_responses(request, survey_id):
         for question in questions:
             # Find the answer for this question in this submission
             answer = submission.answers.filter(question=question).first()
-            row.append(answer.answer_text if answer else "")
+            if answer:
+                # Combine answer text with comment if present
+                cell_content = answer.answer_text
+                if answer.comment_text:
+                    cell_content += f" | Comment: {answer.comment_text}"
+                row.append(cell_content)
+            else:
+                row.append("")
         writer.writerow(row)
 
     return response
