@@ -12,7 +12,7 @@ class MySurveysTest(FunctionalTest):
         self.login(email)  # This redirects to /dashboard/
 
         # They're now on the dashboard - they click "Create Survey"
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
 
         # They enter a name for their survey
@@ -30,7 +30,7 @@ class MySurveysTest(FunctionalTest):
         inputbox.send_keys(Keys.ENTER)
 
         # After adding questions, they navigate back to My Surveys
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         sidebar.find_element(By.LINK_TEXT, "My Surveys").click()
 
         # They see their survey listed by the name they chose
@@ -42,7 +42,7 @@ class MySurveysTest(FunctionalTest):
         )
 
         # After seeing the first survey in My Surveys, create another survey
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
 
         # Wait for the create form to load
@@ -60,7 +60,7 @@ class MySurveysTest(FunctionalTest):
         inputbox.send_keys(Keys.ENTER)
 
         # Navigate back to My Surveys
-        sidebar = self.browser.find_element(By.ID, "dashboard-sidebar")
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
         sidebar.find_element(By.LINK_TEXT, "My Surveys").click()
 
         # Both surveys should be listed
@@ -72,27 +72,27 @@ class MySurveysTest(FunctionalTest):
         self.browser.find_element(By.CSS_SELECTOR, "#id_logout").click()
         self.wait_for(
             lambda: self.assertEqual(
-                self.browser.find_elements(By.ID, "dashboard-sidebar"),
+                self.browser.find_elements(By.ID, "instructor-sidebar"),
                 [],
             )
         )
 
     def test_cannot_create_survey_without_name(self):
-        # User logs in
-        self.login("user@example.com")
+        # Jaydean logs in
+        self.login("jaydean@example.com")
 
-        # She goes to the home page and tries to create a survey without entering a name
-        self.browser.get(self.live_server_url)
+        # She goes to create a survey
+        sidebar = self.browser.find_element(By.ID, "instructor-sidebar")
+        sidebar.find_element(By.LINK_TEXT, "Create Survey").click()
 
-        # She enters a question but no survey name
-        inputbox = self.browser.find_element(By.ID, "id_text")
-        inputbox.send_keys("First question")
-        inputbox.send_keys(Keys.ENTER)
+        # She tries to submit without entering a name
+        name_input = self.browser.find_element(By.NAME, "survey_name")
+        name_input.send_keys(Keys.ENTER)
 
         # The browser prevents submission with HTML5 validation
         self.wait_for(
             lambda: self.browser.find_element(
-                By.CSS_SELECTOR, "#id_survey_name:invalid"
+                By.CSS_SELECTOR, '[name="survey_name"]:invalid'
             )
         )
 
@@ -102,12 +102,13 @@ class MySurveysTest(FunctionalTest):
 
         # Now the survey name field is valid
         self.wait_for(
-            lambda: self.browser.find_element(By.CSS_SELECTOR, "#id_survey_name:valid")
+            lambda: self.browser.find_element(
+                By.CSS_SELECTOR, '[name="survey_name"]:valid'
+            )
         )
 
         # She can now successfully submit
-        inputbox.send_keys(Keys.ENTER)
+        name_input.send_keys(Keys.ENTER)
 
-        # She's redirected to the survey page with her question
-        survey_page = SurveyPage(self)
-        survey_page.wait_for_row_in_question_table("First question", 1)
+        # She's taken to the survey editor
+        self.wait_for(lambda: self.browser.find_element(By.ID, "id_text"))
