@@ -119,18 +119,6 @@ class SurveyAnswerForm(forms.Form):
                 )
 
 
-class SurveyCreationForm(QuestionForm):
-    survey_name = forms.CharField(
-        error_messages={"required": EMPTY_SURVEY_NAME_ERROR},
-        required=True,
-    )
-
-    def save(self):
-        survey = Survey.objects.create(name=self.cleaned_data["survey_name"])
-        super().save(for_survey=survey)
-        return survey
-
-
 class SurveyEditForm(forms.ModelForm):
     class Meta:
         model = Survey
