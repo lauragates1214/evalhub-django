@@ -1,8 +1,8 @@
 <h2>Your Surveys</h2>
 {% for survey in surveys %}
     <!-- fallback url followed by htmx -->
-    <a href="{% url 'instructors:survey_detail' survey.id %}"
-        hx-get="{% url 'instructors:survey_detail' survey.id %}"
+    <a href="{% url 'instructors:view_survey' survey.id %}"
+        hx-get="{% url 'instructors:view_survey' survey.id %}"
         hx-target="#main-content"
         hx-push-url="true">
         {{ survey.name }}

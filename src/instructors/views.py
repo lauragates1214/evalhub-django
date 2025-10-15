@@ -1,8 +1,10 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 import csv
+from io import BytesIO
+import qrcode
 
 from surveys.forms import QuestionForm
 from surveys.models import Survey
@@ -190,3 +192,30 @@ def export_responses(request, survey_id):
         writer.writerow(row)
 
     return response
+
+
+@login_required
+def survey_qr_code(request, survey_id):
+    survey = get_object_or_404(Survey, id=survey_id)
+
+    # Only survey owner can get the QR code
+    if survey.owner != request.user:
+        return HttpResponse("403 - Forbidden", status=403)
+
+    # Generate the full URL for the survey
+    survey_url = request.build_absolute_uri(survey.get_qr_code_url())
+
+    # Create QR code
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(survey_url)
+    qr.make(fit=True)
+
+    # Generate image
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    # Save to BytesIO buffer
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    return HttpResponse(buffer.getvalue(), content_type="image/png")

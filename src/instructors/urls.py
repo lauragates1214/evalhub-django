@@ -5,7 +5,7 @@ app_name = "instructors"  # Namespace for instructor URLs
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
-    path("surveys/", views.survey_list, name="survey_list"),
+    path("surveys/", views.survey_list, name="list_surveys"),
     path(
         "surveys/create/",
         views.create_survey,
@@ -14,16 +14,21 @@ urlpatterns = [
     path(
         "surveys/<int:survey_id>/",
         views.survey_detail,
-        name="survey_detail",
+        name="view_survey",
     ),
     path(
         "surveys/<int:survey_id>/responses/",
         views.survey_responses,
-        name="survey_responses",
+        name="view_responses",
     ),
     path(
         "surveys/<int:survey_id>/export/",
         views.export_responses,
         name="export_responses",
+    ),
+    path(
+        "surveys/<int:survey_id>/qr/",
+        views.survey_qr_code,
+        name="generate_qr_code",
     ),
 ]

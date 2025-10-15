@@ -5,5 +5,5 @@ app_name = "students"  # Namespace for student URLs
 
 
 urlpatterns = [
-    path("survey/<int:survey_id>/", views.survey, name="survey"),
+    path("survey/<int:survey_id>/", views.survey, name="take_survey"),
 ]
