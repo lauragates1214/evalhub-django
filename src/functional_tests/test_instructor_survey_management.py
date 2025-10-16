@@ -102,7 +102,7 @@ class InstructorSurveyManagementTest(FunctionalTest):
         dashboard.click_create_survey()
 
         # The URL updates
-        dashboard.wait_for_url("/instructor/surveys/create")
+        dashboard.wait_for_url("/instructor/survey/create")
 
         # The sidebar is still visible
         dashboard.check_sidebar_visible()
@@ -113,7 +113,7 @@ class InstructorSurveyManagementTest(FunctionalTest):
 
         # URL updates to show the new survey
         self.wait_for(
-            lambda: self.assertIn("/instructor/surveys/", self.browser.current_url)
+            lambda: self.assertIn("/instructor/survey/", self.browser.current_url)
         )
 
         # Sidebar is still there
@@ -130,9 +130,7 @@ class InstructorSurveyManagementTest(FunctionalTest):
         self.login("bob@instructor.com")
 
         # Bob tries to directly access Alice's survey
-        self.browser.get(
-            f"{self.live_server_url}/instructor/surveys/{alice_survey.id}/"
-        )
+        self.browser.get(f"{self.live_server_url}/instructor/survey/{alice_survey.id}/")
 
         # He cannot see the survey content
         self.assertIn("403", self.browser.page_source)
@@ -179,7 +177,7 @@ class InstructorViewResponsesTest(FunctionalTest):
         )
 
         # Mahmoud navigates to the survey
-        self.browser.get(f"{self.live_server_url}/instructor/surveys/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/instructor/survey/{survey.id}/")
 
         # He clicks View Responses
         survey_detail = InstructorSurveyDetailPage(self)
@@ -216,7 +214,7 @@ class InstructorViewResponsesTest(FunctionalTest):
 
         # John tries to view Jane's survey responses
         self.browser.get(
-            f"{self.live_server_url}/instructor/surveys/{jane_survey.id}/responses/"
+            f"{self.live_server_url}/instructor/survey/{jane_survey.id}/responses/"
         )
 
         # He gets an error
@@ -227,7 +225,7 @@ class InstructorViewResponsesTest(FunctionalTest):
         self.login("kate@instructor.com")
 
         # She tries to view responses for a survey that doesn't exist
-        self.browser.get(f"{self.live_server_url}/instructor/surveys/99999/responses/")
+        self.browser.get(f"{self.live_server_url}/instructor/survey/99999/responses/")
 
         # She sees a 404 error
         self.assertIn("Not Found", self.browser.page_source)
@@ -243,7 +241,7 @@ class InstructorViewResponsesTest(FunctionalTest):
 
         # She views the responses page
         self.browser.get(
-            f"{self.live_server_url}/instructor/surveys/{survey.id}/responses/"
+            f"{self.live_server_url}/instructor/survey/{survey.id}/responses/"
         )
 
         # She sees the survey name and question

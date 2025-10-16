@@ -36,7 +36,7 @@ class InstructorDashboardSPATest(FunctionalTest):
         dashboard.check_sidebar_visible()
 
         # The URL has changed to reflect the new view
-        dashboard.wait_for_url("/instructor/surveys/create/")
+        dashboard.wait_for_url("/instructor/survey/create/")
 
         # She creates a survey with a name
         create_page = InstructorSurveyCreatePage(self)
@@ -158,7 +158,7 @@ class InstructorDashboardSPATest(FunctionalTest):
         )
 
         # Amy navigates to her survey in the dashboard
-        self.browser.get(f"{self.live_server_url}/instructor/surveys/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/instructor/survey/{survey.id}/")
 
         # She sees the View Responses link and clicks it
         survey_detail = InstructorSurveyDetailPage(self)

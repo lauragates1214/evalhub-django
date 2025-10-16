@@ -194,7 +194,9 @@ class InstructorSurveyDetailDisplayTest(AuthenticatedTestCase):
         )
 
         self.assertContains(response, "qr-code")
-        self.assertContains(response, f"/instructor/surveys/{self.survey.id}/qr/")
+        self.assertContains(
+            response, reverse("instructors:generate_qr_code", args=[self.survey.id])
+        )
 
     def test_survey_detail_shows_responses_link(self):
         response = self.client.get(

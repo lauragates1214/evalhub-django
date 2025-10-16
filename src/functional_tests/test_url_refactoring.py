@@ -24,26 +24,26 @@ class URLRefactoringTest(FunctionalTest):
         dashboard.click_my_surveys()
         dashboard.wait_for_url("/instructor/surveys/")
 
-        # She clicks "Create Survey" and the URL changes to /instructor/surveys/create/
+        # She clicks "Create Survey" and the URL changes to /instructor/survey/create/
         dashboard.click_create_survey()
-        dashboard.wait_for_url("/instructor/surveys/create/")
+        dashboard.wait_for_url("/instructor/survey/create/")
 
         # She creates a survey
         create_page = InstructorSurveyCreatePage(self)
         create_page.create_survey("Capybara Survey")
 
         # After creation, she's taken to edit that survey at
-        # /instructor/surveys/<id>/
+        # /instructor/survey/<id>/
         self.wait_for(
             lambda: self.assertRegex(
-                self.browser.current_url, r"/instructor/surveys/\d+/$"
+                self.browser.current_url, r"/instructor/survey/{\d+/$}"
             )
         )
 
-        # She can view responses at /instructor/surveys/<id>/responses/
+        # She can view responses at /instructor/survey/<id>/responses/
         survey = Survey.objects.get(owner__email="zhi@instructor.com")
         self.browser.get(
-            f"{self.live_server_url}/instructor/surveys/{survey.id}/responses/"
+            f"{self.live_server_url}/instructor/survey/{survey.id}/responses/"
         )
 
         # She sees the responses page

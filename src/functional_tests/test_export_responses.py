@@ -31,7 +31,7 @@ class ExportResponsesTest(FunctionalTest):
         )
 
         # She goes to the survey detail page
-        self.browser.get(f"{self.live_server_url}/instructor/surveys/{survey.id}/")
+        self.browser.get(f"{self.live_server_url}/instructor/survey/{survey.id}/")
 
         # She sees an "Export to CSV" button
         export_button = self.browser.find_element(By.LINK_TEXT, "Export to CSV")
@@ -39,4 +39,4 @@ class ExportResponsesTest(FunctionalTest):
         # She verifies the link points to the right URL
         # (can't easily test the actual download in Selenium)
         export_url = export_button.get_attribute("href")
-        self.assertIn(f"/instructor/surveys/{survey.id}/export/", export_url)
+        self.assertIn(f"/instructor/survey/{survey.id}/export/", export_url)

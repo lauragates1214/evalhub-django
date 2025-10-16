@@ -145,7 +145,9 @@ def create_survey(request):
                 response = render(
                     request, "partials/survey_editor.html", {"survey": survey}
                 )
-                response["HX-Push-Url"] = f"/instructor/surveys/{survey.id}/"
+                response["HX-Push-Url"] = reverse(
+                    "instructors:survey_detail", args=[survey.id]
+                )
                 return response
             else:
                 return redirect("instructors:survey_detail", survey_id=survey.id)
