@@ -18,6 +18,9 @@ venv/
 src/static/
 src/surveys/static/bootstrap/
 media/src/static
+src/evalhub/static/admin/
+src/evalhub/static/bootstrap/
+
 
 # System files
 .DS_Store
@@ -32,5 +35,15 @@ Thumbs.db
 *.log
 local_settings.py
 
-
+# Test coverage
 src/functional_tests/screendumps
+
+# Node modules
+node_modules/
+package-lock.json
+
+# Compiled/cached static files
+src/evalhub/static/CACHE/
+
+# CSS source maps
+*.css.map

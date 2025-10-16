@@ -1,0 +1,51 @@
+// EvalHub Brand Colors (from evalhub-rails)
+$brand-forest: #2D5A27;      // Dark forest green (primary)
+$brand-sage: #4A7C59;        // Medium sage green (secondary) 
+$brand-coral: #C65D47;       // Warm coral (accent)
+$brand-amber: #D4A574;       // Golden amber (accent light)
+
+// Semantic color system
+$primary: $brand-forest;
+$secondary: $brand-sage;
+$accent: $brand-coral;
+$accent-light: $brand-amber;
+
+// Neutral palette
+$neutral-100: #FFFFFF;
+$neutral-200: #F7F8F9;
+$neutral-300: #E8ECF0;
+$neutral-400: #BCC5CE;
+$neutral-500: #7B8794;
+$neutral-600: #495057;
+$neutral-700: #343A40;
+$neutral-800: #212529;
+$neutral-900: #0D1117;
+
+// Text colors
+$text-primary: $neutral-800;
+$text-secondary: $neutral-600;
+$text-muted: $neutral-500;
+$text-inverse: $neutral-100;
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+
+// Border radius
+$border-radius: 4px;
+$border-radius-lg: 8px;
+$border-radius-xl: 16px;
+
+// Font families
+$font-headers: 'Roboto Slab', serif;
+$font-body: 'Source Sans Pro', sans-serif;
+
+// Font weights
+$font-weight-normal: 400;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-extrabold: 800;

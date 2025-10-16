@@ -1,0 +1,24 @@
+{
+  "name": "evalhub-django",
+  "version": "1.0.0",
+  "description": "Full-stack feedback platform combining Django REST API with htmx and React components. Features multi-tenant architecture, QR code access, and comprehensive analytics. Built with test-driven development for educational use cases.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lauragates1214/evalhub-django.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lauragates1214/evalhub-django/issues"
+  },
+  "homepage": "https://github.com/lauragates1214/evalhub-django#readme",
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "sass": "^1.93.2"
+  }
+}

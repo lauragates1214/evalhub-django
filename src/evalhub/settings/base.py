@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "compressor",
     "accounts",
     "instructors",
     "students",
@@ -164,3 +165,18 @@ LOGGING = {
         "root": {"handlers": ["console"], "level": "INFO"},
     },
 }
+
+COMPRESS_ENABLED = True
+node_modules = os.path.join(BASE_DIR.parent.parent, "node_modules")
+COMPRESS_PRECOMPILERS = (
+    (
+        "text/x-scss",
+        f'npx sass --load-path={node_modules} --load-path={os.path.join(BASE_DIR, "static", "scss")} {{infile}} {{outfile}}',
+    ),
+)
+
+STATICFILES_FINDERS = (
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    "compressor.finders.CompressorFinder",
+)
