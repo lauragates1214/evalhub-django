@@ -9,7 +9,11 @@ from .pages.instructor_pages import (
 
 
 class MySurveysTest(FunctionalTest):
+    """Functional tests for the 'My Surveys' page and survey creation"""
+
     def test_logged_in_users_surveys_are_saved(self):
+        """Instructor can create surveys and see them listed on My Surveys page"""
+
         # A logged-in user visits the site
         email = "user@example.com"
         self.login(email)

@@ -9,8 +9,12 @@ from .pages.instructor_pages import (
 
 
 class NewVisitorTest(FunctionalTest):
+    """A new visitor to the site can create a survey and add questions"""
+
     # Acts as regression test
     def test_can_start_a_new_question(self):
+        """Instructor can create a survey and add questions to it"""
+
         # Emma is an instructor who wants to create a survey
         # She logs into EvalHub
         self.login("user@example.com")
@@ -47,6 +51,8 @@ class NewVisitorTest(FunctionalTest):
         self.browser.find_element(By.CSS_SELECTOR, "#id_logout").click()
 
     def test_multiple_users_can_start_questions_at_different_urls(self):
+        """Multiple instructors can create surveys with unique URLs"""
+
         # Zhi logs in and creates a survey
         self.login("user1@example.com")
 
@@ -95,6 +101,8 @@ class NewVisitorTest(FunctionalTest):
         # Satisfied, they both go back to sleep
 
     def test_instructor_can_name_their_survey(self):
+        """Instructor can name their survey when creating it"""
+
         # Instructor logs in
         self.login("instructor@test.com")
 

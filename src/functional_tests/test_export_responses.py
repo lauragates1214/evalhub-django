@@ -5,7 +5,11 @@ from accounts.models import User
 
 
 class ExportResponsesTest(FunctionalTest):
+    """Tests for exporting survey responses to CSV"""
+
     def test_instructor_can_export_responses_list_to_csv(self):
+        """Instructor with survey responses sees an Export to CSV button that links to the correct export endpoint."""
+
         # Aya creates a survey with responses
         self.login("instructor@test.com")
 

@@ -5,7 +5,11 @@ from surveys.models import Question
 
 
 class QuestionTypesTest(FunctionalTest):
+    """Functional tests for various question types in surveys."""
+
     def test_student_can_answer_multiple_choice_question(self):
+        """Student encounters a multiple choice question, selects a radio option, optionally adds a comment and submits successfully."""
+
         # Instructor creates a survey with a multiple choice question
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions("instructor@test.com", [])
@@ -39,6 +43,8 @@ class QuestionTypesTest(FunctionalTest):
         survey_page.wait_for_confirmation()
 
     def test_student_can_answer_rating_scale_question(self):
+        """Student sees a rating scale question, selects a numeric rating, optionally adds a comment and submits successfully."""
+
         # Instructor creates a survey with a rating scale question
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions("instructor@test.com", [])
@@ -71,6 +77,8 @@ class QuestionTypesTest(FunctionalTest):
         survey_page.wait_for_confirmation()
 
     def test_student_can_answer_checkbox_question(self):
+        """Student encounters a checkbox question, selects multiple options, optionally adds a comment and submits successfully."""
+
         # Instructor creates a survey with a checkbox question
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions("instructor@test.com", [])
@@ -104,6 +112,8 @@ class QuestionTypesTest(FunctionalTest):
         survey_page.wait_for_confirmation()
 
     def test_student_can_answer_yes_no_question(self):
+        """Student sees a yes/no question, selects one option via radio button, optionally adds a comment and submits successfully."""
+
         # Instructor creates a survey with a yes/no question
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions("instructor@test.com", [])
@@ -136,6 +146,8 @@ class QuestionTypesTest(FunctionalTest):
         survey_page.wait_for_confirmation()
 
     def test_comment_boxes_appear_for_non_text_questions_only(self):
+        """Student sees comment boxes appear for all non-text question types, but not for text questions."""
+
         # Instructor creates a survey with multiple question types
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions("instructor@test.com", [])

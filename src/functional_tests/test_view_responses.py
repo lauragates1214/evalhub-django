@@ -6,7 +6,11 @@ from accounts.models import User
 
 
 class ViewResponsesTest(FunctionalTest):
+    """Instructor views responses to their survey"""
+
     def test_instructor_can_view_responses_to_their_survey(self):
+        """Instructor with survey responses clicks 'View Responses' link and sees all submitted answers grouped by question."""
+
         # Instructor creates a survey with questions
         self.login("instructor@test.com")
 

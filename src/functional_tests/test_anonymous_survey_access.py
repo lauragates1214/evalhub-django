@@ -7,7 +7,11 @@ from .pages import StudentSurveyPage
 
 
 class AnonymousSurveyAccessTest(FunctionalTest):
+    """End-to-end tests for anonymous student access to surveys via QR code links"""
+
     def test_student_can_access_survey_via_qr_code_link(self):
+        """Anonymous student scans QR code or visits survey URL, sees questions, fills in responses and receives confirmation."""
+
         # Instructor logs in, creates a survey with questions, then logs out
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions(

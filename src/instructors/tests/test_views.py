@@ -133,8 +133,6 @@ class InstructorCreateSurveyViewTest(AuthenticatedTestCase):
 
 
 class InstructorSurveyDetailAccessControlTest(AuthenticatedTestCase):
-    """Tests for authentication and authorization on survey detail view"""
-
     def test_survey_detail_requires_login(self):
         survey = self.create_survey()
         self.client.logout()
@@ -158,8 +156,6 @@ class InstructorSurveyDetailAccessControlTest(AuthenticatedTestCase):
 
 
 class InstructorSurveyDetailDisplayTest(AuthenticatedTestCase):
-    """Tests for displaying survey information and links"""
-
     def setUp(self):
         super().setUp()
         self.survey = self.create_survey()
@@ -243,8 +239,6 @@ class InstructorSurveyDetailDisplayTest(AuthenticatedTestCase):
 
 
 class InstructorSurveyNameEditingTest(AuthenticatedTestCase):
-    """Tests for editing survey names"""
-
     def setUp(self):
         super().setUp()
         self.survey = self.create_survey()
@@ -294,8 +288,6 @@ class InstructorSurveyNameEditingTest(AuthenticatedTestCase):
 
 
 class InstructorSurveyQuestionManagementTest(AuthenticatedTestCase):
-    """Tests for adding and managing questions"""
-
     def setUp(self):
         super().setUp()
         self.survey = self.create_survey()
@@ -363,8 +355,6 @@ class InstructorSurveyQuestionManagementTest(AuthenticatedTestCase):
 
 
 class InstructorSurveyDetailRenderingTest(AuthenticatedTestCase):
-    """Tests for HTMX rendering and template selection"""
-
     def setUp(self):
         super().setUp()
         self.survey = self.create_survey()
@@ -666,7 +656,6 @@ class InstructorExportResponsesViewTest(AuthenticatedTestCase):
         self.assertEqual(rows[0], ["Submission ID", "Question 1"])
 
     def test_export_requires_login(self):
-        """Test that export requires authentication"""
         self.client.logout()
         response = self.client.get(
             reverse("instructors:export_responses", args=[self.survey.id])
@@ -674,7 +663,6 @@ class InstructorExportResponsesViewTest(AuthenticatedTestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_export_forbidden_for_other_users_survey(self):
-        """Test that instructors can't export other instructors' surveys"""
         other_user = User.objects.create_user(
             email="other@example.com", password="pass"
         )

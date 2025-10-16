@@ -13,7 +13,9 @@ from .pages.instructor_pages import (
 
 
 class QuestionValidationTest(FunctionalTest):
-    # helper method
+    """Functional tests for survey question validation"""
+
+    # helper methods
     def get_error_element(self):
         return self.browser.find_element(By.CSS_SELECTOR, ".invalid-feedback")
 
@@ -21,6 +23,8 @@ class QuestionValidationTest(FunctionalTest):
         return self.browser.find_element(By.NAME, "text")
 
     def test_cannot_add_empty_survey_questions(self):
+        """Instructor cannot add empty survey questions"""
+
         # User 1 logs in
         self.login("user@example.com")
 
@@ -81,6 +85,8 @@ class QuestionValidationTest(FunctionalTest):
         )
 
     def test_cannot_add_duplicate_questions(self):
+        """Instructor cannot add duplicate survey questions"""
+
         # User 1 logs in
         self.login("user@example.com")
 
@@ -126,6 +132,8 @@ class QuestionValidationTest(FunctionalTest):
 
     @skipIf(os.environ.get("CI"), "JavaScript event handling unreliable in headless CI")
     def test_error_messages_are_cleared_on_input(self):
+        """Error messages are cleared as the instructor starts typing"""
+
         # User 1 logs in
         self.login("user@example.com")
 

@@ -11,8 +11,11 @@ from .pages.instructor_pages import (
 
 
 class LayoutAndStylingTest(FunctionalTest):
+    """Test for layout and styling of key pages"""
+
     @skipIf(os.environ.get("CI"), "Visual layout testing not reliable in headless CI")
     def test_layout_and_styling(self):
+        """Instructor dashboard and survey editor are nicely styled and laid out"""
         # Aya logs in
         self.login("aya@example.com")
 

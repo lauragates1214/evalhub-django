@@ -6,9 +6,11 @@ from surveys.models import Survey
 
 
 class URLRefactoringTest(FunctionalTest):
-    """Test that URLs follow the new structure: /instructor/ and /student/"""
+    """Functional tests to verify all instructor and student URLs use the correct /instructor/ and /student/ prefixes."""
 
     def test_instructor_urls_use_instructor_prefix(self):
+        """Instructor navigates through dashboard features and all URLs correctly use the /instructor/ prefix structure."""
+
         # Zhi is an instructor who logs into EvalHub
         self.login("zhi@instructor.com")
 
@@ -50,6 +52,8 @@ class URLRefactoringTest(FunctionalTest):
         self.assertIn("Responses", self.browser.page_source)
 
     def test_student_urls_use_student_prefix(self):
+        """Student accesses a survey and the URL correctly uses the /student/ prefix structure."""
+
         # First, create a survey for students to access
         self.login("instructor@test.com")
         instructor = User.objects.get(email="instructor@test.com")

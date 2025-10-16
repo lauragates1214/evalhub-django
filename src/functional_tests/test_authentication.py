@@ -3,7 +3,11 @@ from .pages import LoginPage
 
 
 class AuthenticationTest(FunctionalTest):
+    """Tests for user authentication: login and logout"""
+
     def test_instructor_can_log_in(self):
+        """Instructor visits the site, navigates to login, enters credentials and successfully logs in to access the dashboard."""
+
         # Create a test user
         email = "instructor@example.com"
         password = "password123"
@@ -27,6 +31,8 @@ class AuthenticationTest(FunctionalTest):
         login_page.wait_for_logged_in(email)
 
     def test_instructor_can_log_out(self):
+        """Logged-in instructor clicks logout and is successfully logged out, returning to the logged-out state."""
+
         # Create and log in a user
         email = "instructor@example.com"
         password = "password123"

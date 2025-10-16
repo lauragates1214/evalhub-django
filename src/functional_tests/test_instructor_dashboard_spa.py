@@ -10,7 +10,11 @@ from .pages import (
 
 
 class InstructorDashboardSPATest(FunctionalTest):
+    """Tests for the instructor dashboard SPA-like navigation experience"""
+
     def test_instructor_experiences_spa_like_navigation(self):
+        """Instructor navigates between dashboard sections with sidebar persisting and only main content updating without full page reloads."""
+
         # Zhi is an instructor who logs into EvalHub
         self.login("zhi@instructor.com")
 
@@ -56,6 +60,8 @@ class InstructorDashboardSPATest(FunctionalTest):
         dashboard.check_sidebar_visible()
 
     def test_my_surveys_navigation_shows_user_surveys(self):
+        """Instructor can navigate to 'My Surveys' and see their surveys listed without full page reloads."""
+
         # Zhi logs in and creates two surveys
         self.login("zhi@instructor.com")
 
@@ -93,6 +99,8 @@ class InstructorDashboardSPATest(FunctionalTest):
         dashboard.check_sidebar_visible()
 
     def test_can_view_survey_in_dashboard(self):
+        """Instructor can click on a survey from 'My Surveys' and view its details in the main content area without full page reloads."""
+
         # Zhi is an instructor with an existing survey
         self.login("zhi@instructor.com")
 
@@ -137,6 +145,8 @@ class InstructorDashboardSPATest(FunctionalTest):
         self.assertIn("Export to CSV", main_content.text)
 
     def test_can_view_responses_in_dashboard(self):
+        """Instructor can view survey responses from the survey detail page without full page reloads."""
+
         # Amy is an instructor who wants to view survey responses
         self.login("amy@instructor.com")
 
@@ -181,6 +191,8 @@ class InstructorDashboardSPATest(FunctionalTest):
         dashboard.check_sidebar_persists()
 
     def test_instructor_can_edit_survey_name(self):
+        """Instructor can edit the survey name inline from the survey detail view without full page reloads."""
+
         # Emma logs in as an instructor
         self.login("emma@instructor.com")
 

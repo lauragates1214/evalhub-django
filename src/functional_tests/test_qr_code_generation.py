@@ -4,7 +4,11 @@ from .pages.instructor_pages import InstructorSurveyDetailPage
 
 
 class QRCodeGenerationTest(FunctionalTest):
+    """Functional tests for QR code generation and display on survey detail page"""
+
     def test_instructor_can_see_qr_code_for_their_survey(self):
+        """Instructor creates a survey and can view a QR code displayed on their survey detail page."""
+
         # Instructor logs in and creates a survey
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions(
@@ -19,6 +23,8 @@ class QRCodeGenerationTest(FunctionalTest):
         survey_detail.check_qr_code_visible()
 
     def test_qr_code_links_to_correct_survey_url(self):
+        """QR code on survey page correctly encodes the student survey URL that displays the survey questions."""
+
         # Instructor creates a survey
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions(

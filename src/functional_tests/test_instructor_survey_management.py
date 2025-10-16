@@ -11,8 +11,11 @@ from accounts.models import User
 
 
 class InstructorSurveyManagementTest(FunctionalTest):
+    """Tests for instructor survey creation and question management."""
 
     def test_cannot_add_duplicate_questions_to_survey(self):
+        """Instructor attempts to add a duplicate question to their survey and sees an error message preventing the addition."""
+
         # Sarah logs in as an instructor
         self.login("sarah@instructor.com")
 
@@ -55,6 +58,8 @@ class InstructorSurveyManagementTest(FunctionalTest):
         self.assertEqual(len(rows), 1)
 
     def test_questions_appear_in_order_they_were_added(self):
+        """Instructor adds multiple questions and they appear in the survey editor table in the exact order they were created."""
+
         # Tom logs in
         self.login("tom@instructor.com")
 
@@ -88,6 +93,8 @@ class InstructorSurveyManagementTest(FunctionalTest):
         self.assertLess(pos2, pos3)
 
     def test_navigation_updates_content_without_losing_sidebar(self):
+        """Instructor navigates between different sections of the dashboard and the sidebar persists throughout without full page reloads."""
+
         # Jaydean logs in
         self.login("jaydean@instructor.com")
 
@@ -120,6 +127,8 @@ class InstructorSurveyManagementTest(FunctionalTest):
         dashboard.check_sidebar_persists()
 
     def test_cannot_access_another_instructors_survey(self):
+        """Instructor attempts to access another instructor's survey via direct URL and receives a 403 forbidden error."""
+
         # Alice creates a survey (using helper to bypass UI)
         alice = User.objects.create_user(
             email="alice@instructor.com", password="password"
@@ -137,8 +146,11 @@ class InstructorSurveyManagementTest(FunctionalTest):
 
 
 class InstructorViewResponsesTest(FunctionalTest):
+    """Tests for instructors viewing survey responses and related permissions."""
 
     def test_can_view_responses_list_with_comments(self):
+        """Instructor views responses for their survey and sees both answer selections and optional comment text from students."""
+
         # Mahmoud logs in
         self.login("mahmoud@instructor.com")
 
@@ -203,6 +215,8 @@ class InstructorViewResponsesTest(FunctionalTest):
         self.assertIn("The hands-on exercises", page_content)
 
     def test_cannot_view_responses_for_another_instructors_survey(self):
+        """Instructor attempts to view responses for another instructor's survey and receives a 403 forbidden error."""
+
         # Jane has a survey with responses
         jane = User.objects.create_user(
             email="jane@instructor.com", password="password"
@@ -221,6 +235,8 @@ class InstructorViewResponsesTest(FunctionalTest):
         self.assertIn("403", self.browser.page_source)
 
     def test_404_when_viewing_responses_for_nonexistent_survey(self):
+        """Instructor tries to view responses for a survey ID that doesn't exist and sees a 404 error."""
+
         # Aya logs in
         self.login("kate@instructor.com")
 
@@ -231,6 +247,8 @@ class InstructorViewResponsesTest(FunctionalTest):
         self.assertIn("Not Found", self.browser.page_source)
 
     def test_survey_with_no_responses_shows_empty_state(self):
+        """Instructor views a survey that has no responses yet and sees an appropriate message indicating no responses are available."""
+
         # Lisa logs in
         self.login("lisa@instructor.com")
 
@@ -260,6 +278,8 @@ class InstructorViewResponsesTest(FunctionalTest):
             self.assertEqual(len(list_items), 0)
 
     def test_responses_load_via_sidebar_navigation(self):
+        """Instructor navigates to their survey via the sidebar and views responses, ensuring the sidebar persists and no full page reload occurs."""
+
         # Igor logs in
         self.login("igor@instructor.com")
 
