@@ -107,7 +107,7 @@ def survey_detail(request, survey_id):
         if request.GET.get("edit_mode") == "true":
             return render(request, "partials/survey_name_edit.html", {"survey": survey})
         return render(
-            request, "partials/survey_editor.html", {"survey": survey, "form": form}
+            request, "partials/survey_detail.html", {"survey": survey, "form": form}
         )
     else:
         return render(
@@ -143,7 +143,7 @@ def create_survey(request):
             # If htmx request, return the survey editor partial
             if request.headers.get("HX-Request"):
                 response = render(
-                    request, "partials/survey_editor.html", {"survey": survey}
+                    request, "partials/survey_detail.html", {"survey": survey}
                 )
                 response["HX-Push-Url"] = reverse(
                     "instructors:survey_detail", args=[survey.id]

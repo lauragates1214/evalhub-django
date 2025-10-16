@@ -106,7 +106,7 @@ class InstructorCreateSurveyViewTest(AuthenticatedTestCase):
             {"survey_name": "Test Survey"},
             HTTP_HX_REQUEST="true",
         )
-        self.assertTemplateUsed(response, "partials/survey_editor.html")
+        self.assertTemplateUsed(response, "partials/survey_detail.html")
         self.assertContains(response, "Test Survey")
 
     def test_post_sets_hx_push_url_header(self):
@@ -375,7 +375,7 @@ class InstructorSurveyDetailRenderingTest(AuthenticatedTestCase):
             HTTP_HX_REQUEST="true",
         )
 
-        self.assertTemplateUsed(response, "partials/survey_editor.html")
+        self.assertTemplateUsed(response, "partials/survey_detail.html")
         self.assertTemplateNotUsed(response, "dashboard.html")
 
     def test_returns_full_dashboard_for_direct_navigation(self):
@@ -392,7 +392,7 @@ class InstructorSurveyDetailRenderingTest(AuthenticatedTestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "partials/survey_editor.html")
+        self.assertTemplateUsed(response, "partials/survey_detail.html")
 
 
 class InstructorSurveyResponsesViewTest(AuthenticatedTestCase):
