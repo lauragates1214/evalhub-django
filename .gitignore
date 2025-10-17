@@ -16,11 +16,9 @@ venv/
 
 # Static files
 src/staticfiles/
-src/evalhub/static/
-src/surveys/static/bootstrap/
 media/src/static
-
-
+src/static/admin/
+src/static/bootstrap/
 
 # System files
 .DS_Store
