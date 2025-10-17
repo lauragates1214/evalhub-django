@@ -10,6 +10,7 @@ from .pages import (
     InstructorSurveyDetailPage,
     StudentSurveyPage,
 )
+from surveys.models import Answer, Question, Submission
 
 
 class LayoutAndStylingTest(FunctionalTest):
@@ -64,8 +65,6 @@ class LayoutAndStylingTest(FunctionalTest):
 
         # Instructor creates a survey with multiple question types
         self.login("instructor@test.com")
-        from surveys.models import Question
-
         survey = self.create_survey_with_questions("instructor@test.com", [])
 
         # Add different question types
@@ -204,8 +203,6 @@ class LayoutAndStylingTest(FunctionalTest):
         )
 
         # Simulate a student response
-        from surveys.models import Submission, Answer, Question
-
         question = Question.objects.get(survey=survey)
         submission = Submission.objects.create(survey=survey)
         Answer.objects.create(
@@ -265,13 +262,10 @@ class ButtonStylingTest(FunctionalTest):
 
     @skipIf(os.environ.get("CI"), "Visual styling testing not reliable in headless CI")
     def test_submit_buttons_have_consistent_styling(self):
-        """Submit buttons have rounded borders, correct colours and hover effects"""
-
         # Instructor logs in and creates a survey
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions("instructor@test.com", [])
 
-        survey_detail = InstructorSurveyDetailPage(self)
         self.browser.get(f"{self.live_server_url}/instructor/survey/{survey.id}/")
 
         # Find submit button
@@ -297,19 +291,7 @@ class ButtonStylingTest(FunctionalTest):
 
         # Check background colour is accent (coral-ish)
         bg_color = submit_button.value_of_css_property("background-color")
-        # Should be some shade of coral/orange (rgb with high R, medium-high G, lower B)
         self.assertRegex(bg_color, r"rgba?\(19[0-9], [1-9][0-9], [4-9][0-9]")
-
-        # Test hover effect
-        initial_bg = submit_button.value_of_css_property("background-color")
-        actions = ActionChains(self.browser)
-        actions.move_to_element(submit_button).perform()
-        import time
-
-        time.sleep(0.3)  # Wait for transition
-        hover_bg = submit_button.value_of_css_property("background-color")
-        # Hover should darken (not always detectable in all browsers)
-        self.assertTrue(submit_button.is_displayed())
 
     @skipIf(os.environ.get("CI"), "Visual styling testing not reliable in headless CI")
     def test_link_buttons_have_consistent_styling(self):
@@ -384,13 +366,10 @@ class FormInputStylingTest(FunctionalTest):
 
     @skipIf(os.environ.get("CI"), "Visual styling testing not reliable in headless CI")
     def test_validation_errors_are_styled_appropriately(self):
-        """Form validation errors have proper error styling"""
-
         # Instructor creates a survey
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions("instructor@test.com", [])
 
-        survey_detail = InstructorSurveyDetailPage(self)
         self.browser.get(f"{self.live_server_url}/instructor/survey/{survey.id}/")
 
         # Try to submit empty question
@@ -540,8 +519,6 @@ class SpacingAndLayoutTest(FunctionalTest):
         # Instructor views responses (which should be in a card-like container)
         self.login("instructor@test.com")
         survey = self.create_survey_with_questions("instructor@test.com", ["Test"])
-
-        from surveys.models import Submission, Answer, Question
 
         question = Question.objects.get(survey=survey)
         submission = Submission.objects.create(survey=survey)

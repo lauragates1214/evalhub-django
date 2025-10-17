@@ -40,7 +40,6 @@ src/functional_tests/screendumps
 
 # Node modules
 node_modules/
-package-lock.json
 
 # Compiled/cached static files
 src/evalhub/static/CACHE/

@@ -33,3 +33,25 @@ class CompiledCSSTest(TestCase):
             ),
             "Submit buttons should have 16px border-radius in compiled CSS",
         )
+
+    def test_text_inputs_have_16px_border_radius(self):
+        css_path = finders.find("CACHE/css/output.a9ceb1e24868.css")
+        if css_path is None:
+            cache_dir = Path(__file__).parent.parent / "CACHE" / "css"
+            css_files = list(cache_dir.glob("*.css"))
+            self.assertTrue(len(css_files) > 0, "No compressed CSS files found")
+            css_path = str(css_files[0])
+
+        with open(css_path, "r") as f:
+            css_content = f.read()
+
+        self.assertIn("border-radius", css_content)
+        # Check for input[type=text] with 16px border-radius (quotes optional in compiled CSS)
+        self.assertTrue(
+            re.search(
+                r'input\[type=["\']?text["\']?\][^}]*border-radius[^}]*16px',
+                css_content,
+                re.DOTALL,
+            ),
+            "Text inputs should have 16px border-radius in compiled CSS",
+        )
