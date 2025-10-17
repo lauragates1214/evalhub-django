@@ -4,8 +4,9 @@
 // Import Bootstrap (full path from node_modules)
 @import 'bootstrap/scss/bootstrap';
 
-// Import custom partials (after Bootstrap so we can override)
+// Import custom partials (after Bootstrap so can override)
 @import 'buttons';
 @import 'forms';
+@import 'layout';
 @import 'navbar';
 @import 'typography';

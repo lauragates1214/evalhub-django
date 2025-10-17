@@ -44,7 +44,7 @@ class LayoutAndStylingTest(FunctionalTest):
         inputbox = self.browser.find_element(By.ID, "id_text")
         self.assertAlmostEqual(
             inputbox.location["x"] + inputbox.size["width"] / 2,
-            593,  # Actual centred position with sidebar
+            644,  # accounting for main-content padding
             delta=10,
         )
 
@@ -55,7 +55,7 @@ class LayoutAndStylingTest(FunctionalTest):
         inputbox = self.browser.find_element(By.ID, "id_text")
         self.assertAlmostEqual(
             inputbox.location["x"] + inputbox.size["width"] / 2,
-            593,  # Actual centred position with sidebar
+            644,  # Centred position accounting for sidebar
             delta=10,
         )
 
@@ -167,7 +167,8 @@ class LayoutAndStylingTest(FunctionalTest):
         self.assertEqual(sidebar.location, sidebar_initial_location)
 
         # Click through to a survey detail
-        dashboard.click_survey_link(survey.name)
+        survey_link = dashboard.find_survey_link(survey.name)
+        self.scroll_to_and_click(survey_link)
 
         # Sidebar still persists
         dashboard.check_sidebar_persists()

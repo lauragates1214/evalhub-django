@@ -103,3 +103,27 @@ class ColorStylingTest(TestCase):
             ),
             "Navbar brand should use primary color (#2D5A27) in compiled CSS",
         )
+
+
+class LayoutTest(TestCase):
+    def test_main_content_has_padding(self):
+        """Main content area should have padding"""
+        css_path = finders.find("CACHE/css/output.db4c10713910.css")
+        if css_path is None:
+            cache_dir = Path(__file__).parent.parent / "CACHE" / "css"
+            css_files = list(cache_dir.glob("*.css"))
+            self.assertTrue(len(css_files) > 0, "No compressed CSS files found")
+            css_path = str(css_files[0])
+
+        with open(css_path, "r") as f:
+            css_content = f.read()
+
+        # Check for #main-content with padding
+        self.assertTrue(
+            re.search(
+                r"#main-content[^}]*padding[^}]*[1-9]",
+                css_content,
+                re.DOTALL,
+            ),
+            "Main content should have non-zero padding in compiled CSS",
+        )
