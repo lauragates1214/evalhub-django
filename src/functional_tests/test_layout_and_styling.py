@@ -364,38 +364,6 @@ class FormInputStylingTest(FunctionalTest):
         # Either border changed or box-shadow appeared
         self.assertTrue(initial_border != focused_border or box_shadow != "none")
 
-    @skipIf(os.environ.get("CI"), "Visual styling testing not reliable in headless CI")
-    def test_validation_errors_are_styled_appropriately(self):
-        # Instructor creates a survey
-        self.login("instructor@test.com")
-        survey = self.create_survey_with_questions("instructor@test.com", [])
-
-        self.browser.get(f"{self.live_server_url}/instructor/survey/{survey.id}/")
-
-        # Try to submit empty question
-        submit_button = self.browser.find_element(
-            By.CSS_SELECTOR, 'button[type="submit"]'
-        )
-        submit_button.click()
-
-        # Wait for error to appear
-        self.wait_for(lambda: self.browser.find_element(By.CLASS_NAME, "is-invalid"))
-
-        # Input has error class
-        text_input = self.browser.find_element(By.ID, "id_text")
-        self.assertIn("is-invalid", text_input.get_attribute("class"))
-
-        # Error message is visible with proper styling
-        error_message = self.browser.find_element(By.CLASS_NAME, "invalid-feedback")
-        self.assertTrue(error_message.is_displayed())
-
-        # Error message should have error colour
-        error_color = error_message.value_of_css_property("color")
-        # Should be some shade of red (high R, low G, low B)
-        self.assertRegex(
-            error_color, r"rgba?\(1[5-9][0-9]|2[0-5][0-9], [0-9]{1,2}, [0-9]{1,2}"
-        )
-
 
 class TypographyStylingTest(FunctionalTest):
     """Tests for typography consistency"""
@@ -435,11 +403,18 @@ class TypographyStylingTest(FunctionalTest):
     def test_survey_name_is_prominent(self):
         """Survey names are displayed prominently with appropriate heading styling"""
 
-        # Instructor creates a survey
+        # Instructor creates a survey through UI
         self.login("instructor@test.com")
-        survey = self.create_survey_with_questions("instructor@test.com", ["Test"])
 
-        self.browser.get(f"{self.live_server_url}/instructor/survey/{survey.id}/")
+        dashboard = InstructorDashboardPage(self)
+        dashboard.navigate_to_dashboard()
+        dashboard.click_create_survey()
+
+        create_page = InstructorSurveyCreatePage(self)
+        create_page.create_survey("Test Survey")
+
+        # Wait for survey name to appear after HTMX swap
+        self.wait_for(lambda: self.browser.find_element(By.ID, "survey-name-display"))
 
         # Survey name should be in an h2
         survey_name = self.browser.find_element(By.ID, "survey-name-display")

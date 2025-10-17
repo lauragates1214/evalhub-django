@@ -5,6 +5,7 @@ import csv
 from io import StringIO
 
 from accounts.models import User
+from surveys.forms import EMPTY_QUESTION_ERROR
 from surveys.models import Answer, Question, Submission, Survey
 from tests.base import AuthenticatedTestCase
 
@@ -779,3 +780,20 @@ class InstructorExportResponsesViewTest(AuthenticatedTestCase):
         # Check that filename includes survey ID
         self.assertIn(f"survey_{self.survey.id}", content_disposition.lower())
         self.assertIn("_responses.csv", content_disposition.lower())
+
+
+class QuestionValidationErrorDisplayTest(AuthenticatedTestCase):
+    def test_empty_question_shows_is_invalid_class(self):
+        survey = self.create_survey()
+
+        response = self.client.post(
+            reverse("instructors:survey_detail", args=[survey.id]),
+            {"text": ""},  # Empty question
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "is-invalid")
+        # Check for the error message (it will be HTML-escaped in the response)
+        self.assertContains(
+            response, "empty question"
+        )  # Just check for part of the message

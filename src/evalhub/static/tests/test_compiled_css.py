@@ -55,3 +55,51 @@ class CompiledCSSTest(TestCase):
             ),
             "Text inputs should have 16px border-radius in compiled CSS",
         )
+
+
+class TypographyTest(TestCase):
+    def test_h1_uses_roboto_slab_font(self):
+        """H1 headers should use Roboto Slab font family"""
+        css_path = finders.find("CACHE/css/output.65a4b43f4b54.css")
+        if css_path is None:
+            cache_dir = Path(__file__).parent.parent / "CACHE" / "css"
+            css_files = list(cache_dir.glob("*.css"))
+            self.assertTrue(len(css_files) > 0, "No compressed CSS files found")
+            css_path = str(css_files[0])
+
+        with open(css_path, "r") as f:
+            css_content = f.read()
+
+        # Check for h1 with Roboto Slab font
+        self.assertTrue(
+            re.search(
+                r"h1[^}]*font-family[^}]*Roboto Slab",
+                css_content,
+                re.DOTALL,
+            ),
+            "H1 should use Roboto Slab font family in compiled CSS",
+        )
+
+
+class ColorStylingTest(TestCase):
+    def test_navbar_brand_has_primary_color(self):
+        """Navbar brand should use primary forest green color"""
+        css_path = finders.find("CACHE/css/output.db4c10713910.css")
+        if css_path is None:
+            cache_dir = Path(__file__).parent.parent / "CACHE" / "css"
+            css_files = list(cache_dir.glob("*.css"))
+            self.assertTrue(len(css_files) > 0, "No compressed CSS files found")
+            css_path = str(css_files[0])
+
+        with open(css_path, "r") as f:
+            css_content = f.read()
+
+        # Check for navbar-brand with primary color
+        self.assertTrue(
+            re.search(
+                r"\.navbar-brand[^}]*color[^}]*#2D5A27",
+                css_content,
+                re.DOTALL,
+            ),
+            "Navbar brand should use primary color (#2D5A27) in compiled CSS",
+        )
