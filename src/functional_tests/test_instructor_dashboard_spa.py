@@ -88,9 +88,13 @@ class InstructorDashboardSPATest(FunctionalTest):
         # Goes back to My Surveys again
         dashboard.click_my_surveys()
 
-        # Wait for the survey list to load (not just check immediately)
-        dashboard.wait_for_content("Your Surveys")
+        # Wait for survey detail content to disappear first
+        self.wait_for(
+            lambda: self.assertNotIn("Add Question", dashboard.get_main_content().text)
+        )
 
+        # Then wait for the survey list to load
+        dashboard.wait_for_content("Your Surveys")
         # Then check both surveys are listed
         dashboard.check_content_contains("First Survey")
         dashboard.check_content_contains("Second Survey")

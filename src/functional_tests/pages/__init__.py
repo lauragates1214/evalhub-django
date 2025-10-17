@@ -7,9 +7,9 @@ from .instructor_pages import (
 from .student_pages import StudentSurveyPage
 
 __all__ = [
+    "LoginPage",
     "InstructorDashboardPage",
     "InstructorSurveyCreatePage",
     "InstructorSurveyDetailPage",
-    "LoginPage",
     "StudentSurveyPage",
 ]
