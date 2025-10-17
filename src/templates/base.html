@@ -17,17 +17,19 @@
       <nav class="navbar">
         <div class="container-fluid">
           <a class="navbar-brand" href="/">EvalHub</a>
-          {% if user.is_authenticated %}
-            <div>
-              <span class="me-3">Logged in as {{ user.email }}</span>
-              <form method="POST" action="{% url 'accounts:logout' %}" style="display: inline;">
-                {% csrf_token %}
-                <button id="id_logout" type="submit" class="btn btn-link p-0">Log out</button>
-              </form>
-            </div>
-          {% else %}
-            <a id="id_login_link" href="{% url 'accounts:login' %}">Log in</a>
-          {% endif %}
+          {% block navbar_content %}
+            {% if user.is_authenticated %}
+              <div>
+                <span class="me-3">Logged in as {{ user.email }}</span>
+                <form method="POST" action="{% url 'accounts:logout' %}" style="display: inline;">
+                  {% csrf_token %}
+                  <button id="id_logout" type="submit" class="btn btn-link p-0">Log out</button>
+                </form>
+              </div>
+            {% else %}
+              <a id="id_login_link" href="{% url 'accounts:login' %}">Log in</a>
+            {% endif %}
+          {% endblock %}
         </div>
       </nav>
 
@@ -68,9 +70,9 @@
         }
       };
 
-      window.onload = attachErrorClearHandler; // Attach on initial load
-      document.body.addEventListener('htmx:afterSwap', attachErrorClearHandler); // Attach after every htmx swap
+      window.onload = attachErrorClearHandler;
+      document.body.addEventListener('htmx:afterSwap', attachErrorClearHandler);
     </script>
-
+    {% block extra_js %}{% endblock %}
   </body>
 </html>
