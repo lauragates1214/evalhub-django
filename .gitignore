@@ -43,4 +43,6 @@ node_modules/
 src/evalhub/static/CACHE/
 
 # CSS source maps
+*.css.mapsrc/evalhub/staticfiles/CACHE/
+src/evalhub/staticfiles/
 *.css.map
