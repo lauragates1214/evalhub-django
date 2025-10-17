@@ -69,7 +69,7 @@ class NewVisitorTest(FunctionalTest):
 
         # He notices that his survey has a unique URL
         user1_survey_url = self.browser.current_url
-        self.assertRegex(user1_survey_url, "/instructor/surveys/.+")
+        self.assertRegex(user1_survey_url, "/instructor/survey/.+")
 
         # Now a new user, Kerrie, comes along to the site
         # We use a new browser session to simulate a new user
@@ -90,7 +90,7 @@ class NewVisitorTest(FunctionalTest):
 
         # Kerrie gets her own unique URL
         user2_survey_url = self.browser.current_url
-        self.assertRegex(user2_survey_url, "/instructor/surveys/.+")
+        self.assertRegex(user2_survey_url, "/instructor/survey/.+")
         self.assertNotEqual(user2_survey_url, user1_survey_url)
 
         # There is no trace of Zhi's survey question

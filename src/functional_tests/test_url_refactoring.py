@@ -38,7 +38,7 @@ class URLRefactoringTest(FunctionalTest):
         # /instructor/survey/<id>/
         self.wait_for(
             lambda: self.assertRegex(
-                self.browser.current_url, r"/instructor/survey/{\d+/$}"
+                self.browser.current_url, r"/instructor/survey/\d+/"
             )
         )
 
