@@ -148,7 +148,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "static"
+STATIC_ROOT = BASE_DIR / "staticfiles"  # Where collectstatic outputs to
+STATICFILES_DIRS = [BASE_DIR.parent / "static"]  # Project-level static files
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -171,7 +173,7 @@ node_modules = os.path.join(BASE_DIR.parent.parent, "node_modules")
 COMPRESS_PRECOMPILERS = (
     (
         "text/x-scss",
-        f'npx sass --load-path={node_modules} --load-path={os.path.join(BASE_DIR, "static", "scss")} {{infile}} {{outfile}}',
+        f'npx sass --load-path={node_modules} --load-path={os.path.join(BASE_DIR.parent, "static", "scss")} {{infile}} {{outfile}}',
     ),
 )
 

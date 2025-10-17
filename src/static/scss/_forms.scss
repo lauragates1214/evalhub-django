@@ -1,0 +1,34 @@
+@import 'variables';
+
+// Form inputs
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+  padding: $spacing-md !important;
+  border-radius: $border-radius-xl !important;
+  border: 6px solid $secondary !important;
+  font-family: $font-body !important;
+  transition: all 0.2s ease !important;
+  
+  &:focus {
+    outline: none !important;
+    border-color: $primary !important;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1) !important;
+  }
+  
+  &:hover:not(:disabled) {
+    border-color: darken($secondary, 10%) !important;
+  }
+  
+  &:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+  }
+  
+  &.is-invalid {
+    border-color: #DC3545 !important;
+  }
+}

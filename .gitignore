@@ -15,11 +15,11 @@ venv/
 .env
 
 # Static files
-src/static/
+src/staticfiles/
+src/evalhub/static/
 src/surveys/static/bootstrap/
 media/src/static
-src/evalhub/static/admin/
-src/evalhub/static/bootstrap/
+
 
 
 # System files

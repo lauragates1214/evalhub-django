@@ -1,0 +1,28 @@
+@import 'variables';
+
+// Submit button styling
+button[type="submit"],
+.submit-btn {
+  padding: $spacing-md $spacing-lg !important;
+  border-radius: $border-radius-xl !important;
+  border: 6px solid $secondary !important;
+  background-color: $accent !important;
+  color: $text-inverse !important;
+  font-family: $font-headers !important;
+  font-weight: $font-weight-extrabold !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  
+  &:hover:not(:disabled) {
+    background-color: darken($accent, 10%) !important;
+  }
+  
+  &:active {
+    background-color: darken($accent, 15%) !important;
+  }
+  
+  &:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+  }
+}
