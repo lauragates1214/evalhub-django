@@ -1,3 +1,12 @@
+"""
+AI Assistance Note:
+This module was developed using AI tools (Claude, VS Code AI) for:
+- Initial test case generation following TDD patterns
+- Debugging and interpreting test failures
+- Explaining Django/htmx concepts and patterns
+All architecture and design decisions and final implementations are my own work.
+"""
+
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render

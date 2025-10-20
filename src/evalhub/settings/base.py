@@ -10,6 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+"""
+AI Assistance Note:
+This module was developed using AI tools (Claude, VS Code AI) for:
+- Initial test case generation following TDD patterns
+- Debugging and interpreting test failures
+- Explaining Django/htmx concepts and patterns
+All architecture and design decisions and final implementations are my own work.
+"""
+
 from decouple import config
 from pathlib import Path
 import os

@@ -1,3 +1,12 @@
+"""
+AI Assistance Note:
+This module was developed using AI tools (Claude, VS Code AI) for:
+- Initial test case generation following TDD patterns
+- Debugging and interpreting test failures
+- Explaining Django/htmx concepts and patterns
+All architecture and design decisions and final implementations are my own work.
+"""
+
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
