@@ -1,9 +1,0 @@
-What we know is deprecated:
-
-Views in surveys/views.py:
-
-home_page (old landing page)
-
-Old home page routes
-
-SurveyPage? Implement Page Pattern for new architecture?

@@ -18,6 +18,8 @@ The frontend uses htmx for dynamic interactions rather than React. While I've us
 
 The database schema centres on four core models: User (handling both instructor and student authentication), Survey (storing survey metadata and activation status), Question (supporting text, multiple choice, and rating question types), and Response (capturing student answers linked to specific questions and surveys). For development, I used SQLite due to its simplicity, though the application is designed to migrate to PostgreSQL for production deployment.
 
+The application is containerised using Docker for both development and production environments, ensuring consistency across different deployment contexts.
+
 Django's template system renders server-side HTML enhanced with htmx attributes, striking a balance between traditional server-rendered pages and modern interactive experiences.
 
 ## File Structure Explanation
@@ -66,7 +68,7 @@ I used AI tools throughout this project whilst maintaining ownership of all desi
 
 ## Deployment & CI/CD
 
-Following the deployment chapters in Percival's book, I configured a CI pipeline using GitHub Actions to automatically run tests on each commit. I also set up a Digital Ocean VPS for staging deployment, configuring Nginx, Gunicorn, and systemd services to run the Django application in a production-like environment. While I've since taken down the VPS to avoid ongoing costs, this process taught me valuable lessons about server configuration, environment management, and deployment workflows.
+Following the deployment chapters in Percival's book, I configured a CI pipeline using GitHub Actions to automatically run tests on each commit. I containerised the application using Docker for both development and production environments, then set up a Digital Ocean VPS for both staging and production deployments, configuring Nginx, Gunicorn, and systemd services to run the Django application in a production-like environment. While I've since taken down the VPS to avoid ongoing costs, this process taught me valuable lessons about containerisation, server configuration, environment management, and deployment workflows.
 
 ---
 
