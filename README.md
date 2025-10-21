@@ -62,13 +62,14 @@ EvalHub follows Django's modular app structure, with functionality separated int
 
 **SCSS Compilation:** Configuring django-compressor to correctly compile SCSS files required getting file paths right in settings files.
 
-## AI Assistance
-
-I used AI tools throughout this project whilst maintaining ownership of all design decisions and core implementations. Claude served multiple roles: writing initial test cases following TDD patterns, helping interpret test failure output, explaining Django and htmx concepts, and debugging configuration issues. During the code integration phases of the TDD cycle, I instructed Claude to act as a tutor rather than writing code directly - guiding me through implementations step-by-step. I modelled this approach on CS50's duck debugger system prompt, introduced to me at a CS50 Hackathon in London in June 2025. Additionally, I used VS Code's integrated AI for code completions. All architectural decisions, feature designs, and final code implementations were my own work, with AI serving as an educational amplifier rather than a replacement for learning.
-
 ## Deployment & CI/CD
 
 Following the deployment chapters in Percival's book, I configured a CI pipeline using GitHub Actions to automatically run tests on each commit. I containerised the application using Docker for both development and production environments, then set up a Digital Ocean VPS for both staging and production deployments, configuring Nginx, Gunicorn, and systemd services to run the Django application in a production-like environment. While I've since taken down the VPS to avoid ongoing costs, this process taught me valuable lessons about containerisation, server configuration, environment management, and deployment workflows.
+
+## AI Assistance
+
+I used AI tools throughout this project while maintaining ownership of all design decisions and core implementations. Claude served multiple roles: writing initial test cases following TDD patterns, helping interpret test failure output, explaining Django and htmx concepts, and debugging configuration issues. During the code integration phases of the TDD cycle, I instructed Claude to act as a tutor rather than writing code directly - guiding me through implementations step-by-step. I modelled this approach on CS50's duck debugger system prompt, introduced to me at a CS50 Hackathon in London in June 2025. Additionally, I used VS Code's integrated AI for code completions. All architectural decisions, feature designs, and final code implementations were my own work, with AI serving as an educational amplifier rather than a replacement for learning.
+
 
 ---
 
